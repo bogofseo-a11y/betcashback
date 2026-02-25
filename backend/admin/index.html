@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BetCashback Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f13; --bg2: #16161e; --card: #1c1c26; --border: rgba(255,255,255,0.08);
+    --accent: #00e5a0; --red: #ff4d6d; --yellow: #ffd166; --blue: #5b8dee;
+    --text: #eeeef8; --text2: #8888aa; --text3: #44445a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; }
+  
+  #login { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .login-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 40px; width: 360px; }
+  .login-logo { font-size: 22px; font-weight: 700; color: var(--accent); margin-bottom: 24px; }
+  
+  #app { display: none; }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 220px; background: var(--bg2); border-right: 1px solid var(--border); padding: 20px 0; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; }
+  .sidebar-logo { font-size: 18px; font-weight: 700; color: var(--accent); padding: 0 20px 24px; }
+  .nav-link { display: flex; align-items: center; gap: 10px; padding: 10px 20px; cursor: pointer; transition: all 0.15s; color: var(--text2); }
+  .nav-link:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+  .nav-link.active { background: rgba(0,229,160,0.08); color: var(--accent); border-right: 2px solid var(--accent); }
+  .nav-icon { font-size: 16px; }
+  
+  .main { margin-left: 220px; padding: 24px; flex: 1; }
+  
+  .page { display: none; }
+  .page.active { display: block; }
+  
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
+  
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .stat-box .label { font-size: 11px; font-weight: 600; color: var(--text2); letter-spacing: 0.8px; text-transform: uppercase; }
+  .stat-box .value { font-size: 28px; font-weight: 700; margin-top: 6px; }
+  .stat-box .value.green { color: var(--accent); }
+  .stat-box .value.yellow { color: var(--yellow); }
+  .stat-box .value.blue { color: var(--blue); }
+  .stat-box .value.red { color: var(--red); }
+  
+  .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-btn { padding: 7px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; border: 1px solid var(--border); background: var(--card); color: var(--text2); transition: all 0.15s; }
+  .filter-btn:hover { border-color: rgba(255,255,255,0.15); color: var(--text); }
+  .filter-btn.active { background: rgba(0,229,160,0.1); border-color: var(--accent); color: var(--accent); }
+  .btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.15s; }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-danger { background: rgba(255,77,109,0.15); color: var(--red); border: 1px solid rgba(255,77,109,0.3); }
+  .btn-success { background: rgba(0,229,160,0.15); color: var(--accent); border: 1px solid rgba(0,229,160,0.3); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  
+  .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: var(--bg2); padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text2); letter-spacing: 0.8px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .badge-submitted { background: rgba(91,141,238,0.15); color: var(--blue); }
+  .badge-in_review { background: rgba(255,209,102,0.15); color: var(--yellow); }
+  .badge-approved { background: rgba(0,229,160,0.15); color: var(--accent); }
+  .badge-paid { background: rgba(0,229,160,0.25); color: var(--accent); }
+  .badge-rejected { background: rgba(255,77,109,0.15); color: var(--red); }
+  
+  .risk-bar { display: flex; align-items: center; gap: 6px; }
+  .risk-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk-low { background: var(--accent); }
+  .risk-mid { background: var(--yellow); }
+  .risk-high { background: var(--red); }
+  
+  .actions { display: flex; gap: 6px; }
+  
+  input[type=text], input[type=password], textarea, select {
+    width: 100%; background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: inherit; font-size: 14px;
+    outline: none; transition: border-color 0.2s;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  label { font-size: 12px; font-weight: 600; color: var(--text2); display: block; margin-bottom: 6px; }
+  .field { margin-bottom: 14px; }
+  
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; width: 540px; max-width: 95vw; max-height: 90vh; overflow-y: auto; padding: 24px; }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+  .btn-cancel { background: var(--card); color: var(--text2); }
+  
+  .thumb-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .thumb { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; cursor: pointer; border: 1px solid var(--border); }
+  .thumb:hover { border-color: var(--accent); }
+  
+  .claim-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .detail-item .d-label { font-size: 11px; color: var(--text2); font-weight: 600; margin-bottom: 3px; }
+  .detail-item .d-value { font-weight: 600; }
+  
+  .pagination { display: flex; gap: 8px; align-items: center; margin-top: 16px; }
+  .page-btn { padding: 6px 12px; border-radius: 6px; cursor: pointer; background: var(--card); border: 1px solid var(--border); color: var(--text2); }
+  .page-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+  
+  #lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; align-items: center; justify-content: center; cursor: zoom-out; }
+  #lightbox.open { display: flex; }
+  #lightbox img { max-width: 95vw; max-height: 95vh; object-fit: contain; border-radius: 8px; }
+  
+  .search-input { padding: 8px 14px; border-radius: 8px; background: var(--card); border: 1px solid var(--border); color: var(--text); font-family: inherit; font-size: 13px; width: 220px; outline: none; }
+  .search-input:focus { border-color: var(--accent); }
+  
+  .broadcast-area { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; max-width: 600px; }
+  .broadcast-area h2 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-box">
+    <div class="login-logo">🎯 BetCashback Admin</div>
+    <div class="field">
+      <label>Backend URL</label>
+      <input type="text" id="login-url" placeholder="https://your-app.onrender.com">
+    </div>
+    <div class="field">
+      <label>Admin Secret</label>
+      <input type="password" id="login-secret" placeholder="Ваш ADMIN_SECRET">
+    </div>
+    <button class="btn btn-primary" style="width:100%;padding:12px" onclick="doLogin()">Войти</button>
+    <div id="login-error" style="color:var(--red);font-size:13px;margin-top:12px;display:none"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="layout">
+    <div class="sidebar">
+      <div class="sidebar-logo">🎯 BetCash Admin</div>
+      <div class="nav-link active" onclick="showPage('dashboard')" id="nav-dashboard"><span class="nav-icon">📊</span> Дашборд</div>
+      <div class="nav-link" onclick="showPage('claims')" id="nav-claims"><span class="nav-icon">📋</span> Заявки</div>
+      <div class="nav-link" onclick="showPage('users')" id="nav-users"><span class="nav-icon">👥</span> Пользователи</div>
+      <div class="nav-link" onclick="showPage('broadcast')" id="nav-broadcast"><span class="nav-icon">📢</span> Рассылка</div>
+      <div style="position:absolute;bottom:20px;left:0;right:0;padding:0 20px">
+        <button class="btn" style="width:100%;background:var(--card);color:var(--text2)" onclick="doLogout()">Выйти</button>
+      </div>
+    </div>
+
+    <div class="main">
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <h1>Дашборд</h1>
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-box"><div class="label">Пользователей</div><div class="value blue" id="s-users">—</div></div>
+          <div class="stat-box"><div class="label">Заявок всего</div><div class="value" id="s-claims">—</div></div>
+          <div class="stat-box"><div class="label">Ожидают проверки</div><div class="value yellow" id="s-pending">—</div></div>
+          <div class="stat-box"><div class="label">Выплачено</div><div class="value green" id="s-paid">—</div></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Статус</th><th>Кол-во</th><th>Сумма кэшбэка</th></tr></thead>
+            <tbody id="stats-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CLAIMS -->
+      <div class="page" id="page-claims">
+        <h1>Заявки</h1>
+        <div class="toolbar">
+          <div class="filter-btn active" onclick="filterClaims('',this)">Все</div>
+          <div class="filter-btn" onclick="filterClaims('submitted',this)">Новые</div>
+          <div class="filter-btn" onclick="filterClaims('in_review',this)">На проверке</div>
+          <div class="filter-btn" onclick="filterClaims('approved',this)">Одобрены</div>
+          <div class="filter-btn" onclick="filterClaims('rejected',this)">Отклонены</div>
+          <div class="filter-btn" onclick="filterClaims('paid',this)">Выплачены</div>
+          <input class="search-input" type="text" placeholder="Поиск по ID купона..." oninput="searchClaims(this.value)" style="margin-left:auto">
+          <button class="btn btn-primary" onclick="exportCSV()">⬇ CSV</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Пользователь</th><th>Букмекер</th><th>Проигрыш</th>
+                <th>Кэшбэк</th><th>Риск</th><th>Статус</th><th>Дата</th><th>Действия</th>
+              </tr>
+            </thead>
+            <tbody id="claims-table"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="claims-pagination"></div>
+      </div>
+
+      <!-- USERS -->
+      <div class="page" id="page-users">
+        <h1>Пользователи</h1>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>TG ID</th><th>Имя</th><th>Username</th><th>Заявок</th><th>Выплачено</th><th>Реф</th><th>Зарегистрирован</th></tr>
+            </thead>
+            <tbody id="users-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- BROADCAST -->
+      <div class="page" id="page-broadcast">
+        <h1>Рассылка</h1>
+        <div class="broadcast-area">
+          <h2>Отправить сообщение пользователям</h2>
+          <div class="field">
+            <label>Аудитория</label>
+            <select id="bc-filter">
+              <option value="all">Все пользователи</option>
+              <option value="active">Активные (были заявки за 30 дней)</option>
+              <option value="inactive">Неактивные (нет заявок за 30 дней)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Сообщение (поддерживает HTML: &lt;b&gt;, &lt;i&gt;, &lt;a&gt;)</label>
+            <textarea id="bc-message" placeholder="Привет! 🎯 Топ-5 кэшбэков этой недели..." style="height:140px"></textarea>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <button class="btn btn-primary" onclick="sendBroadcast()">Отправить рассылку</button>
+            <div id="bc-result" style="font-size:13px;color:var(--text2)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CLAIM MODAL -->
+<div class="modal-overlay" id="modal-claim">
+  <div class="modal">
+    <div class="modal-title" id="modal-claim-title">Заявка #—</div>
+    <div class="claim-detail" id="modal-claim-detail"></div>
+    <div>
+      <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">СКРИНШОТЫ</div>
+      <div class="thumb-grid" id="modal-thumbs"></div>
+    </div>
+    <hr style="border-color:var(--border);margin:16px 0">
+    <div class="field">
+      <label>Комментарий / причина отказа</label>
+      <textarea id="modal-note" placeholder="Например: скрин не читается, купон не соответствует..."></textarea>
+    </div>
+    <div class="field" id="modal-tx-field" style="display:none">
+      <label>TX Hash (для статуса Выплачено)</label>
+      <input type="text" id="modal-tx" placeholder="0x...">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" onclick="closeModal('modal-claim')">Закрыть</button>
+      <button class="btn btn-danger btn-sm" onclick="updateClaimStatus('rejected')">Отклонить</button>
+      <button class="btn" style="background:rgba(255,209,102,0.15);color:var(--yellow);border:1px solid rgba(255,209,102,0.3)" onclick="updateClaimStatus('in_review')">На проверку</button>
+      <button class="btn btn-success btn-sm" onclick="updateClaimStatus('approved')">Одобрить</button>
+      <button class="btn btn-primary btn-sm" id="btn-paid" onclick="handlePaidClick()">Оплачено ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="this.classList.remove('open')">
+  <img id="lightbox-img" src="">
+</div>
+
+<script>
+let API = '';
+let SECRET = '';
+let currentClaims = [];
+let currentClaimId = null;
+let claimFilter = '';
+let currentPage = 1;
+const PAGE_SIZE = 20;
+
+function doLogin() {
+  API = document.getElementById('login-url').value.trim().replace(/\/$/, '');
+  SECRET = document.getElementById('login-secret').value.trim();
+  if (!API || !SECRET) { showLoginError('Заполните все поля'); return; }
+  
+  fetch(API + '/admin/stats', { headers: { 'x-admin-secret': SECRET } })
+    .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+    .then(() => {
+      localStorage.setItem('bcAdminUrl', API);
+      localStorage.setItem('bcAdminSecret', SECRET);
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      loadDashboard();
+    })
+    .catch(() => showLoginError('Неверный URL или секрет'));
+}
+
+function doLogout() {
+  localStorage.removeItem('bcAdminUrl');
+  localStorage.removeItem('bcAdminSecret');
+  location.reload();
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+function adminFetch(path, options = {}) {
+  return fetch(API + path, {
+    ...options,
+    headers: { 'x-admin-secret': SECRET, 'Content-Type': 'application/json', ...options.headers }
+  }).then(r => { if (!r.ok) throw new Error(r.statusText); return r.json(); });
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name)?.classList.add('active');
+  document.getElementById('nav-' + name)?.classList.add('active');
+  
+  if (name === 'dashboard') loadDashboard();
+  if (name === 'claims') loadClaims();
+  if (name === 'users') loadUsers();
+}
+
+// ---- DASHBOARD ----
+async function loadDashboard() {
+  try {
+    const data = await adminFetch('/admin/stats');
+    setEl('s-users', data.users?.total || 0);
+    
+    const totalClaims = data.claims?.reduce((s,r) => s + parseInt(r.cnt), 0) || 0;
+    setEl('s-claims', totalClaims);
+    
+    const pending = data.claims?.find(r => r.status === 'submitted')?.cnt || 0;
+    setEl('s-pending', pending);
+    
+    const paid = data.payouts?.total_paid || 0;
+    setEl('s-paid', formatRub(paid));
+    
+    const statusLabels = { submitted:'Новые', in_review:'На проверке', approved:'Одобрены', rejected:'Отклонены', paid:'Выплачены' };
+    const tbody = data.claims?.map(r => `
+      <tr>
+        <td><span class="badge badge-${r.status}">${statusLabels[r.status]||r.status}</span></td>
+        <td>${r.cnt}</td>
+        <td>${formatRub(r.amount)}</td>
+      </tr>`).join('') || '';
+    setEl('stats-table', tbody);
+  } catch(e) { console.error(e); }
+}
+
+// ---- CLAIMS ----
+async function loadClaims(page = 1) {
+  currentPage = page;
+  try {
+    const url = `/admin/claims?page=${page}&limit=${PAGE_SIZE}${claimFilter ? '&status=' + claimFilter : ''}`;
+    const data = await adminFetch(url);
+    currentClaims = data;
+    renderClaimsTable(data);
+  } catch(e) { console.error(e); }
+}
+
+function renderClaimsTable(claims) {
+  const tbody = document.getElementById('claims-table');
+  if (!claims.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text2);padding:32px">Нет заявок</td></tr>'; return; }
+  tbody.innerHTML = claims.map(c => {
+    const risk = parseInt(c.risk_score);
+    const riskClass = risk > 60 ? 'risk-high' : risk > 30 ? 'risk-mid' : 'risk-low';
+    return `<tr>
+      <td style="font-weight:700">#${c.id}</td>
+      <td>${c.first_name || ''} ${c.username ? '@' + c.username : ''}</td>
+      <td>${c.bookmaker_name || c.bookmaker_id}</td>
+      <td>${formatRub(c.loss_amount_rub)}</td>
+      <td style="color:var(--accent);font-weight:700">${formatRub(c.cashback_amount_rub)} <small style="color:var(--text2)">(${c.cashback_percent}%)</small></td>
+      <td><div class="risk-bar"><div class="risk-dot ${riskClass}"></div>${risk}</div></td>
+      <td><span class="badge badge-${c.status}">${statusLabel(c.status)}</span></td>
+      <td style="color:var(--text2)">${formatDate(c.created_at)}</td>
+      <td><button class="btn btn-sm" style="background:var(--bg2);border:1px solid var(--border);color:#fff" onclick="openClaim(${c.id})">Открыть</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function filterClaims(status, el) {
+  claimFilter = status;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  loadClaims();
+}
+
+function searchClaims(val) {
+  if (!val) { renderClaimsTable(currentClaims); return; }
+  const filtered = currentClaims.filter(c => 
+    c.bet_id?.includes(val) || String(c.id).includes(val) || c.username?.includes(val)
+  );
+  renderClaimsTable(filtered);
+}
+
+function openClaim(id) {
+  currentClaimId = id;
+  const c = currentClaims.find(c => c.id === id);
+  if (!c) return;
+  
+  document.getElementById('modal-claim-title').textContent = `Заявка #${c.id}`;
+  document.getElementById('modal-note').value = c.admin_note || '';
+  document.getElementById('modal-tx').value = c.tx_hash || '';
+  document.getElementById('modal-tx-field').style.display = 'none';
+  
+  const detail = document.getElementById('modal-claim-detail');
+  detail.innerHTML = [
+    { label: 'Пользователь', value: `${c.first_name || ''} ${c.username ? '@' + c.username : '(ID:' + c.user_id + ')'}` },
+    { label: 'Букмекер', value: c.bookmaker_name || c.bookmaker_id },
+    { label: 'Партнёр ID', value: c.affiliate_player_id || '—' },
+    { label: 'Купон', value: c.bet_id || '—' },
+    { label: 'Дата ставки', value: c.bet_date ? formatDate(c.bet_date) : '—' },
+    { label: 'Проигрыш', value: formatRub(c.loss_amount_rub) },
+    { label: 'Кэшбэк', value: `${formatRub(c.cashback_amount_rub)} (${c.cashback_percent}%)` },
+    { label: 'Риск-скор', value: `${c.risk_score}/100` },
+    { label: 'Статус', value: `<span class="badge badge-${c.status}">${statusLabel(c.status)}</span>` },
+    { label: 'Комментарий', value: c.comment || '—' },
+    { label: 'TX Hash', value: c.tx_hash || '—' },
+  ].map(d => `<div class="detail-item"><div class="d-label">${d.label}</div><div class="d-value">${d.value}</div></div>`).join('');
+  
+  // Thumbnails
+  const thumbs = document.getElementById('modal-thumbs');
+  const attachments = c.attachments?.filter(a => a && a.url && a.url !== 'null') || [];
+  if (attachments.length === 0) {
+    thumbs.innerHTML = '<div style="color:var(--text2);font-size:13px">Нет прикреплённых файлов</div>';
+  } else {
+    thumbs.innerHTML = attachments.map(a => {
+      const imgUrl = a.url.startsWith('http') ? a.url : API + a.url;
+      return `<img class="thumb" src="${imgUrl}" 
+       onclick="openLightbox('${imgUrl}')" 
+       title="${a.is_dup ? '⚠️ Дубликат!' : ''}" 
+       style="${a.is_dup ? 'border-color:var(--red)' : ''}"
+       onerror="this.style.display='none'">`;
+    }).join('');
+  }
+  
+  openModal('modal-claim');
+}
+
+function showTxField() {
+  document.getElementById('modal-tx-field').style.display = 'block';
+}
+
+function handlePaidClick() {
+  const txField = document.getElementById('modal-tx-field');
+  if (txField.style.display === 'none' || txField.style.display === '') {
+    txField.style.display = 'block';
+    document.getElementById('btn-paid').textContent = 'Подтвердить оплату ✓';
+    document.getElementById('modal-tx').focus();
+  } else {
+    updateClaimStatus('paid');
+  }
+}
+
+async function updateClaimStatus(status) {
+  if (!currentClaimId) return;
+  const note = document.getElementById('modal-note').value;
+  const txHash = document.getElementById('modal-tx').value;
+  
+  if (status === 'paid' && !txHash) {
+    alert('Введите TX Hash для статуса "Выплачено"'); return;
+  }
+  
+  try {
+    await adminFetch(`/admin/claims/${currentClaimId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, admin_note: note, tx_hash: txHash || undefined })
+    });
+    closeModal('modal-claim');
+    loadClaims(currentPage);
+    loadDashboard();
+  } catch(e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+// ---- USERS ----
+async function loadUsers() {
+  try {
+    const data = await adminFetch('/admin/users');
+    const tbody = data.map(u => `
+      <tr>
+        <td style="font-family:monospace;font-size:12px">${u.id}</td>
+        <td>${u.first_name || ''}</td>
+        <td style="color:var(--text2)">${u.username ? '@' + u.username : '—'}</td>
+        <td>${u.claim_count || 0}</td>
+        <td style="color:var(--accent);font-weight:600">${formatRub(u.total_paid)}</td>
+        <td>${u.referrer_id ? '✓ ' + u.referrer_id : '—'}</td>
+        <td style="color:var(--text2)">${formatDate(u.created_at)}</td>
+      </tr>`).join('');
+    setEl('users-table', tbody);
+  } catch(e) { console.error(e); }
+}
+
+// ---- BROADCAST ----
+async function sendBroadcast() {
+  const message = document.getElementById('bc-message').value.trim();
+  const filter = document.getElementById('bc-filter').value;
+  if (!message) { alert('Введите текст сообщения'); return; }
+  if (!confirm(`Отправить рассылку (${filter})? Это нельзя отменить.`)) return;
+  
+  const result = document.getElementById('bc-result');
+  result.textContent = 'Отправляем...';
+  
+  try {
+    const data = await adminFetch('/admin/broadcast', {
+      method: 'POST',
+      body: JSON.stringify({ message, filter })
+    });
+    result.textContent = `✓ Отправлено: ${data.sent}, ошибок: ${data.failed}`;
+    document.getElementById('bc-message').value = '';
+  } catch(e) {
+    result.textContent = 'Ошибка: ' + e.message;
+  }
+}
+
+async function exportCSV() {
+  try {
+    const res = await fetch(API + '/admin/export/claims', { headers: { 'x-admin-secret': SECRET } });
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'claims_' + new Date().toISOString().split('T')[0] + '.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  } catch(e) { alert('Ошибка экспорта'); }
+}
+
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+
+// HELPERS
+function setEl(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
+function formatRub(n) { return Math.round(parseFloat(n) || 0).toLocaleString('ru-RU') + ' ₽'; }
+function formatDate(d) { if (!d) return '—'; return new Date(d).toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'2-digit' }); }
+function statusLabel(s) { return { submitted:'Новая', in_review:'Проверка', approved:'Одобрена', rejected:'Отклонена', paid:'Выплачена' }[s] || s; }
+function openModal(id) { document.getElementById(id)?.classList.add('open'); }
+function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+// Auto-login if saved
+window.addEventListener('load', () => {
+  const url = localStorage.getItem('bcAdminUrl');
+  const secret = localStorage.getItem('bcAdminSecret');
+  if (url && secret) {
+    document.getElementById('login-url').value = url;
+    document.getElementById('login-secret').value = secret;
+    API = url; SECRET = secret;
+    doLogin();
+  }
+});
+</script>
+</body>
+</html>

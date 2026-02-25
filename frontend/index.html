@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BetCashback</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #12121a;
+    --bg3: #1a1a26;
+    --card: #16161f;
+    --border: rgba(255,255,255,0.07);
+    --accent: #00e5a0;
+    --accent2: #00b87a;
+    --accent-glow: rgba(0,229,160,0.15);
+    --red: #ff4d6d;
+    --yellow: #ffd166;
+    --blue: #5b8dee;
+    --text: #f0f0f8;
+    --text2: #8888aa;
+    --text3: #44445a;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'Manrope', sans-serif; }
+  
+  /* APP SHELL */
+  #app { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  
+  /* SCREENS */
+  .screen { display: none; flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: 80px; }
+  .screen.active { display: block; }
+  .screen::-webkit-scrollbar { display: none; }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    display: flex; align-items: center; justify-content: space-around;
+    background: var(--bg2); border-top: 1px solid var(--border);
+    padding: 10px 0 max(10px, env(safe-area-inset-bottom));
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  }
+  .nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: pointer; padding: 4px 16px; border-radius: 12px;
+    transition: all 0.2s; flex: 1; position: relative;
+  }
+  .nav-item svg { width: 22px; height: 22px; transition: all 0.2s; }
+  .nav-item span { font-size: 10px; font-weight: 600; color: var(--text3); transition: all 0.2s; letter-spacing: 0.3px; }
+  .nav-item.active span { color: var(--accent); }
+  .nav-item.active svg { color: var(--accent); filter: drop-shadow(0 0 6px var(--accent)); }
+  .nav-item svg { color: var(--text3); }
+  .nav-badge {
+    position: absolute; top: 2px; right: calc(50% - 18px);
+    background: var(--red); color: white; font-size: 9px; font-weight: 800;
+    min-width: 16px; height: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    padding: 0 4px;
+  }
+
+  /* HEADER */
+  .page-header {
+    padding: 20px 20px 0;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 10;
+    background: linear-gradient(to bottom, var(--bg) 80%, transparent);
+    padding-bottom: 12px;
+  }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 2px; color: var(--accent); }
+  .logo span { color: var(--text2); }
+
+  /* HERO BALANCE */
+  .hero {
+    margin: 0 16px 20px;
+    background: linear-gradient(135deg, #0d1f18 0%, #0a1520 100%);
+    border: 1px solid rgba(0,229,160,0.2);
+    border-radius: 20px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: radial-gradient(circle, rgba(0,229,160,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .hero-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: var(--text2); text-transform: uppercase; }
+  .hero-amount { font-family: 'Bebas Neue', sans-serif; font-size: 52px; color: var(--accent); letter-spacing: 2px; line-height: 1; margin: 4px 0; }
+  .hero-amount span { font-size: 28px; color: var(--accent2); }
+  .hero-sub { font-size: 12px; color: var(--text2); }
+  .hero-sub strong { color: var(--yellow); }
+  .hero-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .btn-hero {
+    flex: 1; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 700;
+    border: none; cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px;
+  }
+  .btn-hero.primary { background: var(--accent); color: #000; }
+  .btn-hero.primary:active { background: var(--accent2); transform: scale(0.97); }
+  .btn-hero.secondary { background: rgba(255,255,255,0.07); color: var(--text); border: 1px solid var(--border); }
+  .btn-hero.secondary:active { background: rgba(255,255,255,0.12); transform: scale(0.97); }
+
+  /* TIER PROGRESS */
+  .tier-bar {
+    margin: 0 16px 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .tier-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .tier-name { font-size: 12px; font-weight: 700; color: var(--text2); }
+  .tier-pct { font-size: 18px; font-weight: 800; color: var(--accent); }
+  .progress-track { background: var(--bg3); border-radius: 4px; height: 6px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent2), var(--accent)); transition: width 0.8s cubic-bezier(.34,1.56,.64,1); }
+  .tier-hint { font-size: 11px; color: var(--text2); margin-top: 8px; }
+  .tier-hint strong { color: var(--yellow); }
+
+  /* SECTION */
+  .section { padding: 0 16px; margin-bottom: 24px; }
+  .section-title { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; color: var(--text3); text-transform: uppercase; margin-bottom: 12px; }
+
+  /* CLAIM CARD */
+  .claim-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; margin-bottom: 10px;
+    cursor: pointer; transition: all 0.15s; position: relative; overflow: hidden;
+  }
+  .claim-card:active { transform: scale(0.98); border-color: rgba(255,255,255,0.12); }
+  .claim-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+  .claim-card.status-paid::before { background: var(--accent); }
+  .claim-card.status-review::before { background: var(--yellow); }
+  .claim-card.status-rejected::before { background: var(--red); }
+  .claim-card.status-submitted::before { background: var(--blue); }
+  .claim-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .claim-bk { font-size: 14px; font-weight: 700; }
+  .claim-status { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; padding: 3px 8px; border-radius: 20px; }
+  .claim-status.paid { background: rgba(0,229,160,0.15); color: var(--accent); }
+  .claim-status.review { background: rgba(255,209,102,0.15); color: var(--yellow); }
+  .claim-status.rejected { background: rgba(255,77,109,0.15); color: var(--red); }
+  .claim-status.submitted { background: rgba(91,141,238,0.15); color: var(--blue); }
+  .claim-meta { font-size: 11px; color: var(--text2); margin-top: 6px; }
+  .claim-amounts { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; }
+  .claim-loss { font-size: 12px; color: var(--text2); }
+  .claim-cashback { font-size: 16px; font-weight: 800; color: var(--accent); }
+
+  /* BOOKMAKER LIST */
+  .bk-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; margin-bottom: 10px;
+    cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 14px;
+  }
+  .bk-card:active { transform: scale(0.98); }
+  .bk-logo {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--bg3); display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--accent); flex-shrink: 0;
+  }
+  .bk-info { flex: 1; }
+  .bk-name { font-size: 15px; font-weight: 700; }
+  .bk-details { font-size: 12px; color: var(--text2); margin-top: 3px; }
+  .bk-cashback { font-size: 18px; font-weight: 800; color: var(--accent); font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
+  .bk-tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: rgba(0,229,160,0.12); color: var(--accent); margin-top: 4px; display: inline-block; }
+  .bk-tag.connected { background: rgba(91,141,238,0.12); color: var(--blue); }
+
+  /* FORM */
+  .form-screen { padding: 0 16px; }
+  .form-title { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 1px; margin-bottom: 4px; }
+  .form-sub { font-size: 13px; color: var(--text2); margin-bottom: 24px; }
+  .field { margin-bottom: 16px; }
+  .field label { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--text2); text-transform: uppercase; display: block; margin-bottom: 8px; }
+  .field input, .field select, .field textarea {
+    width: 100%; background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px 16px;
+    color: var(--text); font-family: 'Manrope', sans-serif; font-size: 15px;
+    outline: none; transition: border-color 0.2s; -webkit-appearance: none; appearance: none;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+  .field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238888aa' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
+  .field textarea { resize: none; height: 80px; }
+  .field-hint { font-size: 11px; color: var(--text2); margin-top: 6px; }
+
+  /* FILE UPLOAD */
+  .upload-area {
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s;
+    background: var(--card);
+  }
+  .upload-area:active, .upload-area.dragover { border-color: var(--accent); background: var(--accent-glow); }
+  .upload-icon { font-size: 32px; margin-bottom: 8px; }
+  .upload-text { font-size: 13px; color: var(--text2); }
+  .upload-text strong { color: var(--text); }
+  .upload-limit { font-size: 11px; color: var(--text3); margin-top: 4px; }
+  #file-input { display: none; }
+  .file-previews { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .file-preview { position: relative; width: 72px; height: 72px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+  .file-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .file-remove { position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; background: rgba(0,0,0,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; color: white; }
+
+  /* SUBMIT BUTTON */
+  .btn-submit {
+    width: 100%; padding: 16px; background: var(--accent); color: #000;
+    border: none; border-radius: var(--radius); font-size: 15px; font-weight: 800;
+    cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px; margin-top: 8px;
+  }
+  .btn-submit:active { background: var(--accent2); transform: scale(0.98); }
+  .btn-submit:disabled { background: var(--bg3); color: var(--text3); cursor: not-allowed; transform: none; }
+
+  /* REFERRAL */
+  .ref-hero {
+    margin: 0 16px 20px;
+    background: linear-gradient(135deg, #0d1520 0%, #151025 100%);
+    border: 1px solid rgba(91,141,238,0.2);
+    border-radius: 20px; padding: 24px; text-align: center; position: relative; overflow: hidden;
+  }
+  .ref-hero::before {
+    content: '';
+    position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(91,141,238,0.1) 0%, transparent 70%);
+  }
+  .ref-emoji { font-size: 40px; margin-bottom: 8px; }
+  .ref-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 1px; margin-bottom: 6px; }
+  .ref-desc { font-size: 13px; color: var(--text2); line-height: 1.5; margin-bottom: 20px; }
+  .ref-levels { display: flex; gap: 10px; margin-bottom: 20px; }
+  .ref-level {
+    flex: 1; background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px 10px; text-align: center;
+  }
+  .ref-level-pct { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--blue); letter-spacing: 1px; }
+  .ref-level-label { font-size: 10px; color: var(--text2); font-weight: 600; }
+  .ref-link-box {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .ref-link-text { flex: 1; font-size: 12px; color: var(--text2); word-break: break-all; }
+  .btn-copy {
+    background: var(--accent); color: #000; border: none; border-radius: 8px;
+    padding: 8px 14px; font-size: 12px; font-weight: 800; cursor: pointer; flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .btn-copy:active { transform: scale(0.95); }
+
+  /* STATS GRID */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px;
+  }
+  .stat-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--text2); text-transform: uppercase; margin-bottom: 6px; }
+  .stat-value { font-size: 22px; font-weight: 800; }
+  .stat-value.green { color: var(--accent); }
+  .stat-value.blue { color: var(--blue); }
+  .stat-value.yellow { color: var(--yellow); }
+
+  /* PROFILE */
+  .profile-header {
+    margin: 0 16px 20px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 24px; display: flex; gap: 16px; align-items: center;
+  }
+  .avatar {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent2), var(--blue));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: #000; flex-shrink: 0;
+  }
+  .profile-name { font-size: 18px; font-weight: 800; }
+  .profile-id { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .profile-tier { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; }
+  .tier-badge {
+    font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px;
+    background: rgba(0,229,160,0.15); color: var(--accent);
+  }
+
+  /* PAYOUT METHODS */
+  .payout-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.15s;
+  }
+  .payout-card:active { border-color: var(--accent); }
+  .payout-card.selected { border-color: var(--accent); background: rgba(0,229,160,0.05); }
+  .payout-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .payout-info { flex: 1; }
+  .payout-type { font-size: 14px; font-weight: 700; }
+  .payout-addr { font-size: 11px; color: var(--text2); margin-top: 2px; font-family: monospace; }
+  .payout-check { color: var(--accent); display: none; }
+  .payout-card.selected .payout-check { display: block; }
+
+  /* FAQ */
+  .faq-item {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); margin-bottom: 8px; overflow: hidden;
+  }
+  .faq-q {
+    padding: 16px; display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; font-size: 14px; font-weight: 600;
+  }
+  .faq-icon { color: var(--text2); transition: transform 0.2s; font-size: 18px; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); color: var(--accent); }
+  .faq-a { display: none; padding: 0 16px 16px; font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .faq-item.open .faq-a { display: block; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px);
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 20px; font-size: 14px; font-weight: 600; z-index: 1000;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1); white-space: nowrap;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: var(--accent); color: var(--accent); }
+  .toast.error { border-color: var(--red); color: var(--red); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    z-index: 200; align-items: flex-end; backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2); border-top: 1px solid var(--border);
+    border-radius: 24px 24px 0 0; width: 100%; padding: 20px 20px max(24px, env(safe-area-inset-bottom));
+    animation: slideUp 0.3s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
+  .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 1px; margin-bottom: 4px; }
+  .modal-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+
+  /* ADD PAYOUT FORM */
+  .asset-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+  .asset-btn {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.15s;
+  }
+  .asset-btn.selected { border-color: var(--accent); background: rgba(0,229,160,0.08); }
+  .asset-icon { font-size: 20px; margin-bottom: 4px; }
+  .asset-label { font-size: 11px; font-weight: 700; }
+
+  /* EMPTY STATE */
+  .empty { text-align: center; padding: 48px 24px; }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-text { font-size: 14px; color: var(--text2); line-height: 1.5; }
+  .empty-btn {
+    margin-top: 20px; display: inline-block; padding: 12px 24px;
+    background: var(--accent); color: #000; border-radius: 12px;
+    font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+  }
+  .empty-btn:active { transform: scale(0.97); }
+
+  /* PROMO BANNER */
+  .promo-banner {
+    margin: 0 16px 16px; border-radius: var(--radius); overflow: hidden;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    border: 1px solid rgba(91,141,238,0.2); padding: 16px;
+    display: flex; align-items: center; gap: 12px; cursor: pointer;
+  }
+  .promo-emoji { font-size: 28px; }
+  .promo-title { font-size: 14px; font-weight: 700; }
+  .promo-text { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .promo-arrow { color: var(--text2); margin-left: auto; }
+
+  /* LOADING */
+  .spinner {
+    width: 20px; height: 20px; border: 2px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ANIMATIONS */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-in { animation: fadeInUp 0.4s ease forwards; }
+  .delay-1 { animation-delay: 0.05s; opacity: 0; }
+  .delay-2 { animation-delay: 0.1s; opacity: 0; }
+  .delay-3 { animation-delay: 0.15s; opacity: 0; }
+  .delay-4 { animation-delay: 0.2s; opacity: 0; }
+
+  /* WALLET CONNECT STEP */
+  .wallet-step {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; margin-bottom: 10px;
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .step-num {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--accent);
+    color: #000; font-weight: 800; font-size: 13px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .step-title { font-size: 14px; font-weight: 700; }
+  .step-desc { font-size: 12px; color: var(--text2); margin-top: 3px; line-height: 1.4; }
+
+  /* PENDING CASHBACK BAR */
+  .pending-bar {
+    background: linear-gradient(135deg, rgba(255,209,102,0.08), rgba(255,209,102,0.03));
+    border: 1px solid rgba(255,209,102,0.15); border-radius: var(--radius);
+    padding: 14px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+  }
+  .pending-icon { font-size: 20px; }
+  .pending-text { flex: 1; font-size: 13px; }
+  .pending-amount { font-weight: 800; color: var(--yellow); }
+  .pending-hint { font-size: 11px; color: var(--text2); }
+
+  /* SCROLLABLE HORIZONTAL CHIPS */
+  .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip {
+    flex-shrink: 0; padding: 7px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s;
+    background: var(--card); border: 1px solid var(--border); color: var(--text2);
+  }
+  .chip.active { background: rgba(0,229,160,0.12); border-color: var(--accent); color: var(--accent); }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- SCREEN: HOME -->
+  <div class="screen active" id="screen-home">
+    <div class="page-header">
+      <div class="logo">BET<span>CASH</span></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div style="font-size:11px;font-weight:700;color:var(--text2);" id="header-tier">TIER 1 · 5%</div>
+      </div>
+    </div>
+
+    <div class="hero animate-in">
+      <div class="hero-label">Доступно к выводу</div>
+      <div class="hero-amount" id="home-balance">0<span> ₽</span></div>
+      <div class="hero-sub">Накоплено всего: <strong id="home-total">0 ₽</strong></div>
+      <div class="hero-actions">
+        <button class="btn-hero primary" onclick="showScreen('submit')">+ Подать заявку</button>
+        <button class="btn-hero secondary" onclick="showScreen('profile')">Вывести</button>
+      </div>
+    </div>
+
+    <div class="tier-bar animate-in delay-1">
+      <div class="tier-top">
+        <div class="tier-name">ПРОГРЕСС К TIER 2 · 7%</div>
+        <div class="tier-pct" id="tier-pct">5%</div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="tier-progress" style="width:0%"></div></div>
+      <div class="tier-hint">Ещё <strong id="tier-left">20 000 ₽</strong> проигрышей — и ставка вырастет</div>
+    </div>
+
+    <div class="section animate-in delay-2">
+      <div class="section-title">Мои заявки</div>
+      <div id="home-claims">
+        <div class="empty">
+          <div class="empty-icon">🎯</div>
+          <div class="empty-text">Заявок пока нет.<br>Подайте первую — получите кэшбэк за проигрыш.</div>
+          <div class="empty-btn" onclick="showScreen('submit')">Подать заявку</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN: BOOKMAKERS -->
+  <div class="screen" id="screen-bookmakers">
+    <div class="page-header">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;">Букмекеры</div>
+    </div>
+
+    <div style="padding:0 16px 12px;">
+      <div class="chips" id="bk-filter">
+        <div class="chip active" onclick="filterBK('all',this)">Все</div>
+        <div class="chip" onclick="filterBK('connected',this)">Подключённые</div>
+        <div class="chip" onclick="filterBK('top',this)">Топ кэшбэк</div>
+      </div>
+    </div>
+
+    <div class="section" id="bk-list"></div>
+  </div>
+
+  <!-- SCREEN: SUBMIT CLAIM -->
+  <div class="screen" id="screen-submit">
+    <div class="page-header">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;">Новая заявка</div>
+    </div>
+
+    <div class="form-screen">
+      <div class="field">
+        <label>Букмекер</label>
+        <select id="claim-bk">
+          <option value="">Выберите букмекера...</option>
+        </select>
+      </div>
+
+      <div class="field" id="field-account" style="display:none">
+        <label>Ваш аккаунт</label>
+        <select id="claim-account">
+          <option value="new">+ Добавить новый ID</option>
+        </select>
+      </div>
+
+      <div class="field" id="field-new-id" style="display:none">
+        <label>ID в партнёрской программе</label>
+        <input type="text" id="claim-pid" placeholder="Ваш ID у букмекера" autocomplete="off">
+        <div class="field-hint">Найдите в ЛК букмекера в разделе «Партнёры» или «Реферальная программа»</div>
+      </div>
+
+      <div class="field">
+        <label>Сумма проигрыша (₽)</label>
+        <input type="number" id="claim-amount" placeholder="0" min="0" inputmode="numeric">
+        <div class="field-hint" id="cashback-preview" style="color:var(--accent);font-weight:700;"></div>
+      </div>
+
+      <div class="field">
+        <label>Дата ставки</label>
+        <input type="date" id="claim-date">
+      </div>
+
+      <div class="field">
+        <label>Номер купона / ставки</label>
+        <input type="text" id="claim-betid" placeholder="Например: 1234567890" autocomplete="off">
+      </div>
+
+      <div class="field">
+        <label>Прикрепите скрины</label>
+        <div class="upload-area" onclick="document.getElementById('file-input').click()" id="upload-area">
+          <div class="upload-icon">📎</div>
+          <div class="upload-text"><strong>Нажмите для загрузки</strong></div>
+          <div class="upload-limit">JPG, PNG, WebP · до 8 МБ · максимум 5 файлов</div>
+        </div>
+        <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" multiple>
+        <div class="file-previews" id="file-previews"></div>
+        <div class="field-hint">Скрин купона + скрин ЛК с историей ставок</div>
+      </div>
+
+      <div class="field">
+        <label>Комментарий (необязательно)</label>
+        <textarea id="claim-comment" placeholder="Дополнительная информация..."></textarea>
+      </div>
+
+      <div style="padding-bottom:8px">
+        <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer">
+          <input type="checkbox" id="claim-agree" style="width:18px;height:18px;margin-top:2px;accent-color:var(--accent)">
+          <span style="font-size:13px;color:var(--text2);line-height:1.4">Я подтверждаю, что зарегистрирован по реферальной ссылке сервиса и принимаю <span style="color:var(--accent);cursor:pointer" onclick="showScreen('faq')">условия программы</span></span>
+        </label>
+      </div>
+
+      <button class="btn-submit" id="btn-submit" onclick="submitClaim()">Отправить заявку</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: PROFILE -->
+  <div class="screen" id="screen-profile">
+    <div class="page-header">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;">Кабинет</div>
+    </div>
+
+    <div class="profile-header animate-in">
+      <div class="avatar" id="prof-avatar">U</div>
+      <div>
+        <div class="profile-name" id="prof-name">Загрузка...</div>
+        <div class="profile-id" id="prof-id">@username</div>
+        <div class="profile-tier">
+          <div class="tier-badge" id="prof-tier">TIER 1 · 5%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section animate-in delay-1">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Получено</div>
+          <div class="stat-value green" id="stat-earned">0 ₽</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Заявок</div>
+          <div class="stat-value blue" id="stat-claims">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Рефералов</div>
+          <div class="stat-value yellow" id="stat-refs">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Реф. доход</div>
+          <div class="stat-value green" id="stat-ref-income">0 ₽</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="pending-section" style="padding:0 16px;margin-bottom:20px;display:none">
+      <div class="pending-bar">
+        <div class="pending-icon">🪙</div>
+        <div>
+          <div class="pending-text">В копилке: <span class="pending-amount" id="pending-amount">0 ₽</span></div>
+          <div class="pending-hint">Ещё <span id="pending-left">0 ₽</span> до минимального вывода (500 ₽)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section animate-in delay-2">
+      <div class="section-title">Методы выплат</div>
+      <div id="payout-methods-list"></div>
+      <button class="btn-submit" style="margin-top:4px;background:var(--bg3);color:var(--text);border:1px solid var(--border)" onclick="openAddPayout()">+ Добавить кошелёк</button>
+    </div>
+
+    <div class="section animate-in delay-3">
+      <div class="section-title">История выплат</div>
+      <div id="payout-history">
+        <div style="font-size:13px;color:var(--text2);text-align:center;padding:24px">Выплат пока нет</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN: REFERRAL -->
+  <div class="screen" id="screen-referral">
+    <div class="page-header">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;">Реферальная</div>
+    </div>
+
+    <div class="ref-hero animate-in">
+      <div class="ref-emoji">💰</div>
+      <div class="ref-title">Зарабатывай с друзьями</div>
+      <div class="ref-desc">Приглашай друзей — получай процент от их кэшбэка автоматически</div>
+      <div class="ref-levels" style="justify-content:center">
+        <div class="ref-level" style="max-width:160px">
+          <div class="ref-level-pct">20%</div>
+          <div class="ref-level-label">от кэшбэка<br>ваших рефералов</div>
+        </div>
+      </div>
+      <div class="ref-link-box">
+        <div class="ref-link-text" id="ref-link">t.me/betcashback_bot?start=ref_...</div>
+        <button class="btn-copy" onclick="copyRefLink()">Копировать</button>
+      </div>
+    </div>
+
+    <div class="section animate-in delay-1">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Приглашено</div>
+          <div class="stat-value blue" id="ref-count">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Активных</div>
+          <div class="stat-value green" id="ref-active">0</div>
+        </div>
+        <div class="stat-card" style="grid-column:1/-1">
+          <div class="stat-label">Реф. доход</div>
+          <div class="stat-value green" id="ref-income">0 ₽</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section animate-in delay-2">
+      <div class="section-title">Как это работает</div>
+      <div class="wallet-step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">Поделитесь ссылкой</div>
+          <div class="step-desc">Ваш друг регистрируется и подключает аккаунт букмекера по вашей реферальной ссылке</div>
+        </div>
+      </div>
+      <div class="wallet-step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">Друг получает кэшбэк</div>
+          <div class="step-desc">Когда заявка друга одобрена — вы автоматически получаете 20% от его кэшбэка</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section animate-in delay-3">
+      <div class="section-title">Мои рефералы</div>
+      <div id="ref-list">
+        <div style="font-size:13px;color:var(--text2);text-align:center;padding:24px">Пока никого нет.<br>Поделитесь ссылкой!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN: FAQ -->
+  <div class="screen" id="screen-faq">
+    <div class="page-header">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;">FAQ</div>
+    </div>
+    <div class="section" id="faq-list"></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="showScreen('home')" id="nav-home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Главная</span>
+    </div>
+    <div class="nav-item" onclick="showScreen('bookmakers')" id="nav-bookmakers">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <span>Букмекеры</span>
+    </div>
+    <div class="nav-item" onclick="showScreen('submit')" id="nav-submit">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      <span>Заявка</span>
+    </div>
+    <div class="nav-item" onclick="showScreen('referral')" id="nav-referral">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      <span>Рефералы</span>
+    </div>
+    <div class="nav-item" onclick="showScreen('profile')" id="nav-profile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Кабинет</span>
+    </div>
+  </nav>
+</div>
+
+<!-- MODAL: Add Payout -->
+<div class="modal-overlay" id="modal-payout">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Добавить кошелёк</div>
+    <div class="modal-sub">Выберите тип и введите адрес</div>
+    <div class="asset-grid" id="asset-grid">
+      <div class="asset-btn selected" onclick="selectAsset('USDT_TRC20',this)"><div class="asset-icon">💵</div><div class="asset-label">USDT TRC20</div></div>
+      <div class="asset-btn" onclick="selectAsset('USDT_TON',this)"><div class="asset-icon">💎</div><div class="asset-label">USDT TON</div></div>
+      <div class="asset-btn" onclick="selectAsset('TON',this)"><div class="asset-icon">🔷</div><div class="asset-label">TON</div></div>
+      <div class="asset-btn" onclick="selectAsset('TG_WALLET',this)"><div class="asset-icon">✈️</div><div class="asset-label">TG Wallet</div></div>
+    </div>
+    <div class="field">
+      <label>Адрес кошелька</label>
+      <input type="text" id="payout-address" placeholder="Введите адрес..." autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
+    <button class="btn-submit" onclick="savePayoutMethod()">Сохранить</button>
+    <button style="width:100%;padding:14px;background:none;border:none;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px" onclick="closeModal('modal-payout')">Отмена</button>
+  </div>
+</div>
+
+<!-- MODAL: Bookmaker detail -->
+<div class="modal-overlay" id="modal-bk">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-bk-name"></div>
+    <div class="modal-sub" id="modal-bk-rules"></div>
+    <div class="field">
+      <label>Ваш ID в партнёрской программе</label>
+      <input type="text" id="modal-bk-id" placeholder="Введите ваш Partner ID" autocomplete="off">
+      <div class="field-hint">Найдите в ЛК букмекера в разделе «Партнёры»</div>
+    </div>
+    <button class="btn-submit" id="modal-bk-btn" onclick="connectBK()">Подключить аккаунт</button>
+    <button style="width:100%;padding:14px;background:none;border:none;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px" onclick="closeModal('modal-bk')">Закрыть</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const API_BASE = 'https://betcashback-backend.onrender.com/api'; // REPLACE IN PRODUCTION
+const BOT_USERNAME = 'betcashback_bot'; // REPLACE WITH YOUR BOT
+
+// ============================================================
+// TELEGRAM WEBAPP INIT
+// ============================================================
+const tg = window.Telegram?.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+  tg.setHeaderColor('#0a0a0f');
+  tg.setBackgroundColor('#0a0a0f');
+}
+const tgUser = tg?.initDataUnsafe?.user || { id: 12345, first_name: 'Demo', username: 'demo_user' };
+const initData = tg?.initData || '';
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  balance: 0,
+  pending: 0,
+  totalEarned: 0,
+  claims: [],
+  bookmakers: [],
+  payoutMethods: [],
+  connectedBKs: {},
+  tierInfo: { tier: 1, pct: 5, progress: 0, nextTierAt: 20000 },
+  refStats: { count: 0, active: 0, income: 0 },
+  selectedAsset: 'USDT_TRC20',
+  selectedBKId: null,
+};
+
+// ============================================================
+// MOCK DATA (replaced by API in production)
+// ============================================================
+const BOOKMAKERS = [
+  { id:1, name:'1xBet', short:'1X', cashback:'5-10%', rules:'Кэшбэк 5-10% от проигрышей. Мин. сумма: 500₽. Нужны: скрин купона + скрин ЛК.', tags:['Топ'], minLoss:500 },
+  { id:2, name:'Fonbet', short:'FB', cashback:'5-10%', rules:'Кэшбэк 5-10% от проигрышей. Нужны: скрин ставки + история.', tags:[], minLoss:500 },
+  { id:3, name:'Betcity', short:'BC', cashback:'5-10%', rules:'Кэшбэк 5-10% от проигрышей. Нужны: скрин из ЛК.', tags:['Новый'], minLoss:500 },
+  { id:4, name:'Melbet', short:'MB', cashback:'5-10%', rules:'Кэшбэк 5-10% от проигрышей. Лимит 30 000₽/мес.', tags:['Топ'], minLoss:500 },
+  { id:5, name:'BetBoom', short:'BB', cashback:'5-10%', rules:'Кэшбэк 5-10% от проигрышей.', tags:[], minLoss:500 },
+];
+
+const FAQ_ITEMS = [
+  { q: 'Как работает кэшбэк?', a: 'Вы регистрируетесь у букмекера по нашей реферальной ссылке, делаете ставки. Если ставка проиграла — подаёте заявку через приложение. Мы проверяем и возвращаем 5-10% от проигрыша в крипте.' },
+  { q: 'Какой минимальный размер выплаты?', a: 'Минимальная сумма к выплате — 500₽. Если накоплено меньше, сумма хранится в «копилке» и накапливается с каждой новой заявкой.' },
+  { q: 'Сколько ждать выплату?', a: 'Проверка заявки: до 24 часов. Выплата производится ежедневно после проверки. Итого: обычно 24-48 часов с момента подачи.' },
+  { q: 'Какой процент кэшбэка?', a: 'Базовый: 5%. При подтверждённых проигрышах от 20 000₽/мес — 7%. От 60 000₽/мес — 10%. Уровень обновляется раз в 30 дней.' },
+  { q: 'Почему могут отказать?', a: 'Аккаунт не зарегистрирован по нашей ссылке; скрины не соответствуют требованиям; купон уже был подан; несовпадение данных; попытка фрода.' },
+  { q: 'В чём выплачивают?', a: 'USDT (TRC20), USDT (TON), TON или Telegram Wallet. Вы выбираете сами в настройках кабинета.' },
+  { q: 'Реферальная программа — как работает?', a: 'Вы получаете 20% от суммы кэшбэка ваших рефералов. Начисление происходит автоматически после одобрения заявки реферала.' },
+  { q: 'Нужно регистрироваться заново?', a: 'Нет. Зайдите в раздел «Букмекеры» и подключите свой существующий аккаунт, если он зарегистрирован по нашей реферальной ссылке.' },
+];
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+  renderBookmakers();
+  renderFAQ();
+  setupForm();
+  loadUserData();
+  updateRefLink();
+}
+
+async function loadUserData() {
+  try {
+    // Load user data and claims from API
+    const urlParams = new URLSearchParams(window.location.search);
+    const ref = urlParams.get('ref') || tg?.initDataUnsafe?.start_param || null;
+    
+    const [userRes, claimsRes] = await Promise.all([
+      apiCall('/auth/start', 'POST', { ref }),
+      apiCall('/claims'),
+    ]);
+    
+    if (userRes) {
+      state.balance = userRes.balance || 0;
+      state.pending = userRes.pending || 0;
+      state.totalEarned = userRes.totalEarned || 0;
+      state.tierInfo = userRes.tierInfo || state.tierInfo;
+      state.refStats = userRes.refStats || state.refStats;
+    }
+    
+    if (claimsRes && Array.isArray(claimsRes)) {
+      state.claims = claimsRes.map(c => ({
+        id: c.id,
+        bkName: c.bookmaker_name || 'Букмекер',
+        amount: parseFloat(c.loss_amount_rub),
+        cashback: parseFloat(c.cashback_amount_rub),
+        date: c.bet_date,
+        status: c.status,
+        betId: c.bet_id,
+      }));
+    }
+  } catch(e) {
+    console.log('API not available, using demo mode:', e.message);
+  }
+  updateProfile();
+}
+
+function updateProfile() {
+  const name = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
+  const initials = name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+  
+  setEl('prof-avatar', initials);
+  setEl('prof-name', name);
+  setEl('prof-id', '@' + (tgUser.username || 'user'));
+  document.getElementById('home-balance').innerHTML = Math.round(state.balance || 0).toLocaleString('ru-RU') + '<span> ₽</span>';
+  setEl('home-total', formatRub(state.totalEarned));
+  setEl('stat-earned', formatRub(state.totalEarned));
+  setEl('stat-claims', state.claims.length);
+  setEl('stat-refs', state.refStats.count);
+  setEl('stat-ref-income', formatRub(state.refStats.income));
+  
+  updateTierUI();
+  renderHomeClaims();
+  renderPayoutMethods();
+  updatePendingUI();
+}
+
+function updateTierUI() {
+  const t = state.tierInfo;
+  const pct = Math.min(100, Math.round((t.progress / t.nextTierAt) * 100));
+  setEl('tier-pct', t.pct + '%');
+  setEl('header-tier', 'TIER ' + t.tier + ' · ' + t.pct + '%');
+  setEl('prof-tier', 'TIER ' + t.tier + ' · ' + t.pct + '%');
+  setEl('tier-left', formatRub(Math.max(0, t.nextTierAt - t.progress)));
+  document.getElementById('tier-progress').style.width = pct + '%';
+  if (t.tier >= 3) {
+    const tierBar = document.querySelector('.tier-bar');
+    if (tierBar) tierBar.style.display = 'none';
+  }
+}
+
+function updatePendingUI() {
+  const section = document.getElementById('pending-section');
+  if (state.pending > 0 && state.pending < 500) {
+    section.style.display = 'block';
+    setEl('pending-amount', formatRub(state.pending));
+    setEl('pending-left', formatRub(500 - state.pending));
+  } else {
+    section.style.display = 'none';
+  }
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+const screens = ['home','bookmakers','submit','referral','profile','faq'];
+
+function showScreen(name) {
+  screens.forEach(s => {
+    document.getElementById('screen-' + s)?.classList.remove('active');
+    document.getElementById('nav-' + s)?.classList.remove('active');
+  });
+  document.getElementById('screen-' + name)?.classList.add('active');
+  document.getElementById('nav-' + name)?.classList.add('active');
+  document.getElementById('screen-' + name)?.scrollTo(0,0);
+}
+
+// ============================================================
+// BOOKMAKERS
+// ============================================================
+let bkFilter = 'all';
+function renderBookmakers() {
+  let list = [...BOOKMAKERS];
+  if (bkFilter === 'connected') list = list.filter(b => state.connectedBKs[b.id]);
+  if (bkFilter === 'top') list = list.filter(b => b.tags.includes('Топ'));
+  
+  const html = list.map(bk => {
+    const isConn = state.connectedBKs[bk.id];
+    return `<div class="bk-card" onclick="openBKModal(${bk.id})">
+      <div class="bk-logo">${bk.short}</div>
+      <div class="bk-info">
+        <div class="bk-name">${bk.name}</div>
+        <div class="bk-details">Мин. проигрыш ${formatRub(bk.minLoss)}</div>
+        ${bk.tags.map(t=>`<div class="bk-tag">${t}</div>`).join('')}
+        ${isConn ? '<div class="bk-tag connected">✓ Подключён</div>' : ''}
+      </div>
+      <div class="bk-cashback">${bk.cashback}</div>
+    </div>`;
+  }).join('');
+  
+  setEl('bk-list', html || '<div style="font-size:13px;color:var(--text2);text-align:center;padding:32px">Нет букмекеров в этой категории</div>');
+}
+
+function filterBK(type, el) {
+  bkFilter = type;
+  document.querySelectorAll('#bk-filter .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderBookmakers();
+}
+
+let activeBKId = null;
+function openBKModal(id) {
+  activeBKId = id;
+  const bk = BOOKMAKERS.find(b => b.id === id);
+  setEl('modal-bk-name', bk.name);
+  setEl('modal-bk-rules', bk.rules);
+  const isConn = state.connectedBKs[id];
+  document.getElementById('modal-bk-btn').textContent = isConn ? 'Обновить ID' : 'Подключить аккаунт';
+  document.getElementById('modal-bk-id').value = state.connectedBKs[id] || '';
+  openModal('modal-bk');
+}
+
+function connectBK() {
+  const pid = document.getElementById('modal-bk-id').value.trim();
+  if (!pid) { showToast('Введите ваш ID', 'error'); return; }
+  state.connectedBKs[activeBKId] = pid;
+  closeModal('modal-bk');
+  renderBookmakers();
+  // Populate claim form
+  populateClaimAccounts();
+  showToast('✓ Аккаунт подключён', 'success');
+  // In production: await apiCall('/bookmaker-accounts', 'POST', {...})
+}
+
+// ============================================================
+// CLAIM FORM
+// ============================================================
+function setupForm() {
+  // Date: default today
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('claim-date').value = today;
+  document.getElementById('claim-date').max = today;
+  
+  // BK select
+  const bkSel = document.getElementById('claim-bk');
+  BOOKMAKERS.forEach(bk => {
+    const opt = document.createElement('option');
+    opt.value = bk.id; opt.textContent = bk.name;
+    bkSel.appendChild(opt);
+  });
+  
+  bkSel.addEventListener('change', onBKChange);
+  document.getElementById('claim-account').addEventListener('change', onAccountChange);
+  document.getElementById('claim-amount').addEventListener('input', onAmountChange);
+  document.getElementById('file-input').addEventListener('change', onFilesChange);
+}
+
+function onBKChange(e) {
+  const bkId = parseInt(e.target.value);
+  const accountField = document.getElementById('field-account');
+  const newIdField = document.getElementById('field-new-id');
+  
+  if (!bkId) { accountField.style.display='none'; newIdField.style.display='none'; return; }
+  
+  const isConn = state.connectedBKs[bkId];
+  if (isConn) {
+    accountField.style.display = 'block';
+    newIdField.style.display = 'none';
+    populateClaimAccounts();
+  } else {
+    accountField.style.display = 'none';
+    newIdField.style.display = 'block';
+  }
+}
+
+function populateClaimAccounts() {
+  const sel = document.getElementById('claim-account');
+  sel.innerHTML = '';
+  const bkId = parseInt(document.getElementById('claim-bk').value);
+  if (state.connectedBKs[bkId]) {
+    const opt = document.createElement('option');
+    opt.value = state.connectedBKs[bkId];
+    opt.textContent = 'ID: ' + state.connectedBKs[bkId];
+    sel.appendChild(opt);
+  }
+  const addOpt = document.createElement('option');
+  addOpt.value = 'new'; addOpt.textContent = '+ Добавить новый ID';
+  sel.appendChild(addOpt);
+}
+
+function onAccountChange(e) {
+  document.getElementById('field-new-id').style.display = e.target.value === 'new' ? 'block' : 'none';
+}
+
+function onAmountChange(e) {
+  const amount = parseFloat(e.target.value) || 0;
+  const pct = state.tierInfo.pct / 100;
+  const cashback = amount * pct;
+  const preview = document.getElementById('cashback-preview');
+  if (amount > 0) {
+    const msg = amount < 500
+      ? `⚠️ Минимальный проигрыш 500₽. Ваш кэшбэк: ${formatRub(cashback)} — пойдёт в копилку`
+      : `✓ Кэшбэк: +${formatRub(cashback)} (${state.tierInfo.pct}%)`;
+    preview.textContent = msg;
+    preview.style.color = amount < 500 ? 'var(--yellow)' : 'var(--accent)';
+  } else {
+    preview.textContent = '';
+  }
+}
+
+// Files
+const uploadedFiles = [];
+function onFilesChange(e) {
+  const newFiles = Array.from(e.target.files);
+  newFiles.forEach(f => {
+    if (uploadedFiles.length >= 5) return;
+    if (!['image/jpeg','image/png','image/webp'].includes(f.type)) {
+      showToast('Только JPG, PNG, WebP', 'error'); return;
+    }
+    if (f.size > 8 * 1024 * 1024) {
+      showToast('Файл > 8МБ', 'error'); return;
+    }
+    uploadedFiles.push(f);
+  });
+  renderFilePreviews();
+  e.target.value = '';
+}
+
+function renderFilePreviews() {
+  const container = document.getElementById('file-previews');
+  container.innerHTML = uploadedFiles.map((f,i) => {
+    const url = URL.createObjectURL(f);
+    return `<div class="file-preview">
+      <img src="${url}">
+      <div class="file-remove" onclick="removeFile(${i})">×</div>
+    </div>`;
+  }).join('');
+  
+  const uploadArea = document.getElementById('upload-area');
+  if (uploadedFiles.length >= 5) {
+    uploadArea.style.opacity = '0.4';
+    uploadArea.style.pointerEvents = 'none';
+  } else {
+    uploadArea.style.opacity = '1';
+    uploadArea.style.pointerEvents = '';
+  }
+}
+
+function removeFile(idx) {
+  uploadedFiles.splice(idx, 1);
+  renderFilePreviews();
+}
+
+async function submitClaim() {
+  const bkId = document.getElementById('claim-bk').value;
+  const amount = parseFloat(document.getElementById('claim-amount').value);
+  const date = document.getElementById('claim-date').value;
+  const betId = document.getElementById('claim-betid').value.trim();
+  const agree = document.getElementById('claim-agree').checked;
+  
+  if (!bkId) { showToast('Выберите букмекера', 'error'); return; }
+  if (!amount || amount <= 0) { showToast('Укажите сумму проигрыша', 'error'); return; }
+  if (!date) { showToast('Укажите дату', 'error'); return; }
+  if (!betId) { showToast('Укажите номер купона', 'error'); return; }
+  if (uploadedFiles.length === 0) { showToast('Добавьте хотя бы 1 скрин', 'error'); return; }
+  if (!agree) { showToast('Подтвердите условия', 'error'); return; }
+  
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Отправляем...';
+  
+  try {
+    // Real API call
+    const fd = new FormData();
+    fd.append('bookmaker_id', bkId);
+    fd.append('loss_amount', amount);
+    fd.append('bet_id', betId);
+    fd.append('bet_date', date);
+    const pid = document.getElementById('claim-pid').value.trim() || document.getElementById('claim-account').value || '';
+    fd.append('affiliate_player_id', pid);
+    fd.append('comment', document.getElementById('claim-comment').value.trim());
+    uploadedFiles.forEach(f => fd.append('files', f));
+    
+    const result = await apiCall('/claims', 'POST', fd, true);
+    
+    const bk = BOOKMAKERS.find(b => b.id == bkId);
+    const cashback = result.cashback || (amount * state.tierInfo.pct / 100);
+    state.claims.unshift({
+      id: result.claim_id, bkName: bk.name, amount, cashback, date,
+      status: 'submitted', betId,
+    });
+    state.pending += cashback;
+    
+    renderHomeClaims();
+    updatePendingUI();
+    
+    // Reset form
+    document.getElementById('claim-bk').value = '';
+    document.getElementById('claim-amount').value = '';
+    document.getElementById('claim-betid').value = '';
+    document.getElementById('claim-pid').value = '';
+    document.getElementById('claim-agree').checked = false;
+    document.getElementById('cashback-preview').textContent = '';
+    document.getElementById('field-account').style.display = 'none';
+    document.getElementById('field-new-id').style.display = 'none';
+    uploadedFiles.length = 0;
+    renderFilePreviews();
+    
+    showToast('✓ Заявка отправлена!', 'success');
+    setTimeout(() => showScreen('home'), 1000);
+  } catch(e) {
+    showToast('Ошибка: ' + (e.message || 'попробуйте ещё раз'), 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Отправить заявку';
+  }
+}
+
+// ============================================================
+// HOME CLAIMS
+// ============================================================
+function renderHomeClaims() {
+  const container = document.getElementById('home-claims');
+  if (!state.claims.length) {
+    container.innerHTML = `<div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">Заявок пока нет.<br>Подайте первую — получите кэшбэк за проигрыш.</div><div class="empty-btn" onclick="showScreen('submit')">Подать заявку</div></div>`;
+    return;
+  }
+  const statusMap = { submitted:'submitted', review:'review', approved:'review', paid:'paid', rejected:'rejected' };
+  const labelMap = { submitted:'Отправлено', review:'На проверке', approved:'Одобрено', paid:'Выплачено', rejected:'Отклонено' };
+  container.innerHTML = state.claims.slice(0,10).map(c => `
+    <div class="claim-card status-${statusMap[c.status]||'submitted'}">
+      <div class="claim-top">
+        <div class="claim-bk">${c.bkName}</div>
+        <div class="claim-status ${statusMap[c.status]||'submitted'}">${labelMap[c.status]||'Отправлено'}</div>
+      </div>
+      <div class="claim-meta">${formatDate(c.date)} · #${c.betId}</div>
+      <div class="claim-amounts">
+        <div class="claim-loss">Проигрыш: ${formatRub(c.amount)}</div>
+        <div class="claim-cashback">+${formatRub(c.cashback)}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ============================================================
+// FAQ
+// ============================================================
+function renderFAQ() {
+  const html = FAQ_ITEMS.map((f,i) => `
+    <div class="faq-item" id="faq-${i}">
+      <div class="faq-q" onclick="toggleFAQ(${i})">${f.q}<span class="faq-icon">+</span></div>
+      <div class="faq-a">${f.a}</div>
+    </div>`).join('');
+  setEl('faq-list', html);
+}
+
+function toggleFAQ(i) {
+  document.getElementById('faq-' + i)?.classList.toggle('open');
+}
+
+// ============================================================
+// PAYOUT METHODS
+// ============================================================
+const assetLabels = { USDT_TRC20:'USDT TRC20', USDT_TON:'USDT TON', TON:'TON', TG_WALLET:'Telegram Wallet' };
+const assetIcons = { USDT_TRC20:'💵', USDT_TON:'💎', TON:'🔷', TG_WALLET:'✈️' };
+
+function renderPayoutMethods() {
+  const container = document.getElementById('payout-methods-list');
+  if (!state.payoutMethods.length) {
+    container.innerHTML = '<div style="font-size:13px;color:var(--text2);padding:8px 0 12px">Кошелёк не добавлен</div>';
+    return;
+  }
+  container.innerHTML = state.payoutMethods.map((m,i) => `
+    <div class="payout-card ${i===0?'selected':''}" onclick="selectPayout(${i})">
+      <div class="payout-icon">${assetIcons[m.asset]||'💳'}</div>
+      <div class="payout-info">
+        <div class="payout-type">${assetLabels[m.asset]||m.asset}</div>
+        <div class="payout-addr">${truncateAddr(m.address)}</div>
+      </div>
+      <svg class="payout-check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>`).join('');
+}
+
+function selectPayout(idx) {
+  document.querySelectorAll('.payout-card').forEach((c,i) => c.classList.toggle('selected', i===idx));
+}
+
+function openAddPayout() { openModal('modal-payout'); }
+
+function selectAsset(asset, el) {
+  state.selectedAsset = asset;
+  document.querySelectorAll('.asset-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function savePayoutMethod() {
+  const addr = document.getElementById('payout-address').value.trim();
+  if (!addr) { showToast('Введите адрес', 'error'); return; }
+  state.payoutMethods.push({ asset: state.selectedAsset, address: addr });
+  renderPayoutMethods();
+  closeModal('modal-payout');
+  document.getElementById('payout-address').value = '';
+  showToast('✓ Кошелёк сохранён', 'success');
+  // In production: apiCall('/payout-methods', 'POST', {...})
+}
+
+// ============================================================
+// REFERRAL
+// ============================================================
+function updateRefLink() {
+  const link = `t.me/${BOT_USERNAME}?start=ref_${tgUser.id}`;
+  setEl('ref-link', link);
+  setEl('ref-count', state.refStats.count);
+  setEl('ref-active', state.refStats.active);
+  setEl('ref-income', formatRub(state.refStats.income));
+}
+
+function copyRefLink() {
+  const link = `https://t.me/${BOT_USERNAME}?start=ref_${tgUser.id}`;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(link).then(() => showToast('✓ Ссылка скопирована!', 'success'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = link; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('✓ Ссылка скопирована!', 'success');
+  }
+}
+
+// ============================================================
+// API HELPER (for production)
+// ============================================================
+async function apiCall(path, method='GET', body=null, isFormData=false) {
+  const headers = { 'X-Telegram-Init-Data': initData };
+  if (!isFormData && body) headers['Content-Type'] = 'application/json';
+  const res = await fetch(API_BASE + path, {
+    method,
+    headers,
+    body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function setEl(id, html) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = html;
+}
+
+function formatRub(n) {
+  return Math.round(n || 0).toLocaleString('ru-RU') + ' ₽';
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'2-digit' });
+}
+
+function truncateAddr(addr) {
+  if (!addr || addr.length < 12) return addr;
+  return addr.substring(0,6) + '...' + addr.substring(addr.length-4);
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+let toastTimeout;
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function openModal(id) { document.getElementById(id)?.classList.add('open'); }
+function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if(e.target === o) o.classList.remove('open'); });
+});
+
+// ============================================================
+// START
+// ============================================================
+init();
+</script>
+</body>
+</html>

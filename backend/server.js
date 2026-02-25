@@ -110,27 +110,29 @@ function authMiddleware(req, res, next) {
 }
 
 // ============================================================
-// TIER SYSTEM
+// TIER SYSTEM (по кол-ву подтверждённых заявок — лояльность, не сумма проигрышей)
+// Tier 1: 0-4 заявок  → 5%
+// Tier 2: 5-14 заявок → 7%
+// Tier 3: 15+ заявок  → 10%
 // ============================================================
 const TIERS = [
-  { tier: 1, pct: 5,  minLoss: 0 },
-  { tier: 2, pct: 7,  minLoss: 20000 },
-  { tier: 3, pct: 10, minLoss: 60000 },
+  { tier: 1, pct: 5,  minClaims: 0 },
+  { tier: 2, pct: 7,  minClaims: 5 },
+  { tier: 3, pct: 10, minClaims: 15 },
 ];
 
 async function getUserTier(userId) {
   const result = await pool.query(`
-    SELECT COALESCE(SUM(loss_amount_rub), 0) as total
+    SELECT COUNT(*) as total
     FROM claims
-    WHERE user_id = $1 AND status = 'paid'
-    AND created_at > NOW() - INTERVAL '30 days'
+    WHERE user_id = $1 AND status IN ('approved', 'paid')
   `, [userId]);
-  const total = parseFloat(result.rows[0].total);
-  const tier = [...TIERS].reverse().find(t => total >= t.minLoss) || TIERS[0];
+  const total = parseInt(result.rows[0].total);
+  const tier = [...TIERS].reverse().find(t => total >= t.minClaims) || TIERS[0];
   const nextTier = TIERS.find(t => t.tier === tier.tier + 1);
   return {
     tier: tier.tier, pct: tier.pct, progress: total,
-    nextTierAt: nextTier ? nextTier.minLoss : tier.minLoss,
+    nextTierAt: nextTier ? nextTier.minClaims : tier.minClaims,
   };
 }
 
@@ -317,11 +319,18 @@ app.post('/api/claims', authMiddleware, claimLimiter, upload.array('files', 5), 
         ).catch(() => {});
       }
       
-      // Notify user
+      // Notify user with exact SLA deadline
+      const deadline = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const deadlineStr = deadline.toLocaleString('ru-RU', {
+        day: '2-digit', month: '2-digit',
+        hour: '2-digit', minute: '2-digit',
+        timeZone: 'Europe/Moscow'
+      });
       bot.sendMessage(req.tgUser.id,
         `✅ Заявка #${claim.id} принята!\n\n` +
         `💰 Ожидаемый кэшбэк: ${cashback.toLocaleString('ru-RU')}₽\n` +
-        `⏱ Проверим в течение 24 часов`
+        `⏱ Проверим до ${deadlineStr} МСК\n\n` +
+        `Если появятся вопросы — пишите в поддержку.`
       ).catch(() => {});
       
       res.json({ success: true, claim_id: claim.id, cashback });

@@ -449,11 +449,11 @@
 
     <div class="tier-bar animate-in delay-1">
       <div class="tier-top">
-        <div class="tier-name">ПРОГРЕСС К TIER 2 · 7%</div>
+        <div class="tier-name" id="tier-name">ПРОГРЕСС К TIER 2 · 7%</div>
         <div class="tier-pct" id="tier-pct">5%</div>
       </div>
       <div class="progress-track"><div class="progress-fill" id="tier-progress" style="width:0%"></div></div>
-      <div class="tier-hint">Ещё <strong id="tier-left">20 000 ₽</strong> проигрышей — и ставка вырастет</div>
+      <div class="tier-hint" id="tier-hint-text">Ещё <strong>5 заявок</strong> — и ставка вырастет до 7%</div>
     </div>
 
     <div class="section animate-in delay-2">
@@ -595,12 +595,24 @@
     </div>
 
     <div id="pending-section" style="padding:0 16px;margin-bottom:20px;display:none">
-      <div class="pending-bar">
-        <div class="pending-icon">🪙</div>
-        <div>
-          <div class="pending-text">В копилке: <span class="pending-amount" id="pending-amount">0 ₽</span></div>
-          <div class="pending-hint">Ещё <span id="pending-left">0 ₽</span> до минимального вывода (500 ₽)</div>
+      <div class="pending-bar" style="flex-direction:column;align-items:stretch;gap:12px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="pending-icon">🪙</div>
+          <div style="flex:1">
+            <div class="pending-text"><span class="pending-amount" id="pending-amount">0 ₽</span> в копилке!</div>
+            <div class="pending-hint">Ещё <span id="pending-left">0 ₽</span> — и можно вывести 💸</div>
+          </div>
         </div>
+        <div>
+          <div style="background:rgba(255,209,102,0.12);border-radius:4px;height:6px;overflow:hidden">
+            <div id="pending-bar-fill" style="height:100%;border-radius:4px;background:linear-gradient(90deg,var(--yellow),#ffaa00);transition:width 0.8s cubic-bezier(.34,1.56,.64,1);width:0%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px">
+            <div style="font-size:10px;color:var(--text3)">0 ₽</div>
+            <div style="font-size:10px;color:var(--text3)">500 ₽ → вывод</div>
+          </div>
+        </div>
+        <button onclick="showScreen('submit')" style="width:100%;padding:10px;background:rgba(255,209,102,0.1);border:1px solid rgba(255,209,102,0.25);border-radius:10px;color:var(--yellow);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s" onmousedown="this.style.background='rgba(255,209,102,0.18)'" onmouseup="this.style.background='rgba(255,209,102,0.1)'">+ Подать ещё заявку</button>
       </div>
     </div>
 
@@ -881,11 +893,14 @@ function updateProfile() {
 
 function updateTierUI() {
   const t = state.tierInfo;
-  const pct = Math.min(100, Math.round((t.progress / t.nextTierAt) * 100));
+  const pct = t.nextTierAt > 0 ? Math.min(100, Math.round((t.progress / t.nextTierAt) * 100)) : 100;
   setEl('tier-pct', t.pct + '%');
   setEl('header-tier', 'TIER ' + t.tier + ' · ' + t.pct + '%');
   setEl('prof-tier', 'TIER ' + t.tier + ' · ' + t.pct + '%');
-  setEl('tier-left', formatRub(Math.max(0, t.nextTierAt - t.progress)));
+  const left = Math.max(0, t.nextTierAt - t.progress);
+  const nextPct = t.tier === 1 ? 7 : 10;
+  setEl('tier-name', 'ПРОГРЕСС К TIER ' + (t.tier + 1) + ' · ' + nextPct + '%');
+  setEl('tier-hint-text', `Ещё <strong>${left} заявок</strong> — и ставка вырастет до ${nextPct}%`);
   document.getElementById('tier-progress').style.width = pct + '%';
   if (t.tier >= 3) {
     const tierBar = document.querySelector('.tier-bar');
@@ -899,6 +914,8 @@ function updatePendingUI() {
     section.style.display = 'block';
     setEl('pending-amount', formatRub(state.pending));
     setEl('pending-left', formatRub(500 - state.pending));
+    const fill = document.getElementById('pending-bar-fill');
+    if (fill) fill.style.width = Math.min(100, Math.round((state.pending / 500) * 100)) + '%';
   } else {
     section.style.display = 'none';
   }

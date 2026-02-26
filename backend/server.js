@@ -33,6 +33,7 @@ app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 app.use('/admin-panel', express.static(path.join(__dirname, 'admin')));
+app.use('/', express.static(path.join(__dirname, '../frontend')));
 
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100, message: { error: 'Too many requests' } });
 app.use('/api/', limiter);

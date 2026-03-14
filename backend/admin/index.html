@@ -143,6 +143,10 @@
       <div class="nav-link active" onclick="showPage('dashboard')" id="nav-dashboard"><span class="nav-icon">📊</span> Дашборд</div>
       <div class="nav-link" onclick="showPage('claims')" id="nav-claims"><span class="nav-icon">📋</span> Заявки</div>
       <div class="nav-link" onclick="showPage('users')" id="nav-users"><span class="nav-icon">👥</span> Пользователи</div>
+      <div class="nav-link" onclick="showPage('bookmakers')" id="nav-bookmakers"><span class="nav-icon">🏦</span> Букмекеры</div>
+      <div class="nav-link" onclick="showPage('bk-verify')" id="nav-bk-verify"><span class="nav-icon">🛂</span> Верификация BK</div>
+      <div class="nav-link" onclick="showPage('imports')" id="nav-imports"><span class="nav-icon">📥</span> Импорты</div>
+      <div class="nav-link" onclick="showPage('payouts')" id="nav-payouts"><span class="nav-icon">💸</span> Выплаты</div>
       <div class="nav-link" onclick="showPage('broadcast')" id="nav-broadcast"><span class="nav-icon">📢</span> Рассылка</div>
       <div style="position:absolute;bottom:20px;left:0;right:0;padding:0 20px">
         <button class="btn" style="width:100%;background:var(--card);color:var(--text2)" onclick="doLogout()">Выйти</button>
@@ -207,6 +211,99 @@
         </div>
       </div>
 
+
+      <!-- BOOKMAKERS -->
+      <div class="page" id="page-bookmakers">
+        <h1>Букмекеры</h1>
+        <div class="toolbar">
+          <button class="btn btn-primary" onclick="openBookmakerCreate()">+ Добавить букмекера</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th><th>Название</th><th>Short</th><th>Трекинг</th><th>Кэшбэк</th><th>Сорт</th><th>Активен</th><th>Действия</th>
+              </tr>
+            </thead>
+            <tbody id="bookmakers-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+
+      <!-- BOOKMAKER ACCOUNT VERIFICATION -->
+      <div class="page" id="page-bk-verify">
+        <h1>Верификация аккаунтов букмекеров</h1>
+        <div class="toolbar">
+          <div class="filter-btn active" onclick="filterBkAccounts('',this)">Все</div>
+          <div class="filter-btn" onclick="filterBkAccounts('pending',this)">Pending</div>
+          <div class="filter-btn" onclick="filterBkAccounts('verified',this)">Verified</div>
+          <div class="filter-btn" onclick="filterBkAccounts('rejected',this)">Rejected</div>
+          <button class="btn btn-primary" style="margin-left:auto" onclick="loadBookmakerAccounts()">Обновить</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>ID</th><th>User</th><th>Букмекер</th><th>Player ID</th><th>Статус</th><th>Selected match</th><th>Обновлено</th><th>Сопоставления</th><th>Действия</th></tr>
+            </thead>
+            <tbody id="bk-accounts-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+
+      <!-- PARTNER IMPORTS -->
+      <div class="page" id="page-imports">
+        <h1>Партнёрские импорты</h1>
+        <div class="broadcast-area" style="margin-bottom:16px">
+          <h2>Загрузить файл импорта</h2>
+          <div class="field">
+            <label>Букмекер</label>
+            <select id="import-bookmaker"></select>
+          </div>
+          <div class="field">
+            <label>CSV файл</label>
+            <input type="file" id="import-file" accept=".csv,text/csv">
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <button class="btn btn-primary" onclick="uploadPartnerImport()">Загрузить импорт</button>
+            <div id="import-result" style="font-size:13px;color:var(--text2)"></div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Букмекер</th><th>Файл</th><th>Статус</th><th>Rows</th><th>New</th><th>Changed</th><th>Unchanged</th><th>Match suggestions</th><th>Создан</th><th>Действия</th></tr>
+            </thead>
+            <tbody id="imports-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+
+      <!-- PAYOUT REQUESTS -->
+      <div class="page" id="page-payouts">
+        <h1>Запросы на выплаты</h1>
+        <div class="toolbar">
+          <div class="filter-btn active" onclick="filterPayoutRequests('', this)">Все</div>
+          <div class="filter-btn" onclick="filterPayoutRequests('pending', this)">pending</div>
+          <div class="filter-btn" onclick="filterPayoutRequests('processing', this)">processing</div>
+          <div class="filter-btn" onclick="filterPayoutRequests('approved', this)">approved</div>
+          <div class="filter-btn" onclick="filterPayoutRequests('paid', this)">paid</div>
+          <div class="filter-btn" onclick="filterPayoutRequests('rejected', this)">rejected</div>
+          <div class="filter-btn" onclick="filterPayoutRequests('failed', this)">failed</div>
+          <button class="btn btn-primary" style="margin-left:auto" onclick="loadPayoutRequests()">Обновить</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>ID</th><th>User</th><th>Amount</th><th>Asset</th><th>Address</th><th>Status</th><th>Created</th><th>Processed</th><th>TX</th><th>Note</th><th>Действия</th></tr>
+            </thead>
+            <tbody id="payout-requests-table"></tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- BROADCAST -->
       <div class="page" id="page-broadcast">
         <h1>Рассылка</h1>
@@ -234,6 +331,77 @@
   </div>
 </div>
 
+
+
+<!-- IMPORT DETAIL MODAL -->
+<div class="modal-overlay" id="modal-import-detail">
+  <div class="modal" style="width:760px">
+    <div class="modal-title" id="import-detail-title">Импорт #—</div>
+    <div id="import-detail-summary" style="font-size:13px;color:var(--text2);margin-bottom:10px"></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Player ID</th><th>SubID</th><th>ClickID</th><th>Reg</th><th>Activity</th><th>Deposit</th><th>GGR</th><th>Diff</th></tr></thead>
+        <tbody id="import-detail-rows"></tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" onclick="closeModal('modal-import-detail')">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- MATCH SUGGESTIONS MODAL -->
+<div class="modal-overlay" id="modal-match-suggestions">
+  <div class="modal" style="width:980px">
+    <div class="modal-title" id="match-suggestions-title">Сопоставления</div>
+    <div id="match-suggestions-summary" style="font-size:13px;color:var(--text2);margin-bottom:10px"></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>ID</th><th>BK account</th><th>User</th><th>Букмекер</th><th>Player ID</th><th>Imported player/sub/click</th><th>Confidence</th><th>Reasons</th><th>Выбор</th><th>Действие</th></tr>
+        </thead>
+        <tbody id="match-suggestions-rows"></tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" onclick="closeModal('modal-match-suggestions')">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKMAKER MODAL -->
+<div class="modal-overlay" id="modal-bookmaker">
+  <div class="modal">
+    <div class="modal-title" id="modal-bookmaker-title">Новый букмекер</div>
+    <div class="field"><label>Название *</label><input type="text" id="bm-name"></div>
+    <div class="field"><label>Short name</label><input type="text" id="bm-short-name"></div>
+    <div class="field"><label>Logo URL</label><input type="text" id="bm-logo-url"></div>
+    <div class="field"><label>Правила</label><textarea id="bm-rules"></textarea></div>
+    <div class="field"><label>Required proofs (через запятую)</label><input type="text" id="bm-required-proofs" placeholder="slip,profile"></div>
+    <div class="field"><label>Минимальный проигрыш (₽)</label><input type="text" id="bm-min-loss" value="500"></div>
+    <div class="field"><label>Sort order</label><input type="text" id="bm-sort-order" value="0"></div>
+    <div class="field"><label>Кэшбэк label</label><input type="text" id="bm-cashback-label" placeholder="5-10%"></div>
+    <div class="field"><label>Offer text</label><textarea id="bm-offer-text"></textarea></div>
+    <div class="field"><label>Instruction asset URL</label><input type="text" id="bm-instruction-url"></div>
+    <div class="field"><label>Affiliate URL template</label><input type="text" id="bm-affiliate-url"></div>
+    <div class="field"><label>Tracking mode</label>
+      <select id="bm-tracking-mode">
+        <option value="none">none</option>
+        <option value="subid">subid</option>
+        <option value="clickid">clickid</option>
+        <option value="subid_clickid">subid_clickid</option>
+      </select>
+    </div>
+    <div class="field"><label>Subid param</label><input type="text" id="bm-subid-param" value="subid"></div>
+    <div class="field"><label>Clickid param</label><input type="text" id="bm-clickid-param" value="clickid"></div>
+    <div class="field"><label>Активен</label><select id="bm-is-active"><option value="true">Да</option><option value="false">Нет</option></select></div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" onclick="closeModal('modal-bookmaker')">Отмена</button>
+      <button class="btn btn-primary" onclick="saveBookmaker()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
 <!-- CLAIM MODAL -->
 <div class="modal-overlay" id="modal-claim">
   <div class="modal">
@@ -252,12 +420,36 @@
       <label>TX Hash (для статуса Выплачено)</label>
       <input type="text" id="modal-tx" placeholder="0x...">
     </div>
+    <div style="margin-top:10px;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--bg2)">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">ВНУТРЕННИЕ ЗАМЕТКИ (операционные)</div>
+      <div id="claim-notes-list" style="max-height:130px;overflow:auto;margin-bottom:8px;font-size:12px;color:var(--text2)"></div>
+      <textarea id="claim-note-input" placeholder="Добавить заметку по заявке..." style="min-height:70px"></textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px">
+        <button class="btn btn-sm" style="background:var(--bg3);border:1px solid var(--border);color:#fff" onclick="addClaimNote()">+ Добавить заметку</button>
+      </div>
+    </div>
     <div class="modal-footer">
       <button class="btn btn-cancel" onclick="closeModal('modal-claim')">Закрыть</button>
       <button class="btn btn-danger btn-sm" onclick="updateClaimStatus('rejected')">Отклонить</button>
       <button class="btn" style="background:rgba(255,209,102,0.15);color:var(--yellow);border:1px solid rgba(255,209,102,0.3)" onclick="updateClaimStatus('in_review')">На проверку</button>
       <button class="btn btn-success btn-sm" onclick="updateClaimStatus('approved')">Одобрить</button>
       <button class="btn btn-primary btn-sm" id="btn-paid" onclick="handlePaidClick()">Оплачено ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- GENERIC INTERNAL NOTES MODAL -->
+<div class="modal-overlay" id="modal-entity-notes">
+  <div class="modal" style="width:640px">
+    <div class="modal-title" id="entity-notes-title">Заметки</div>
+    <div id="entity-notes-list" style="max-height:260px;overflow:auto;font-size:13px;color:var(--text2);margin-bottom:10px"></div>
+    <div class="field">
+      <label>Новая заметка</label>
+      <textarea id="entity-note-input" placeholder="Операционная заметка для админов"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" onclick="closeModal('modal-entity-notes')">Закрыть</button>
+      <button class="btn btn-primary" onclick="addEntityNoteFromModal()">+ Добавить</button>
     </div>
   </div>
 </div>
@@ -275,6 +467,15 @@ let currentClaimId = null;
 let claimFilter = '';
 let currentPage = 1;
 const PAGE_SIZE = 20;
+let currentBookmakers = [];
+let editingBookmakerId = null;
+let bkAccountFilter = '';
+let currentBkAccounts = [];
+let currentImportBatches = [];
+let currentMatchSuggestions = [];
+let payoutRequestFilter = '';
+let currentPayoutRequests = [];
+let entityNotesContext = { entityType: '', entityId: null, title: '' };
 
 function doLogin() {
   API = document.getElementById('login-url').value.trim().replace(/\/$/, '');
@@ -305,10 +506,16 @@ function showLoginError(msg) {
 }
 
 function adminFetch(path, options = {}) {
+  const isFormData = options.body instanceof FormData;
+  const headers = { 'x-admin-secret': SECRET, ...options.headers };
+  if (!isFormData && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
   return fetch(API + path, {
     ...options,
-    headers: { 'x-admin-secret': SECRET, 'Content-Type': 'application/json', ...options.headers }
-  }).then(r => { if (!r.ok) throw new Error(r.statusText); return r.json(); });
+    headers,
+  }).then(async r => {
+    if (!r.ok) throw new Error(await r.text() || r.statusText);
+    return r.json();
+  });
 }
 
 function showPage(name) {
@@ -320,6 +527,10 @@ function showPage(name) {
   if (name === 'dashboard') loadDashboard();
   if (name === 'claims') loadClaims();
   if (name === 'users') loadUsers();
+  if (name === 'bookmakers') loadBookmakers();
+  if (name === 'bk-verify') loadBookmakerAccounts();
+  if (name === 'imports') loadPartnerImports();
+  if (name === 'payouts') loadPayoutRequests();
 }
 
 // ---- DASHBOARD ----
@@ -381,7 +592,7 @@ function renderClaimsTable(claims) {
 
 function filterClaims(status, el) {
   claimFilter = status;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#page-claims .filter-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   loadClaims();
 }
@@ -402,6 +613,7 @@ function openClaim(id) {
   document.getElementById('modal-claim-title').textContent = `Заявка #${c.id}`;
   document.getElementById('modal-note').value = c.admin_note || '';
   document.getElementById('modal-tx').value = c.tx_hash || '';
+  document.getElementById('claim-note-input').value = '';
   document.getElementById('modal-tx-field').style.display = 'none';
   
   const detail = document.getElementById('modal-claim-detail');
@@ -416,6 +628,7 @@ function openClaim(id) {
     { label: 'Риск-скор', value: `${c.risk_score}/100` },
     { label: 'Статус', value: `<span class="badge badge-${c.status}">${statusLabel(c.status)}</span>` },
     { label: 'Комментарий', value: c.comment || '—' },
+    { label: 'Admin note', value: c.admin_note || '—' },
     { label: 'TX Hash', value: c.tx_hash || '—' },
   ].map(d => `<div class="detail-item"><div class="d-label">${d.label}</div><div class="d-value">${d.value}</div></div>`).join('');
   
@@ -434,8 +647,26 @@ function openClaim(id) {
        onerror="this.style.display='none'">`;
     }).join('');
   }
+
+  loadEntityNotes('claim', c.id, 'claim-notes-list');
   
   openModal('modal-claim');
+}
+
+async function addClaimNote() {
+  if (!currentClaimId) return;
+  const note = (document.getElementById('claim-note-input').value || '').trim();
+  if (!note) return;
+  try {
+    await adminFetch('/admin/internal-notes', {
+      method: 'POST',
+      body: JSON.stringify({ entity_type: 'claim', entity_id: currentClaimId, note, is_private: true })
+    });
+    document.getElementById('claim-note-input').value = '';
+    loadEntityNotes('claim', currentClaimId, 'claim-notes-list');
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
 }
 
 function showTxField() {
@@ -493,6 +724,452 @@ async function loadUsers() {
   } catch(e) { console.error(e); }
 }
 
+// ---- BOOKMAKERS ----
+async function loadBookmakers() {
+  try {
+    const data = await adminFetch('/admin/bookmakers');
+    currentBookmakers = data || [];
+    const tbody = currentBookmakers.map(b => `
+      <tr>
+        <td>${b.id}</td>
+        <td>${b.name || '—'}</td>
+        <td>${b.short_name || '—'}</td>
+        <td style="color:var(--text2)">${b.tracking_mode || 'none'}</td>
+        <td>${b.cashback_label || '—'}</td>
+        <td>${b.sort_order ?? 0}</td>
+        <td>${b.is_active ? '✅' : '⛔'}</td>
+        <td class="actions">
+          <button class="btn btn-sm" style="background:var(--bg2);border:1px solid var(--border);color:#fff" onclick="openBookmakerEdit(${b.id})">Редактировать</button>
+          <button class="btn btn-sm" style="background:rgba(255,209,102,0.15);color:var(--yellow)" onclick="toggleBookmakerActive(${b.id}, ${b.is_active ? 'false' : 'true'})">${b.is_active ? 'Отключить' : 'Включить'}</button>
+        </td>
+      </tr>
+    `).join('');
+    setEl('bookmakers-table', tbody || '<tr><td colspan="8" style="text-align:center;color:var(--text2);padding:32px">Нет букмекеров</td></tr>');
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function openBookmakerCreate() {
+  editingBookmakerId = null;
+  document.getElementById('modal-bookmaker-title').textContent = 'Новый букмекер';
+  ['bm-name','bm-short-name','bm-logo-url','bm-rules','bm-required-proofs','bm-cashback-label','bm-offer-text','bm-instruction-url','bm-affiliate-url'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('bm-min-loss').value = '500';
+  document.getElementById('bm-sort-order').value = '0';
+  document.getElementById('bm-tracking-mode').value = 'none';
+  document.getElementById('bm-subid-param').value = 'subid';
+  document.getElementById('bm-clickid-param').value = 'clickid';
+  document.getElementById('bm-is-active').value = 'true';
+  openModal('modal-bookmaker');
+}
+
+function openBookmakerEdit(id) {
+  const b = currentBookmakers.find(x => x.id === id);
+  if (!b) return;
+  editingBookmakerId = id;
+  document.getElementById('modal-bookmaker-title').textContent = `Букмекер #${id}`;
+  document.getElementById('bm-name').value = b.name || '';
+  document.getElementById('bm-short-name').value = b.short_name || '';
+  document.getElementById('bm-logo-url').value = b.logo_url || '';
+  document.getElementById('bm-rules').value = b.rules || '';
+  document.getElementById('bm-required-proofs').value = (b.required_proofs || []).join(',');
+  document.getElementById('bm-min-loss').value = b.min_loss_rub || 500;
+  document.getElementById('bm-sort-order').value = b.sort_order || 0;
+  document.getElementById('bm-cashback-label').value = b.cashback_label || '';
+  document.getElementById('bm-offer-text').value = b.offer_text || '';
+  document.getElementById('bm-instruction-url').value = b.instruction_asset_url || '';
+  document.getElementById('bm-affiliate-url').value = b.affiliate_url_template || '';
+  document.getElementById('bm-tracking-mode').value = b.tracking_mode || 'none';
+  document.getElementById('bm-subid-param').value = b.tracking_subid_param || 'subid';
+  document.getElementById('bm-clickid-param').value = b.tracking_clickid_param || 'clickid';
+  document.getElementById('bm-is-active').value = b.is_active ? 'true' : 'false';
+  openModal('modal-bookmaker');
+}
+
+async function saveBookmaker() {
+  const payload = {
+    name: document.getElementById('bm-name').value.trim(),
+    short_name: document.getElementById('bm-short-name').value.trim() || null,
+    logo_url: document.getElementById('bm-logo-url').value.trim() || null,
+    rules: document.getElementById('bm-rules').value.trim() || null,
+    required_proofs: document.getElementById('bm-required-proofs').value.trim(),
+    min_loss_rub: parseInt(document.getElementById('bm-min-loss').value) || 500,
+    sort_order: parseInt(document.getElementById('bm-sort-order').value) || 0,
+    cashback_label: document.getElementById('bm-cashback-label').value.trim() || null,
+    offer_text: document.getElementById('bm-offer-text').value.trim() || null,
+    instruction_asset_url: document.getElementById('bm-instruction-url').value.trim() || null,
+    affiliate_url_template: document.getElementById('bm-affiliate-url').value.trim() || null,
+    tracking_mode: document.getElementById('bm-tracking-mode').value,
+    tracking_subid_param: document.getElementById('bm-subid-param').value.trim() || 'subid',
+    tracking_clickid_param: document.getElementById('bm-clickid-param').value.trim() || 'clickid',
+    is_active: document.getElementById('bm-is-active').value === 'true',
+  };
+
+  if (!payload.name) { alert('Название обязательно'); return; }
+
+  try {
+    if (editingBookmakerId) {
+      await adminFetch(`/admin/bookmakers/${editingBookmakerId}`, { method: 'PATCH', body: JSON.stringify(payload) });
+    } else {
+      await adminFetch('/admin/bookmakers', { method: 'POST', body: JSON.stringify(payload) });
+    }
+    closeModal('modal-bookmaker');
+    loadBookmakers();
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+async function toggleBookmakerActive(id, isActive) {
+  const b = currentBookmakers.find(x => x.id === id);
+  if (!b) return;
+  try {
+    await adminFetch(`/admin/bookmakers/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ ...b, is_active: isActive === 'true' })
+    });
+    loadBookmakers();
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+// ---- BOOKMAKER ACCOUNT VERIFICATION ----
+async function loadBookmakerAccounts() {
+  try {
+    const suffix = bkAccountFilter ? ('?status=' + encodeURIComponent(bkAccountFilter)) : '';
+    const data = await adminFetch('/admin/bookmaker-accounts' + suffix);
+    currentBkAccounts = data || [];
+    renderBkAccounts(currentBkAccounts);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function renderBkAccounts(rows) {
+  const tbody = document.getElementById('bk-accounts-table');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text2);padding:32px">Нет аккаунтов для верификации</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(r => {
+    const userLabel = `${escapeHtml(r.first_name || '')} ${r.username ? '@' + escapeHtml(r.username) : ''} <small style="color:var(--text2)">(${r.user_id})</small>`;
+    const statusBadge = renderStatusBadge(r.status, 'bookmaker_account');
+    const selectedMatch = r.selected_suggestion_id
+      ? `<div style="font-size:12px;line-height:1.35">${escapeHtml(r.selected_confidence_level || '—')} (${r.selected_confidence_score || 0})<br><span style="font-family:monospace">${escapeHtml(r.selected_imported_player_id || '—')} / ${escapeHtml(r.selected_imported_subid || '—')} / ${escapeHtml(r.selected_imported_clickid || '—')}</span></div>`
+      : '<span style="color:var(--text2)">—</span>';
+    return `<tr>
+      <td>#${r.id}</td>
+      <td>${userLabel}</td>
+      <td>${escapeHtml(r.bookmaker_name || String(r.bookmaker_id || '—'))}</td>
+      <td style="font-family:monospace">${escapeHtml(r.affiliate_player_id || '—')}</td>
+      <td>${statusBadge}</td>
+      <td>${selectedMatch}</td>
+      <td style="color:var(--text2)">${formatDate(r.updated_at)}</td>
+      <td><button class="btn btn-sm" style="background:var(--bg2);border:1px solid var(--border);color:#fff" onclick="openAccountSuggestions(${r.id})">Подбор</button></td>
+      <td class="actions">
+        <button class="btn btn-sm" style="background:var(--bg2);border:1px solid var(--border);color:#fff" onclick="openEntityNotesModal('bookmaker_account', ${r.id}, 'BK account #${r.id}')">Notes</button>
+        <button class="btn btn-success btn-sm" onclick="updateBkAccountStatus(${r.id}, 'verified')">Verified</button>
+        <button class="btn btn-danger btn-sm" onclick="updateBkAccountStatus(${r.id}, 'rejected')">Rejected</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterBkAccounts(status, el) {
+  bkAccountFilter = status;
+  document.querySelectorAll('#page-bk-verify .filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  loadBookmakerAccounts();
+}
+
+async function updateBkAccountStatus(id, status) {
+  let rejection_reason = null;
+  if (status === 'rejected') {
+    rejection_reason = prompt('Причина отклонения (необязательно):', '') || null;
+  }
+  try {
+    await adminFetch(`/admin/bookmaker-accounts/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, rejection_reason })
+    });
+    loadBookmakerAccounts();
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+// ---- PARTNER IMPORTS ----
+async function loadPartnerImports() {
+  try {
+    const [bks, batches] = await Promise.all([
+      adminFetch('/admin/bookmakers'),
+      adminFetch('/admin/partner-imports')
+    ]);
+    const select = document.getElementById('import-bookmaker');
+    const prev = select.value;
+    select.innerHTML = '<option value="">Выберите букмекера...</option>' + (bks || []).map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+    if (prev) select.value = prev;
+
+    currentImportBatches = batches || [];
+    const tbody = currentImportBatches.map(b => `
+      <tr>
+        <td>#${b.id}</td>
+        <td>${escapeHtml(b.bookmaker_name || String(b.bookmaker_id || '—'))}</td>
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escapeAttr(b.original_filename || '')}">${escapeHtml(b.original_filename || '—')}</td>
+        <td>${renderStatusBadge(b.status, 'import_batch')}</td>
+        <td>${b.rows_total || 0}</td>
+        <td>${b.rows_new || 0}</td>
+        <td>${b.rows_changed || 0}</td>
+        <td>${b.rows_unchanged || 0}</td>
+        <td>${b.suggestions_count || 0}</td>
+        <td style="color:var(--text2)">${formatDate(b.created_at)}</td>
+        <td>
+          <button class="btn btn-sm" style="background:var(--bg2);border:1px solid var(--border);color:#fff" onclick="openImportDetail(${b.id})">Открыть</button>
+          <button class="btn btn-sm" style="background:var(--bg2);border:1px solid var(--border);color:#fff" onclick="openBatchSuggestions(${b.id})">Сопоставления</button>
+        </td>
+      </tr>
+    `).join('');
+    setEl('imports-table', tbody || '<tr><td colspan="11" style="text-align:center;color:var(--text2);padding:32px">Импортов пока нет</td></tr>');
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function uploadPartnerImport() {
+  const bookmakerId = document.getElementById('import-bookmaker').value;
+  const file = document.getElementById('import-file').files?.[0];
+  const resultEl = document.getElementById('import-result');
+
+  if (!bookmakerId) { alert('Выберите букмекера'); return; }
+  if (!file) { alert('Выберите файл'); return; }
+
+  const fd = new FormData();
+  fd.append('bookmaker_id', bookmakerId);
+  fd.append('file', file);
+
+  resultEl.textContent = 'Импортируем...';
+  try {
+    const data = await adminFetch('/admin/partner-imports', { method: 'POST', body: fd });
+    resultEl.textContent = `✓ Готово: total ${data.summary.rows_total}, new ${data.summary.rows_new}, changed ${data.summary.rows_changed}, suggestions ${data.summary.suggestions_upserted || 0}`;
+    document.getElementById('import-file').value = '';
+    loadPartnerImports();
+  } catch (e) {
+    resultEl.textContent = 'Ошибка: ' + e.message;
+  }
+}
+
+async function openImportDetail(id) {
+  try {
+    const data = await adminFetch('/admin/partner-imports/' + id);
+    setEl('import-detail-title', `Импорт #${id} · ${data.batch.bookmaker_name || ''}`);
+    setEl('import-detail-summary', `Файл: ${data.batch.original_filename || '—'} · Статус: ${data.batch.status} · total/new/changed/unchanged: ${data.batch.rows_total || 0}/${data.batch.rows_new || 0}/${data.batch.rows_changed || 0}/${data.batch.rows_unchanged || 0}`);
+    const rows = (data.rows || []).map(r => `
+      <tr>
+        <td>${r.id}</td>
+        <td>${r.imported_player_id || '—'}</td>
+        <td>${r.imported_subid || '—'}</td>
+        <td>${r.imported_clickid || '—'}</td>
+        <td>${formatDate(r.registration_date)}</td>
+        <td>${formatDate(r.last_activity_at)}</td>
+        <td>${r.total_deposit_rub ?? '—'}</td>
+        <td>${r.total_ggr_rub ?? '—'}</td>
+        <td>${r.is_diff_new ? 'new' : (r.is_diff_changed ? 'changed' : 'unchanged')}</td>
+      </tr>
+    `).join('');
+    setEl('import-detail-rows', rows || '<tr><td colspan="9" style="text-align:center;color:var(--text2);padding:20px">Нет строк</td></tr>');
+    openModal('modal-import-detail');
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+function renderSuggestionsTable(rows) {
+  if (!rows.length) {
+    setEl('match-suggestions-rows', '<tr><td colspan="10" style="text-align:center;color:var(--text2);padding:20px">Сопоставлений пока нет</td></tr>');
+    return;
+  }
+  const html = rows.map(r => {
+    const confidenceBadge = renderStatusBadge(r.confidence_level, 'confidence', r.confidence_score);
+    const userLabel = r.user_id ? `${escapeHtml(r.first_name || '')} ${r.username ? '@' + escapeHtml(r.username) : ''} <small style="color:var(--text2)">(${r.user_id})</small>` : '—';
+    const importedLabel = `${escapeHtml(r.imported_player_id || '—')} / ${escapeHtml(r.imported_subid || '—')} / ${escapeHtml(r.imported_clickid || '—')}`;
+    const reasons = escapeHtml(Array.isArray(r.reasons) ? r.reasons.join(', ') : '—');
+    return `<tr>
+      <td>#${r.id}</td>
+      <td>#${r.bookmaker_account_id}</td>
+      <td>${userLabel}</td>
+      <td>${escapeHtml(r.bookmaker_name || String(r.bookmaker_id || '—'))}</td>
+      <td style="font-family:monospace">${escapeHtml(r.affiliate_player_id || '—')}</td>
+      <td style="font-family:monospace">${importedLabel}</td>
+      <td>${confidenceBadge}</td>
+      <td style="font-size:12px;max-width:260px">${reasons}</td>
+      <td>${r.is_selected ? '✅ selected' : '—'}</td>
+      <td><button class="btn btn-sm" style="background:var(--bg2);border:1px solid var(--border);color:#fff" onclick="selectSuggestion(${r.id})">Выбрать</button></td>
+    </tr>`;
+  }).join('');
+  setEl('match-suggestions-rows', html);
+}
+
+async function openBatchSuggestions(batchId) {
+  try {
+    const rows = await adminFetch(`/admin/partner-imports/${batchId}/suggestions`);
+    currentMatchSuggestions = rows || [];
+    setEl('match-suggestions-title', `Сопоставления по импорту #${batchId}`);
+    setEl('match-suggestions-summary', `Найдено: ${currentMatchSuggestions.length}. Это подсказки для ручной верификации, авто-верификации нет.`);
+    renderSuggestionsTable(currentMatchSuggestions);
+    openModal('modal-match-suggestions');
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+async function openAccountSuggestions(accountId) {
+  try {
+    const rows = await adminFetch(`/admin/bookmaker-accounts/${accountId}/suggestions`);
+    currentMatchSuggestions = rows || [];
+    setEl('match-suggestions-title', `Сопоставления для BK account #${accountId}`);
+    setEl('match-suggestions-summary', `Найдено: ${currentMatchSuggestions.length}. Используйте как decision support перед ручным Verified/Rejected.`);
+    renderSuggestionsTable(currentMatchSuggestions);
+    openModal('modal-match-suggestions');
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+async function selectSuggestion(suggestionId) {
+  if (!confirm('Отметить это сопоставление как выбранное для аккаунта?')) return;
+  try {
+    await adminFetch(`/admin/partner-match-suggestions/${suggestionId}/select`, { method: 'POST' });
+    const found = currentMatchSuggestions.find(x => x.id === suggestionId);
+    if (found?.bookmaker_account_id) {
+      await openAccountSuggestions(found.bookmaker_account_id);
+    }
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+// ---- PAYOUT REQUESTS ----
+async function loadPayoutRequests() {
+  try {
+    const suffix = payoutRequestFilter ? ('?status=' + encodeURIComponent(payoutRequestFilter)) : '';
+    const rows = await adminFetch('/admin/payout-requests' + suffix);
+    currentPayoutRequests = rows || [];
+    renderPayoutRequests(currentPayoutRequests);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function filterPayoutRequests(status, el) {
+  payoutRequestFilter = status;
+  document.querySelectorAll('#page-payouts .filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  loadPayoutRequests();
+}
+
+function renderPayoutRequests(rows) {
+  const tbody = document.getElementById('payout-requests-table');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--text2);padding:32px">Запросов пока нет</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td>#${r.id}</td>
+      <td>${escapeHtml(r.first_name || '')} ${r.username ? '@' + escapeHtml(r.username) : ''} <small style="color:var(--text2)">(${r.user_id})</small></td>
+      <td>${formatRub(r.amount_rub)}</td>
+      <td>${escapeHtml(r.asset || '—')}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escapeAttr(r.address_snapshot || '')}">${escapeHtml(r.address_snapshot || '—')}</td>
+      <td>${renderStatusBadge(r.status, 'payout_request')}</td>
+      <td style="color:var(--text2)">${formatDate(r.created_at)}</td>
+      <td style="color:var(--text2)">${formatDate(r.processed_at)}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escapeAttr(r.tx_hash || '')}">${escapeHtml(r.tx_hash || '—')}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escapeAttr(r.admin_note || '')}">${escapeHtml(r.admin_note || '—')}</td>
+      <td class="actions">
+        <button class="btn btn-sm" style="background:var(--bg2);border:1px solid var(--border);color:#fff" onclick="openEntityNotesModal('payout_request', ${r.id}, 'Payout #${r.id}')">Notes</button>
+        <button class="btn btn-sm" style="background:var(--bg2);border:1px solid var(--border);color:#fff" onclick="updatePayoutRequestStatus(${r.id}, 'approved')">approve</button>
+        <button class="btn btn-sm" style="background:var(--bg2);border:1px solid var(--border);color:#fff" onclick="updatePayoutRequestStatus(${r.id}, 'processing')">processing</button>
+        <button class="btn btn-sm btn-success" onclick="updatePayoutRequestStatus(${r.id}, 'paid')">paid</button>
+        <button class="btn btn-sm btn-danger" onclick="updatePayoutRequestStatus(${r.id}, 'rejected')">reject</button>
+        <button class="btn btn-sm btn-danger" onclick="updatePayoutRequestStatus(${r.id}, 'failed')">failed</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function updatePayoutRequestStatus(id, status) {
+  const note = prompt('Комментарий админа (опционально):', '') || null;
+  let txHash = null;
+  if (status === 'paid') {
+    txHash = prompt('TX hash (обязательно для paid):', '') || '';
+    if (!txHash.trim()) {
+      alert('TX hash обязателен для paid');
+      return;
+    }
+  }
+
+  try {
+    await adminFetch(`/admin/payout-requests/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, admin_note: note, tx_hash: txHash })
+    });
+    loadPayoutRequests();
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+function renderNoteRows(rows) {
+  if (!rows.length) {
+    return '<div style="color:var(--text2);padding:8px 0">Заметок пока нет</div>';
+  }
+  return rows.map(r => `
+    <div style="border:1px solid var(--border);border-radius:8px;padding:8px;margin-bottom:8px;background:var(--bg3)">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px">${formatDate(r.created_at)} · admin #${r.created_by_admin_id ?? 0} ${r.is_private ? '· private' : ''}</div>
+      <div style="white-space:pre-wrap;color:#fff">${escapeHtml(r.note || '')}</div>
+    </div>
+  `).join('');
+}
+
+async function loadEntityNotes(entityType, entityId, containerId) {
+  try {
+    const rows = await adminFetch(`/admin/internal-notes?entity_type=${encodeURIComponent(entityType)}&entity_id=${encodeURIComponent(entityId)}`);
+    setEl(containerId, renderNoteRows(rows || []));
+  } catch (e) {
+    setEl(containerId, `<div style="color:var(--red)">Ошибка загрузки заметок: ${escapeHtml(e.message || '')}</div>`);
+  }
+}
+
+async function openEntityNotesModal(entityType, entityId, title) {
+  entityNotesContext = { entityType, entityId, title };
+  setEl('entity-notes-title', `Заметки · ${title}`);
+  document.getElementById('entity-note-input').value = '';
+  await loadEntityNotes(entityType, entityId, 'entity-notes-list');
+  openModal('modal-entity-notes');
+}
+
+async function addEntityNoteFromModal() {
+  const note = (document.getElementById('entity-note-input').value || '').trim();
+  if (!note || !entityNotesContext.entityType || !entityNotesContext.entityId) return;
+  try {
+    await adminFetch('/admin/internal-notes', {
+      method: 'POST',
+      body: JSON.stringify({
+        entity_type: entityNotesContext.entityType,
+        entity_id: entityNotesContext.entityId,
+        note,
+        is_private: true,
+      })
+    });
+    document.getElementById('entity-note-input').value = '';
+    await loadEntityNotes(entityNotesContext.entityType, entityNotesContext.entityId, 'entity-notes-list');
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
 // ---- BROADCAST ----
 async function sendBroadcast() {
   const message = document.getElementById('bc-message').value.trim();
@@ -536,6 +1213,28 @@ function setEl(id, html) { const el = document.getElementById(id); if (el) el.in
 function formatRub(n) { return Math.round(parseFloat(n) || 0).toLocaleString('ru-RU') + ' ₽'; }
 function formatDate(d) { if (!d) return '—'; return new Date(d).toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'2-digit' }); }
 function statusLabel(s) { return { submitted:'Новая', in_review:'Проверка', approved:'Одобрена', rejected:'Отклонена', paid:'Выплачена' }[s] || s; }
+function escapeHtml(v) { return String(v || '').replace(/[&<>'"]/g, ch => ({ '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[ch])); }
+function escapeAttr(v) { return escapeHtml(v).replace(/`/g, '&#96;'); }
+function renderStatusBadge(status, kind = 'generic', score = null) {
+  const s = String(status || '—');
+  if (kind === 'confidence') {
+    const cls = s === 'high' ? 'approved' : s === 'medium' ? 'submitted' : 'rejected';
+    return `<span class="badge badge-${cls}">${escapeHtml(s)} (${Number(score || 0)})</span>`;
+  }
+  if (kind === 'bookmaker_account') {
+    const cls = s === 'verified' ? 'approved' : s === 'rejected' ? 'rejected' : 'submitted';
+    return `<span class="badge badge-${cls}">${escapeHtml(s)}</span>`;
+  }
+  if (kind === 'import_batch') {
+    const cls = s === 'processed' ? 'approved' : s === 'failed' ? 'rejected' : 'submitted';
+    return `<span class="badge badge-${cls}">${escapeHtml(s)}</span>`;
+  }
+  if (kind === 'payout_request') {
+    const cls = (s === 'paid' || s === 'approved') ? 'approved' : (s === 'rejected' || s === 'failed' ? 'rejected' : 'submitted');
+    return `<span class="badge badge-${cls}">${escapeHtml(s)}</span>`;
+  }
+  return `<span class="badge badge-submitted">${escapeHtml(s)}</span>`;
+}
 function openModal(id) { document.getElementById(id)?.classList.add('open'); }
 function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
 

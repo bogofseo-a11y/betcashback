@@ -477,8 +477,7 @@
     <div style="padding:0 16px 12px;">
       <div class="chips" id="bk-filter">
         <div class="chip active" onclick="filterBK('all',this)">Все</div>
-        <div class="chip" onclick="filterBK('connected',this)">Подключённые</div>
-        <div class="chip" onclick="filterBK('top',this)">Топ кэшбэк</div>
+        <div class="chip" onclick="filterBK('bonus',this)">С бонусом</div>
       </div>
     </div>
 
@@ -497,6 +496,7 @@
         <select id="claim-bk">
           <option value="">Выберите букмекера...</option>
         </select>
+        <div class="field-hint" id="claim-eligibility-hint">Для подачи заявки нужен подтверждённый (verified) аккаунт букмекера.</div>
       </div>
 
       <div class="field" id="field-account" style="display:none">
@@ -617,6 +617,9 @@
     </div>
 
     <div class="section animate-in delay-2">
+      <div class="section-title">Запрос на вывод</div>
+      <div id="withdraw-box" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px"></div>
+
       <div class="section-title">Методы выплат</div>
       <div id="payout-methods-list"></div>
       <button class="btn-submit" style="margin-top:4px;background:var(--bg3);color:var(--text);border:1px solid var(--border)" onclick="openAddPayout()">+ Добавить кошелёк</button>
@@ -755,12 +758,19 @@
     <div class="modal-handle"></div>
     <div class="modal-title" id="modal-bk-name"></div>
     <div class="modal-sub" id="modal-bk-rules"></div>
-    <div class="field">
-      <label>Ваш ID в партнёрской программе</label>
-      <input type="text" id="modal-bk-id" placeholder="Введите ваш Partner ID" autocomplete="off">
-      <div class="field-hint">Найдите в ЛК букмекера в разделе «Партнёры»</div>
+    <div class="field-hint" id="modal-bk-offer" style="margin:8px 0 12px"></div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:8px" id="modal-bk-status"></div>
+    <a id="modal-bk-instruction" href="#" target="_blank" style="display:none;font-size:12px;color:var(--accent);text-decoration:none;margin-bottom:10px">📄 Инструкция букмекера</a>
+    <div style="font-size:13px;color:var(--text2);line-height:1.5;margin:8px 0 12px">
+      ⚠️ Важно: зарегистрируйтесь только по этой ссылке. После регистрации отправьте player ID для верификации.
     </div>
-    <button class="btn-submit" id="modal-bk-btn" onclick="connectBK()">Подключить аккаунт</button>
+    <button class="btn-submit" id="modal-bk-btn" onclick="registerBookmaker()">Зарегистрироваться</button>
+    <div class="field" style="margin-top:10px">
+      <label>Player ID букмекера</label>
+      <input type="text" id="modal-bk-player-id" placeholder="Введите player ID" autocomplete="off">
+      <div class="field-hint">После регистрации по ссылке выше отправьте player ID для проверки</div>
+    </div>
+    <button class="btn-submit" id="modal-bk-save-btn" onclick="submitBookmakerPlayerId()">Отправить player ID</button>
     <button style="width:100%;padding:14px;background:none;border:none;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px" onclick="closeModal('modal-bk')">Закрыть</button>
   </div>
 </div>
@@ -796,23 +806,20 @@ let state = {
   bookmakers: [],
   payoutMethods: [],
   connectedBKs: {},
+  bookmakerAccounts: {},
   tierInfo: { tier: 1, pct: 5, progress: 0, nextTierAt: 20000 },
   refStats: { count: 0, active: 0, income: 0 },
   selectedAsset: 'USDT_TRC20',
+  selectedPayoutMethodId: null,
   selectedBKId: null,
+  minPayoutAmountRub: 500,
+  withdrawable: { approvedTotal: 0, reservedTotal: 0, available: 0 },
+  payoutRequests: [],
 };
 
 // ============================================================
-// MOCK DATA (replaced by API in production)
+// FAQ DATA
 // ============================================================
-const BOOKMAKERS = [
-  { id:1, name:'1xBet', short:'1X', cashback:'5-10%', rules:'Кэшбэк 5-10% от проигрышей. Мин. сумма: 500₽. Нужны: скрин купона + скрин ЛК.', tags:['Топ'], minLoss:500 },
-  { id:2, name:'Fonbet', short:'FB', cashback:'5-10%', rules:'Кэшбэк 5-10% от проигрышей. Нужны: скрин ставки + история.', tags:[], minLoss:500 },
-  { id:3, name:'Betcity', short:'BC', cashback:'5-10%', rules:'Кэшбэк 5-10% от проигрышей. Нужны: скрин из ЛК.', tags:['Новый'], minLoss:500 },
-  { id:4, name:'Melbet', short:'MB', cashback:'5-10%', rules:'Кэшбэк 5-10% от проигрышей. Лимит 30 000₽/мес.', tags:['Топ'], minLoss:500 },
-  { id:5, name:'BetBoom', short:'BB', cashback:'5-10%', rules:'Кэшбэк 5-10% от проигрышей.', tags:[], minLoss:500 },
-];
-
 const FAQ_ITEMS = [
   { q: 'Как работает кэшбэк?', a: 'Вы регистрируетесь у букмекера по нашей реферальной ссылке, делаете ставки. Если ставка проиграла — подаёте заявку через приложение. Мы проверяем и возвращаем 5-10% от проигрыша в крипте.' },
   { q: 'Какой минимальный размер выплаты?', a: 'Минимальная сумма к выплате — 500₽. Если накоплено меньше, сумма хранится в «копилке» и накапливается с каждой новой заявкой.' },
@@ -828,22 +835,24 @@ const FAQ_ITEMS = [
 // INIT
 // ============================================================
 async function init() {
-  renderBookmakers();
   renderFAQ();
   setupForm();
-  loadUserData();
+  await loadUserData();
   updateRefLink();
 }
 
 async function loadUserData() {
   try {
-    // Load user data and claims from API
     const urlParams = new URLSearchParams(window.location.search);
     const ref = urlParams.get('ref') || tg?.initDataUnsafe?.start_param || null;
-    
-    const [userRes, claimsRes] = await Promise.all([
+
+    const [userRes, claimsRes, bookmakersRes, bookmakerAccountsRes, payoutMethodsRes, payoutReqRes] = await Promise.all([
       apiCall('/auth/start', 'POST', { ref }),
       apiCall('/claims'),
+      apiCall('/bookmakers'),
+      apiCall('/bookmaker-accounts'),
+      apiCall('/payout-methods'),
+      apiCall('/payout-requests'),
     ]);
     
     if (userRes) {
@@ -865,9 +874,46 @@ async function loadUserData() {
         betId: c.bet_id,
       }));
     }
+
+    if (bookmakersRes && Array.isArray(bookmakersRes)) {
+      state.bookmakers = bookmakersRes;
+    }
+
+    if (bookmakerAccountsRes && Array.isArray(bookmakerAccountsRes)) {
+      state.connectedBKs = {};
+      state.bookmakerAccounts = {};
+      bookmakerAccountsRes.forEach(acc => {
+        if (acc.bookmaker_id) {
+          state.connectedBKs[acc.bookmaker_id] = acc.affiliate_player_id || '';
+          state.bookmakerAccounts[acc.bookmaker_id] = acc;
+        }
+      });
+    }
+
+    if (payoutMethodsRes && Array.isArray(payoutMethodsRes)) {
+      state.payoutMethods = payoutMethodsRes;
+      if (!state.selectedPayoutMethodId && state.payoutMethods[0]?.id) {
+        state.selectedPayoutMethodId = state.payoutMethods[0].id;
+      }
+    }
+
+    if (payoutReqRes) {
+      state.minPayoutAmountRub = parseFloat(payoutReqRes.min_payout_amount_rub || 500) || 500;
+      state.withdrawable = {
+        approvedTotal: parseFloat(payoutReqRes.balance?.approved_total || 0) || 0,
+        reservedTotal: parseFloat(payoutReqRes.balance?.reserved_total || 0) || 0,
+        available: parseFloat(payoutReqRes.balance?.available || 0) || 0,
+      };
+      state.payoutRequests = Array.isArray(payoutReqRes.requests) ? payoutReqRes.requests : [];
+    }
   } catch(e) {
     console.log('API not available, using demo mode:', e.message);
+    if (!state.bookmakers.length) {
+      state.bookmakers = [];
+    }
   }
+  renderBookmakers();
+  populateBookmakerSelect();
   updateProfile();
 }
 
@@ -888,6 +934,8 @@ function updateProfile() {
   updateTierUI();
   renderHomeClaims();
   renderPayoutMethods();
+  renderWithdrawSection();
+  renderPayoutHistory();
   updatePendingUI();
 }
 
@@ -940,26 +988,42 @@ function showScreen(name) {
 // BOOKMAKERS
 // ============================================================
 let bkFilter = 'all';
+
+function bookmakerStatusMeta(status) {
+  const map = {
+    pending: { label: '⏳ Верификация: ожидает проверки. Подача заявок пока недоступна.', short: 'Проверка' },
+    verified: { label: '✅ Верификация: подтверждено. Можно подавать заявки.', short: 'Подтверждено' },
+    rejected: { label: '❌ Верификация: отклонено. Обновите player ID или обратитесь в поддержку.', short: 'Отклонено' },
+    none: { label: '🟦 Статус: не начато. Сначала зарегистрируйтесь и отправьте player ID.', short: 'Не начато' },
+  };
+  return map[status] || map.none;
+}
+
+function getBookmakerAccount(bookmakerId) {
+  return state.bookmakerAccounts[bookmakerId] || null;
+}
+
 function renderBookmakers() {
-  let list = [...BOOKMAKERS];
-  if (bkFilter === 'connected') list = list.filter(b => state.connectedBKs[b.id]);
-  if (bkFilter === 'top') list = list.filter(b => b.tags.includes('Топ'));
-  
+  let list = [...state.bookmakers];
+  if (bkFilter === 'bonus') list = list.filter(b => (b.cashback_label || '').trim());
+
   const html = list.map(bk => {
-    const isConn = state.connectedBKs[bk.id];
+    const logo = (bk.short_name || bk.name || '?').toString().substring(0,3).toUpperCase();
+    const acc = getBookmakerAccount(bk.id);
+    const status = bookmakerStatusMeta(acc?.status || 'none');
     return `<div class="bk-card" onclick="openBKModal(${bk.id})">
-      <div class="bk-logo">${bk.short}</div>
+      <div class="bk-logo">${logo}</div>
       <div class="bk-info">
         <div class="bk-name">${bk.name}</div>
-        <div class="bk-details">Мин. проигрыш ${formatRub(bk.minLoss)}</div>
-        ${bk.tags.map(t=>`<div class="bk-tag">${t}</div>`).join('')}
-        ${isConn ? '<div class="bk-tag connected">✓ Подключён</div>' : ''}
+        <div class="bk-details">${bk.offer_text || bk.rules || 'Условия доступны после регистрации'}</div>
+        ${bk.cashback_label ? `<div class="bk-tag">${bk.cashback_label}</div>` : ''}
+        <div class="bk-tag" style="margin-top:6px">${status.short}</div>
       </div>
-      <div class="bk-cashback">${bk.cashback}</div>
+      <div class="bk-cashback">${bk.cashback_label || 'Оффер'}</div>
     </div>`;
   }).join('');
-  
-  setEl('bk-list', html || '<div style="font-size:13px;color:var(--text2);text-align:center;padding:32px">Нет букмекеров в этой категории</div>');
+
+  setEl('bk-list', html || '<div style="font-size:13px;color:var(--text2);text-align:center;padding:32px">Нет доступных букмекеров</div>');
 }
 
 function filterBK(type, el) {
@@ -972,25 +1036,68 @@ function filterBK(type, el) {
 let activeBKId = null;
 function openBKModal(id) {
   activeBKId = id;
-  const bk = BOOKMAKERS.find(b => b.id === id);
+  const bk = state.bookmakers.find(b => b.id === id);
+  if (!bk) return;
+  const acc = getBookmakerAccount(id);
   setEl('modal-bk-name', bk.name);
-  setEl('modal-bk-rules', bk.rules);
-  const isConn = state.connectedBKs[id];
-  document.getElementById('modal-bk-btn').textContent = isConn ? 'Обновить ID' : 'Подключить аккаунт';
-  document.getElementById('modal-bk-id').value = state.connectedBKs[id] || '';
+  setEl('modal-bk-rules', bk.rules || 'Условия регистрации будут показаны после перехода.');
+  setEl('modal-bk-offer', bk.offer_text || (bk.cashback_label ? `Оффер: ${bk.cashback_label}` : ''));
+  setEl('modal-bk-status', bookmakerStatusMeta(acc?.status || 'none').label);
+  document.getElementById('modal-bk-player-id').value = acc?.affiliate_player_id || '';
+  const instr = document.getElementById('modal-bk-instruction');
+  if (bk.instruction_asset_url) {
+    instr.style.display = 'inline-block';
+    instr.href = bk.instruction_asset_url;
+  } else {
+    instr.style.display = 'none';
+  }
   openModal('modal-bk');
 }
 
-function connectBK() {
-  const pid = document.getElementById('modal-bk-id').value.trim();
-  if (!pid) { showToast('Введите ваш ID', 'error'); return; }
-  state.connectedBKs[activeBKId] = pid;
-  closeModal('modal-bk');
-  renderBookmakers();
-  // Populate claim form
-  populateClaimAccounts();
-  showToast('✓ Аккаунт подключён', 'success');
-  // In production: await apiCall('/bookmaker-accounts', 'POST', {...})
+async function registerBookmaker() {
+  if (!activeBKId) return;
+  const btn = document.getElementById('modal-bk-btn');
+  const old = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Готовим ссылку...';
+  try {
+    const data = await apiCall(`/bookmakers/${activeBKId}/generate-link`, 'POST', {});
+    if (!data?.final_url) throw new Error('Ссылка не получена');
+    showToast('✓ Ссылка готова, открываем...', 'success');
+    setTimeout(() => window.open(data.final_url, '_blank'), 300);
+  } catch (e) {
+    showToast('Ошибка: ' + (e.message || 'не удалось создать ссылку'), 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = old;
+  }
+}
+
+async function submitBookmakerPlayerId() {
+  if (!activeBKId) return;
+  const playerId = document.getElementById('modal-bk-player-id').value.trim();
+  if (!playerId) { showToast('Введите player ID', 'error'); return; }
+  const btn = document.getElementById('modal-bk-save-btn');
+  const old = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Отправляем...';
+  try {
+    const account = await apiCall('/bookmaker-accounts', 'POST', {
+      bookmaker_id: activeBKId,
+      affiliate_player_id: playerId,
+    });
+    state.connectedBKs[activeBKId] = account.affiliate_player_id || playerId;
+    state.bookmakerAccounts[activeBKId] = account;
+    setEl('modal-bk-status', bookmakerStatusMeta(account.status || 'pending').label);
+    renderBookmakers();
+    populateClaimAccounts();
+    showToast('✓ Player ID отправлен. Статус: на проверке', 'success');
+  } catch (e) {
+    showToast('Ошибка: ' + (e.message || 'не удалось отправить ID'), 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = old;
+  }
 }
 
 // ============================================================
@@ -1002,35 +1109,58 @@ function setupForm() {
   document.getElementById('claim-date').value = today;
   document.getElementById('claim-date').max = today;
   
-  // BK select
   const bkSel = document.getElementById('claim-bk');
-  BOOKMAKERS.forEach(bk => {
-    const opt = document.createElement('option');
-    opt.value = bk.id; opt.textContent = bk.name;
-    bkSel.appendChild(opt);
-  });
-  
   bkSel.addEventListener('change', onBKChange);
   document.getElementById('claim-account').addEventListener('change', onAccountChange);
   document.getElementById('claim-amount').addEventListener('input', onAmountChange);
   document.getElementById('file-input').addEventListener('change', onFilesChange);
 }
 
+function populateBookmakerSelect() {
+  const bkSel = document.getElementById('claim-bk');
+  if (!bkSel) return;
+  const current = bkSel.value;
+  bkSel.innerHTML = '<option value="">Выберите букмекера...</option>';
+  state.bookmakers.forEach(bk => {
+    const acc = getBookmakerAccount(bk.id);
+    const isVerified = acc?.status === 'verified';
+    const statusText = isVerified ? '✅ verified' : (acc?.status === 'pending' ? '⏳ pending' : (acc?.status === 'rejected' ? '❌ rejected' : '• не начато'));
+    const opt = document.createElement('option');
+    opt.value = bk.id;
+    opt.textContent = `${bk.name} — ${statusText}`;
+    opt.disabled = !isVerified;
+    bkSel.appendChild(opt);
+  });
+  if (current && [...bkSel.options].some(o => o.value === current && !o.disabled)) {
+    bkSel.value = current;
+  }
+}
+
 function onBKChange(e) {
   const bkId = parseInt(e.target.value);
   const accountField = document.getElementById('field-account');
   const newIdField = document.getElementById('field-new-id');
-  
-  if (!bkId) { accountField.style.display='none'; newIdField.style.display='none'; return; }
-  
-  const isConn = state.connectedBKs[bkId];
-  if (isConn) {
+  const hint = document.getElementById('claim-eligibility-hint');
+
+  if (!bkId) {
+    accountField.style.display='none';
+    newIdField.style.display='none';
+    hint.textContent = 'Для подачи заявки нужен подтверждённый (verified) аккаунт букмекера.';
+    return;
+  }
+
+  const acc = getBookmakerAccount(bkId);
+  if (acc?.status === 'verified') {
     accountField.style.display = 'block';
     newIdField.style.display = 'none';
+    hint.textContent = '✅ Этот букмекер подтверждён. Можно отправлять заявку.';
     populateClaimAccounts();
   } else {
     accountField.style.display = 'none';
-    newIdField.style.display = 'block';
+    newIdField.style.display = 'none';
+    if (!acc) hint.textContent = 'Сначала зарегистрируйтесь и отправьте player ID в разделе «Букмекеры».';
+    else if (acc.status === 'pending') hint.textContent = '⏳ Ваш player ID ещё на проверке. Подача заявок пока недоступна.';
+    else hint.textContent = '❌ Player ID отклонён. Обновите player ID в разделе «Букмекеры».';
   }
 }
 
@@ -1038,19 +1168,17 @@ function populateClaimAccounts() {
   const sel = document.getElementById('claim-account');
   sel.innerHTML = '';
   const bkId = parseInt(document.getElementById('claim-bk').value);
-  if (state.connectedBKs[bkId]) {
+  const acc = getBookmakerAccount(bkId);
+  if (acc?.status === 'verified' && acc.affiliate_player_id) {
     const opt = document.createElement('option');
-    opt.value = state.connectedBKs[bkId];
-    opt.textContent = 'ID: ' + state.connectedBKs[bkId];
+    opt.value = acc.affiliate_player_id;
+    opt.textContent = 'ID: ' + acc.affiliate_player_id;
     sel.appendChild(opt);
   }
-  const addOpt = document.createElement('option');
-  addOpt.value = 'new'; addOpt.textContent = '+ Добавить новый ID';
-  sel.appendChild(addOpt);
 }
 
 function onAccountChange(e) {
-  document.getElementById('field-new-id').style.display = e.target.value === 'new' ? 'block' : 'none';
+  document.getElementById('field-new-id').style.display = 'none';
 }
 
 function onAmountChange(e) {
@@ -1120,6 +1248,12 @@ async function submitClaim() {
   const agree = document.getElementById('claim-agree').checked;
   
   if (!bkId) { showToast('Выберите букмекера', 'error'); return; }
+  const acc = getBookmakerAccount(parseInt(bkId));
+  if (!acc || acc.status !== 'verified') {
+    showToast('Подача доступна только для verified аккаунтов букмекера', 'error');
+    showScreen('bookmakers');
+    return;
+  }
   if (!amount || amount <= 0) { showToast('Укажите сумму проигрыша', 'error'); return; }
   if (!date) { showToast('Укажите дату', 'error'); return; }
   if (!betId) { showToast('Укажите номер купона', 'error'); return; }
@@ -1137,14 +1271,14 @@ async function submitClaim() {
     fd.append('loss_amount', amount);
     fd.append('bet_id', betId);
     fd.append('bet_date', date);
-    const pid = document.getElementById('claim-pid').value.trim() || document.getElementById('claim-account').value || '';
+    const pid = acc.affiliate_player_id || '';
     fd.append('affiliate_player_id', pid);
     fd.append('comment', document.getElementById('claim-comment').value.trim());
     uploadedFiles.forEach(f => fd.append('files', f));
     
     const result = await apiCall('/claims', 'POST', fd, true);
     
-    const bk = BOOKMAKERS.find(b => b.id == bkId);
+    const bk = state.bookmakers.find(b => b.id == bkId) || { name: 'Букмекер' };
     const cashback = result.cashback || (amount * state.tierInfo.pct / 100);
     state.claims.unshift({
       id: result.claim_id, bkName: bk.name, amount, cashback, date,
@@ -1227,11 +1361,17 @@ const assetIcons = { USDT_TRC20:'💵', USDT_TON:'💎', TON:'🔷', TG_WALLET:'
 function renderPayoutMethods() {
   const container = document.getElementById('payout-methods-list');
   if (!state.payoutMethods.length) {
+    state.selectedPayoutMethodId = null;
     container.innerHTML = '<div style="font-size:13px;color:var(--text2);padding:8px 0 12px">Кошелёк не добавлен</div>';
     return;
   }
+
+  if (!state.payoutMethods.some(m => m.id === state.selectedPayoutMethodId)) {
+    state.selectedPayoutMethodId = state.payoutMethods[0].id;
+  }
+
   container.innerHTML = state.payoutMethods.map((m,i) => `
-    <div class="payout-card ${i===0?'selected':''}" onclick="selectPayout(${i})">
+    <div class="payout-card ${m.id === state.selectedPayoutMethodId ? 'selected' : ''}" onclick="selectPayout(${i})">
       <div class="payout-icon">${assetIcons[m.asset]||'💳'}</div>
       <div class="payout-info">
         <div class="payout-type">${assetLabels[m.asset]||m.asset}</div>
@@ -1242,7 +1382,11 @@ function renderPayoutMethods() {
 }
 
 function selectPayout(idx) {
+  const method = state.payoutMethods[idx];
+  if (!method) return;
+  state.selectedPayoutMethodId = method.id;
   document.querySelectorAll('.payout-card').forEach((c,i) => c.classList.toggle('selected', i===idx));
+  renderWithdrawSection();
 }
 
 function openAddPayout() { openModal('modal-payout'); }
@@ -1253,15 +1397,120 @@ function selectAsset(asset, el) {
   el.classList.add('selected');
 }
 
-function savePayoutMethod() {
+async function savePayoutMethod() {
   const addr = document.getElementById('payout-address').value.trim();
   if (!addr) { showToast('Введите адрес', 'error'); return; }
-  state.payoutMethods.push({ asset: state.selectedAsset, address: addr });
-  renderPayoutMethods();
-  closeModal('modal-payout');
-  document.getElementById('payout-address').value = '';
-  showToast('✓ Кошелёк сохранён', 'success');
-  // In production: apiCall('/payout-methods', 'POST', {...})
+  try {
+    const saved = await apiCall('/payout-methods', 'POST', {
+      asset: state.selectedAsset,
+      address: addr,
+      type: 'external',
+    });
+    state.payoutMethods.unshift(saved);
+    state.selectedPayoutMethodId = saved.id;
+    renderPayoutMethods();
+    renderWithdrawSection();
+    closeModal('modal-payout');
+    document.getElementById('payout-address').value = '';
+    showToast('✓ Кошелёк сохранён', 'success');
+  } catch (e) {
+    showToast(e.message || 'Ошибка сохранения', 'error');
+  }
+}
+
+function renderWithdrawSection() {
+  const el = document.getElementById('withdraw-box');
+  if (!el) return;
+
+  const available = state.withdrawable?.available || 0;
+  const minAmount = state.minPayoutAmountRub || 500;
+  const disabled = available < minAmount || !state.payoutMethods.length;
+
+  const methodsOptions = state.payoutMethods.map(m =>
+    `<option value="${m.id}" ${m.id === state.selectedPayoutMethodId ? 'selected' : ''}>${assetLabels[m.asset]||m.asset} · ${truncateAddr(m.address)}</option>`
+  ).join('');
+
+  el.innerHTML = `
+    <div style="font-size:13px;color:var(--text2);margin-bottom:8px">Доступно к выводу: <strong style="color:#fff">${formatRub(available)}</strong></div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Минимум: ${formatRub(minAmount)} · Правило: только подтверждённый кэшбэк (approved), за вычетом уже созданных выплат.</div>
+    <div class="field" style="margin-bottom:8px">
+      <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:4px">Метод выплаты</label>
+      <select id="withdraw-method" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);color:#fff" ${state.payoutMethods.length ? '' : 'disabled'}>
+        ${state.payoutMethods.length ? methodsOptions : '<option value="">Сначала добавьте кошелёк</option>'}
+      </select>
+    </div>
+    <div class="field" style="margin-bottom:10px">
+      <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:4px">Сумма (₽)</label>
+      <input id="withdraw-amount" type="number" min="1" step="1" placeholder="Например, 1000" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);color:#fff" ${disabled ? 'disabled' : ''}>
+    </div>
+    <button class="btn-submit" onclick="submitWithdrawRequest()" ${disabled ? 'disabled style="opacity:.6;cursor:not-allowed"' : ''}>Запросить вывод</button>
+    ${available < minAmount ? `<div style="margin-top:8px;font-size:12px;color:var(--yellow)">Недостаточно средств для вывода. Накопите минимум ${formatRub(minAmount)}.</div>` : ''}
+  `;
+
+  const methodSelect = document.getElementById('withdraw-method');
+  if (methodSelect) {
+    methodSelect.addEventListener('change', (e) => {
+      state.selectedPayoutMethodId = parseInt(e.target.value) || null;
+    });
+  }
+}
+
+function renderPayoutHistory() {
+  const el = document.getElementById('payout-history');
+  if (!el) return;
+  if (!state.payoutRequests.length) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--text2);text-align:center;padding:24px">Выплат пока нет</div>';
+    return;
+  }
+
+  el.innerHTML = state.payoutRequests.map(r => `
+    <div class="claim-card ${r.status === 'paid' ? 'paid' : (r.status === 'rejected' || r.status === 'failed' ? 'rejected' : 'submitted')}">
+      <div class="claim-top">
+        <div class="claim-bk">#${r.id} · ${assetLabels[r.asset] || r.asset || 'PAYOUT'}</div>
+        <div class="claim-status ${r.status === 'paid' ? 'paid' : (r.status === 'rejected' || r.status === 'failed' ? 'rejected' : 'submitted')}">${r.status}</div>
+      </div>
+      <div class="claim-meta">${formatDate(r.created_at)} · ${truncateAddr(r.address_snapshot || '')}</div>
+      <div class="claim-amounts">
+        <div class="claim-loss">Сумма: ${formatRub(parseFloat(r.amount_rub || 0))}</div>
+        <div class="claim-cashback">${r.tx_hash ? ('TX: ' + r.tx_hash) : ''}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function submitWithdrawRequest() {
+  const amount = parseFloat(document.getElementById('withdraw-amount')?.value || '0');
+  const methodId = parseInt(document.getElementById('withdraw-method')?.value || state.selectedPayoutMethodId || '0');
+
+  if (!Number.isInteger(methodId) || methodId <= 0) {
+    showToast('Выберите метод выплаты', 'error');
+    return;
+  }
+  if (!Number.isFinite(amount) || amount <= 0) {
+    showToast('Введите корректную сумму', 'error');
+    return;
+  }
+
+  try {
+    const data = await apiCall('/payout-requests', 'POST', {
+      payout_method_id: methodId,
+      amount_rub: amount,
+    });
+    if (data?.request) state.payoutRequests.unshift(data.request);
+    if (data?.balance_after) {
+      state.withdrawable = {
+        approvedTotal: parseFloat(data.balance_after.approved_total || 0),
+        reservedTotal: parseFloat(data.balance_after.reserved_total || 0),
+        available: parseFloat(data.balance_after.available || 0),
+      };
+    }
+    document.getElementById('withdraw-amount').value = '';
+    renderWithdrawSection();
+    renderPayoutHistory();
+    showToast('✓ Запрос на вывод создан', 'success');
+  } catch (e) {
+    showToast(e.message || 'Ошибка создания запроса', 'error');
+  }
 }
 
 // ============================================================

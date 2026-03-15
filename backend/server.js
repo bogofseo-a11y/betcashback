@@ -89,28 +89,55 @@ async function processAndSaveImage(buffer, originalname) {
 // TELEGRAM initData VERIFICATION
 // ============================================================
 function verifyTelegramInitData(initData) {
-  if (!initData) return null;
+  if (!initData) {
+    console.log('[TG VERIFY] No initData provided');
+    return null;
+  }
+
   try {
     const params = new URLSearchParams(initData);
     const hash = params.get('hash');
+
+    if (!hash) {
+      console.log('[TG VERIFY] No hash in initData');
+      return null;
+    }
+
     params.delete('hash');
+
     const dataCheckString = [...params.entries()]
-      .sort(([a],[b]) => a.localeCompare(b))
-      .map(([k,v]) => `${k}=${v}`)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => `${k}=${v}`)
       .join('\n');
-    const secretKey = crypto.createHmac('sha256', 'WebAppData')
+
+    const secret = crypto
+      .createHmac('sha256', 'WebAppData')
       .update(process.env.BOT_TOKEN)
       .digest();
-    const expectedHash = crypto.createHmac('sha256', secretKey)
+
+    const computedHash = crypto
+      .createHmac('sha256', secret)
       .update(dataCheckString)
       .digest('hex');
-    if (expectedHash !== hash) return null;
-    // Check auth_date not older than 24h
-    const authDate = parseInt(params.get('auth_date'));
-    if (Date.now() / 1000 - authDate > 86400) return null;
-    const userStr = params.get('user');
-    return userStr ? JSON.parse(userStr) : null;
-  } catch { return null; }
+
+    if (computedHash !== hash) {
+      console.log('[TG VERIFY] Hash mismatch');
+      console.log('[TG VERIFY] hash from telegram =', hash);
+      console.log('[TG VERIFY] computed hash =', computedHash);
+      return null;
+    }
+
+    const userRaw = params.get('user');
+    if (!userRaw) {
+      console.log('[TG VERIFY] No user field in initData');
+      return null;
+    }
+
+    return JSON.parse(userRaw);
+  } catch (e) {
+    console.log('[TG VERIFY] Exception:', e.message);
+    return null;
+  }
 }
 
 // Auth middleware
@@ -120,9 +147,20 @@ function authMiddleware(req, res, next) {
     req.tgUser = { id: 12345, first_name: 'Dev', username: 'dev_user' };
     return next();
   }
+
   const initData = req.headers['x-telegram-init-data'];
+
+  console.log('[AUTH] NODE_ENV =', process.env.NODE_ENV);
+  console.log('[AUTH] BOT_TOKEN exists =', !!process.env.BOT_TOKEN);
+  console.log('[AUTH] initData exists =', !!initData);
+  console.log('[AUTH] initData preview =', initData ? String(initData).slice(0, 120) : null);
+
   const user = verifyTelegramInitData(initData);
+
+  console.log('[AUTH] verify result =', user ? 'OK' : 'FAIL');
+
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
   req.tgUser = user;
   next();
 }

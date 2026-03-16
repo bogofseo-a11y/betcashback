@@ -515,12 +515,24 @@ function adminFetch(path, options = {}) {
   const isFormData = options.body instanceof FormData;
   const headers = { 'x-admin-secret': SECRET, ...options.headers };
   if (!isFormData && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
+  const method = options.method || 'GET';
   return fetch(API + path, {
     ...options,
     headers,
   }).then(async r => {
-    if (!r.ok) throw new Error(await r.text() || r.statusText);
+    if (!r.ok) {
+      const raw = await r.text();
+      let message = raw || r.statusText || 'Request failed';
+      try {
+        const parsed = JSON.parse(raw || '{}');
+        message = parsed.error || parsed.detail || parsed.message || message;
+      } catch {}
+      throw new Error(message);
+    }
     return r.json();
+  }).catch((err) => {
+    // Keep user-facing error short but include request context for support/debug.
+    throw new Error(`[${method} ${path}] ${err?.message || 'Load failed'}`);
   });
 }
 

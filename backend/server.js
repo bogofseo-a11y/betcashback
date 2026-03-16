@@ -1516,15 +1516,15 @@ app.patch('/admin/bookmaker-accounts/:id/status', adminAuth, async (req, res) =>
     const result = await pool.query(`
       UPDATE bookmaker_accounts
       SET status = $1,
-          verification_source = CASE WHEN $1='verified' THEN 'manual' ELSE verification_source END,
-          verified_at = CASE WHEN $1='verified' THEN NOW() ELSE NULL END,
-          rejected_at = CASE WHEN $1='rejected' THEN NOW() ELSE NULL END,
-          rejection_reason = CASE WHEN $1='rejected' THEN $2 ELSE NULL END,
-          verified_by_admin_id = CASE WHEN $1='verified' THEN 0 ELSE verified_by_admin_id END,
+          verification_source = CASE WHEN $2::text='verified' THEN 'manual' ELSE verification_source END,
+          verified_at = CASE WHEN $2::text='verified' THEN NOW() ELSE NULL END,
+          rejected_at = CASE WHEN $3::text='rejected' THEN NOW() ELSE NULL END,
+          rejection_reason = CASE WHEN $3::text='rejected' THEN $4 ELSE NULL END,
+          verified_by_admin_id = CASE WHEN $2::text='verified' THEN 0 ELSE verified_by_admin_id END,
           updated_at = NOW()
-      WHERE id = $3
+      WHERE id = $5
       RETURNING *
-    `, [status, rejection_reason || null, id]);
+    `, [status, status, status, rejection_reason || null, id]);
 
     if (!result.rows.length) return res.status(404).json({ error: 'Not found' });
 

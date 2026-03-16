@@ -516,7 +516,12 @@ function validateBookmakerPayload(payload = {}) {
     }
 
     try {
-      const u = new URL(affiliateTemplate);
+      // Some runtimes can reject raw curly-brace placeholders in URL parsing.
+      // Validate using a parser-safe preview string while preserving placeholder support.
+      const templateForValidation = affiliateTemplate
+        .split('{subid}').join('subid_preview')
+        .split('{clickid}').join('clickid_preview');
+      const u = new URL(templateForValidation);
       if (!['http:', 'https:'].includes(u.protocol)) errors.push('affiliate_url_template must be http/https');
     } catch {
       errors.push('affiliate_url_template must be a valid URL');

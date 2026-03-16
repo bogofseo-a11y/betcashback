@@ -505,6 +505,16 @@ function validateBookmakerPayload(payload = {}) {
   }
 
   if (affiliateTemplate) {
+    const hasSubidPlaceholder = affiliateTemplate.includes('{subid}');
+    const hasClickidPlaceholder = affiliateTemplate.includes('{clickid}');
+
+    if (hasSubidPlaceholder && !(trackingMode === 'subid' || trackingMode === 'subid_clickid')) {
+      errors.push('Template contains {subid} but tracking_mode does not support subid');
+    }
+    if (hasClickidPlaceholder && !(trackingMode === 'clickid' || trackingMode === 'subid_clickid')) {
+      errors.push('Template contains {clickid} but tracking_mode does not support clickid');
+    }
+
     try {
       const u = new URL(affiliateTemplate);
       if (!['http:', 'https:'].includes(u.protocol)) errors.push('affiliate_url_template must be http/https');
@@ -554,12 +564,31 @@ function buildTrackedUrl(bookmaker, userId) {
     ? generateTrackingToken('clickid')
     : null;
 
-  const finalUrl = new URL(template);
+  const hasSubidPlaceholder = template.includes('{subid}');
+  const hasClickidPlaceholder = template.includes('{clickid}');
 
-  if (generatedSubid) {
+  if (hasSubidPlaceholder && !generatedSubid) {
+    throw new Error('Template contains {subid} but tracking mode does not generate subid');
+  }
+  if (hasClickidPlaceholder && !generatedClickid) {
+    throw new Error('Template contains {clickid} but tracking mode does not generate clickid');
+  }
+
+  let templateWithValues = template;
+  if (hasSubidPlaceholder) {
+    templateWithValues = templateWithValues.split('{subid}').join(generatedSubid);
+  }
+  if (hasClickidPlaceholder) {
+    templateWithValues = templateWithValues.split('{clickid}').join(generatedClickid);
+  }
+
+  const finalUrl = new URL(templateWithValues);
+
+  // Backward-compatible fallback: if placeholder is absent, keep old param-based insertion.
+  if (generatedSubid && !hasSubidPlaceholder) {
     finalUrl.searchParams.set(subidParam, generatedSubid);
   }
-  if (generatedClickid) {
+  if (generatedClickid && !hasClickidPlaceholder) {
     finalUrl.searchParams.set(clickidParam, generatedClickid);
   }
 

@@ -1063,10 +1063,11 @@ async function registerBookmaker() {
   try {
     const data = await apiCall(`/bookmakers/${activeBKId}/generate-link`, 'POST', {});
     if (!data?.final_url) throw new Error('Ссылка не получена');
+    console.log('[bookmaker-register] opening tracked link', { bookmakerId: activeBKId });
+    openTrackedBookmakerLink(data.final_url);
     showToast('✓ Ссылка готова, открываем...', 'success');
-    setTimeout(() => window.open(data.final_url, '_blank'), 300);
   } catch (e) {
-    showToast('Ошибка: ' + (e.message || 'не удалось создать ссылку'), 'error');
+    showToast(e.message || 'Не удалось открыть ссылку регистрации', 'error');
   } finally {
     btn.disabled = false;
     btn.textContent = old;
@@ -1547,13 +1548,47 @@ async function apiCall(path, method='GET', body=null, isFormData=false) {
     headers,
     body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
   });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+
+  const contentType = res.headers.get('content-type') || '';
+  const isJson = contentType.includes('application/json');
+  const payload = isJson ? await res.json().catch(() => null) : await res.text();
+
+  if (!res.ok) {
+    const message = typeof payload === 'string'
+      ? payload
+      : payload?.error || payload?.message || 'Ошибка запроса';
+    throw new Error(message);
+  }
+
+  return payload;
 }
 
 // ============================================================
 // HELPERS
 // ============================================================
+function openTrackedBookmakerLink(url) {
+  if (!url) throw new Error('Ссылка регистрации недоступна');
+
+  try {
+    const parsed = new URL(url);
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      throw new Error('Некорректная ссылка регистрации');
+    }
+  } catch (e) {
+    throw new Error(e.message || 'Некорректная ссылка регистрации');
+  }
+
+  if (tg?.openLink) {
+    tg.openLink(url, { try_instant_view: false });
+    return;
+  }
+
+  const popup = window.open(url, '_blank', 'noopener,noreferrer');
+  if (!popup) {
+    throw new Error('Не удалось открыть ссылку. Разрешите открытие внешних ссылок и попробуйте ещё раз.');
+  }
+}
+
 function setEl(id, html) {
   const el = document.getElementById(id);
   if (el) el.innerHTML = html;

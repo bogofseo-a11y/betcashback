@@ -383,7 +383,13 @@
     <div class="field"><label>Кэшбэк label</label><input type="text" id="bm-cashback-label" placeholder="5-10%"></div>
     <div class="field"><label>Offer text</label><textarea id="bm-offer-text"></textarea></div>
     <div class="field"><label>Instruction asset URL</label><input type="text" id="bm-instruction-url"></div>
-    <div class="field"><label>Affiliate URL template</label><input type="text" id="bm-affiliate-url"></div>
+    <div class="field">
+      <label>Affiliate URL template</label>
+      <input type="text" id="bm-affiliate-url">
+      <div style="margin-top:6px;font-size:12px;color:var(--text2)">
+        Поддерживаются placeholders: <code>{subid}</code> и <code>{clickid}</code> внутри URL-шаблона.
+      </div>
+    </div>
     <div class="field"><label>Tracking mode</label>
       <select id="bm-tracking-mode">
         <option value="none">none</option>

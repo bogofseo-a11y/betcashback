@@ -484,6 +484,20 @@ function sanitizeParamName(name, fallback) {
   return /^[a-zA-Z_][a-zA-Z0-9_]{0,49}$/.test(value) ? value : null;
 }
 
+function summarizeBookmakerPayload(payload = {}) {
+  const template = String(payload.affiliate_url_template || '').trim();
+  return {
+    name: String(payload.name || '').trim().slice(0, 80),
+    tracking_mode: payload.tracking_mode || 'none',
+    tracking_subid_param: String(payload.tracking_subid_param || '').trim() || null,
+    tracking_clickid_param: String(payload.tracking_clickid_param || '').trim() || null,
+    template_len: template.length,
+    has_subid_placeholder: template.includes('{subid}'),
+    has_clickid_placeholder: template.includes('{clickid}'),
+    is_active: payload.is_active !== false,
+  };
+}
+
 function validateBookmakerPayload(payload = {}) {
   const errors = [];
   const trackingMode = payload.tracking_mode || 'none';
@@ -1234,13 +1248,18 @@ app.get('/admin/bookmakers', adminAuth, async (req, res) => {
 app.post('/admin/bookmakers', adminAuth, async (req, res) => {
   try {
     const payload = req.body || {};
+    console.log('[ADMIN BOOKMAKER POST] start', summarizeBookmakerPayload(payload));
     const errors = validateBookmakerPayload(payload);
-    if (errors.length) return res.status(400).json({ error: errors.join('; ') });
+    if (errors.length) {
+      console.log('[ADMIN BOOKMAKER POST] validation_failed', { errors });
+      return res.status(400).json({ error: errors.join('; ') });
+    }
 
     const requiredProofs = Array.isArray(payload.required_proofs)
       ? payload.required_proofs.filter(Boolean)
       : String(payload.required_proofs || '').split(',').map(v => v.trim()).filter(Boolean);
 
+    console.log('[ADMIN BOOKMAKER POST] before_insert');
     const result = await pool.query(`
       INSERT INTO bookmakers
         (name, short_name, logo_url, rules, required_proofs, min_loss_rub, is_active, sort_order,
@@ -1265,15 +1284,20 @@ app.post('/admin/bookmakers', adminAuth, async (req, res) => {
       payload.cashback_label || null,
       payload.instruction_asset_url || null,
     ]);
+    console.log('[ADMIN BOOKMAKER POST] after_insert', { id: result.rows[0]?.id });
 
     await pool.query(`
       INSERT INTO admin_audit_log (admin_id, action, entity_type, entity_id, payload_json)
       VALUES ($1, 'bookmaker_created', 'bookmaker', $2, $3)
-    `, [0, result.rows[0].id, JSON.stringify({ name: result.rows[0].name })]).catch(() => {});
+    `, [0, result.rows[0].id, JSON.stringify({ name: result.rows[0].name })])
+      .then(() => console.log('[ADMIN BOOKMAKER POST] audit_logged', { id: result.rows[0]?.id }))
+      .catch((auditErr) => console.error('[ADMIN BOOKMAKER POST] audit_log_failed', { id: result.rows[0]?.id, message: auditErr?.message }));
 
     res.json(result.rows[0]);
   } catch(e) {
-    res.status(500).json({ error: e.message });
+    console.error('[ADMIN BOOKMAKER POST] failed', { message: e?.message, stack: e?.stack });
+    if (res.headersSent) return res.end();
+    res.status(500).json({ error: 'Failed to save bookmaker config', detail: e?.message || 'Unknown error' });
   }
 });
 
@@ -1281,18 +1305,26 @@ app.patch('/admin/bookmakers/:id', adminAuth, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'Invalid id' });
+    console.log('[ADMIN BOOKMAKER PATCH] start', { id });
 
+    console.log('[ADMIN BOOKMAKER PATCH] before_select_current', { id });
     const currentRes = await pool.query('SELECT * FROM bookmakers WHERE id = $1', [id]);
     if (!currentRes.rows.length) return res.status(404).json({ error: 'Not found' });
+    console.log('[ADMIN BOOKMAKER PATCH] current_found', { id });
 
     const payload = { ...currentRes.rows[0], ...(req.body || {}) };
+    console.log('[ADMIN BOOKMAKER PATCH] payload_summary', { id, ...summarizeBookmakerPayload(payload) });
     const errors = validateBookmakerPayload(payload);
-    if (errors.length) return res.status(400).json({ error: errors.join('; ') });
+    if (errors.length) {
+      console.log('[ADMIN BOOKMAKER PATCH] validation_failed', { id, errors });
+      return res.status(400).json({ error: errors.join('; ') });
+    }
 
     const requiredProofs = Array.isArray(payload.required_proofs)
       ? payload.required_proofs.filter(Boolean)
       : String(payload.required_proofs || '').split(',').map(v => v.trim()).filter(Boolean);
 
+    console.log('[ADMIN BOOKMAKER PATCH] before_update', { id });
     const result = await pool.query(`
       UPDATE bookmakers SET
         name=$1, short_name=$2, logo_url=$3, rules=$4, required_proofs=$5, min_loss_rub=$6,
@@ -1319,15 +1351,20 @@ app.patch('/admin/bookmakers/:id', adminAuth, async (req, res) => {
       payload.instruction_asset_url || null,
       id,
     ]);
+    console.log('[ADMIN BOOKMAKER PATCH] after_update', { id, updated_id: result.rows[0]?.id });
 
     await pool.query(`
       INSERT INTO admin_audit_log (admin_id, action, entity_type, entity_id, payload_json)
       VALUES ($1, 'bookmaker_updated', 'bookmaker', $2, $3)
-    `, [0, id, JSON.stringify({ name: result.rows[0].name })]).catch(() => {});
+    `, [0, id, JSON.stringify({ name: result.rows[0].name })])
+      .then(() => console.log('[ADMIN BOOKMAKER PATCH] audit_logged', { id }))
+      .catch((auditErr) => console.error('[ADMIN BOOKMAKER PATCH] audit_log_failed', { id, message: auditErr?.message }));
 
     res.json(result.rows[0]);
   } catch(e) {
-    res.status(500).json({ error: e.message });
+    console.error('[ADMIN BOOKMAKER PATCH] failed', { message: e?.message, stack: e?.stack });
+    if (res.headersSent) return res.end();
+    res.status(500).json({ error: 'Failed to save bookmaker config', detail: e?.message || 'Unknown error' });
   }
 });
 

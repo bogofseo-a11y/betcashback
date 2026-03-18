@@ -820,6 +820,31 @@ let activeScreen = 'home';
 let payoutStateSyncPromise = null;
 let lastPayoutStateSyncAt = 0;
 const PAYOUT_STATE_SYNC_COOLDOWN_MS = 4000;
+let claimStateSyncPromise = null;
+let lastClaimStateSyncAt = 0;
+const CLAIM_STATE_SYNC_COOLDOWN_MS = 4000;
+
+function applyUserSnapshot(userRes) {
+  if (!userRes) return;
+  state.balance = userRes.balance || 0;
+  state.pending = userRes.pending || 0;
+  state.totalEarned = userRes.totalEarned || 0;
+  state.tierInfo = userRes.tierInfo || state.tierInfo;
+  state.refStats = userRes.refStats || state.refStats;
+}
+
+function applyClaimsSnapshot(claimsRes) {
+  if (!Array.isArray(claimsRes)) return;
+  state.claims = claimsRes.map(c => ({
+    id: c.id,
+    bkName: c.bookmaker_name || 'Букмекер',
+    amount: parseFloat(c.loss_amount_rub),
+    cashback: parseFloat(c.cashback_amount_rub),
+    date: c.bet_date,
+    status: c.status,
+    betId: c.bet_id,
+  }));
+}
 
 function applyPayoutSnapshot(payoutReqRes) {
   if (!payoutReqRes) return;
@@ -836,6 +861,40 @@ function applyPayoutSnapshot(payoutReqRes) {
 
 function shouldSyncPayoutForScreen(screenName = activeScreen) {
   return screenName === 'home' || screenName === 'profile';
+}
+
+function shouldSyncClaimForScreen(screenName = activeScreen) {
+  return screenName === 'home' || screenName === 'profile';
+}
+
+async function syncClaimState({ force = false, silent = true } = {}) {
+  if (!shouldSyncClaimForScreen()) return;
+  const now = Date.now();
+  if (!force && now - lastClaimStateSyncAt < CLAIM_STATE_SYNC_COOLDOWN_MS) return;
+  if (claimStateSyncPromise) return claimStateSyncPromise;
+
+  claimStateSyncPromise = (async () => {
+    const [userRes, claimsRes] = await Promise.all([
+      apiCall('/auth/start', 'POST', {}),
+      apiCall('/claims'),
+    ]);
+    applyUserSnapshot(userRes);
+    applyClaimsSnapshot(claimsRes);
+    lastClaimStateSyncAt = Date.now();
+    updateProfile();
+  })();
+
+  try {
+    await claimStateSyncPromise;
+  } catch (e) {
+    if (!silent) {
+      showToast(e.message || 'Не удалось обновить заявки', 'error');
+    } else {
+      console.log('[claim-sync] failed', e?.message || e);
+    }
+  } finally {
+    claimStateSyncPromise = null;
+  }
 }
 
 async function syncPayoutState({ force = false, silent = true } = {}) {
@@ -902,25 +961,8 @@ async function loadUserData() {
       apiCall('/payout-requests'),
     ]);
     
-    if (userRes) {
-      state.balance = userRes.balance || 0;
-      state.pending = userRes.pending || 0;
-      state.totalEarned = userRes.totalEarned || 0;
-      state.tierInfo = userRes.tierInfo || state.tierInfo;
-      state.refStats = userRes.refStats || state.refStats;
-    }
-    
-    if (claimsRes && Array.isArray(claimsRes)) {
-      state.claims = claimsRes.map(c => ({
-        id: c.id,
-        bkName: c.bookmaker_name || 'Букмекер',
-        amount: parseFloat(c.loss_amount_rub),
-        cashback: parseFloat(c.cashback_amount_rub),
-        date: c.bet_date,
-        status: c.status,
-        betId: c.bet_id,
-      }));
-    }
+    applyUserSnapshot(userRes);
+    applyClaimsSnapshot(claimsRes);
 
     if (bookmakersRes && Array.isArray(bookmakersRes)) {
       state.bookmakers = bookmakersRes;
@@ -1023,6 +1065,9 @@ function showScreen(name) {
   document.getElementById('screen-' + name)?.classList.add('active');
   document.getElementById('nav-' + name)?.classList.add('active');
   document.getElementById('screen-' + name)?.scrollTo(0,0);
+  if (shouldSyncClaimForScreen(name)) {
+    syncClaimState({ silent: true }).catch(() => {});
+  }
   if (shouldSyncPayoutForScreen(name)) {
     syncPayoutState({ silent: true }).catch(() => {});
   }
@@ -1359,6 +1404,7 @@ async function submitClaim() {
     renderFilePreviews();
     
     showToast('✓ Заявка отправлена!', 'success');
+    syncClaimState({ force: true, silent: true }).catch(() => {});
     setTimeout(() => showScreen('home'), 1000);
   } catch(e) {
     showToast('Ошибка: ' + (e.message || 'попробуйте ещё раз'), 'error');
@@ -1698,12 +1744,18 @@ document.querySelectorAll('.modal-overlay').forEach(o => {
 });
 
 document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && shouldSyncClaimForScreen()) {
+    syncClaimState({ silent: true }).catch(() => {});
+  }
   if (document.visibilityState === 'visible' && shouldSyncPayoutForScreen()) {
     syncPayoutState({ silent: true }).catch(() => {});
   }
 });
 
 window.addEventListener('focus', () => {
+  if (shouldSyncClaimForScreen()) {
+    syncClaimState({ silent: true }).catch(() => {});
+  }
   if (shouldSyncPayoutForScreen()) {
     syncPayoutState({ silent: true }).catch(() => {});
   }

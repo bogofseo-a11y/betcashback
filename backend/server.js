@@ -353,8 +353,20 @@ app.get('/api/claims', authMiddleware, async (req, res) => {
 
 app.post('/api/claims', authMiddleware, claimLimiter, upload.array('files', 5), async (req, res) => {
   try {
-    const { bookmaker_id, affiliate_player_id, loss_amount, bet_id, bet_date, comment } = req.body;
+    const { bookmaker_id, affiliate_player_id, loss_amount, bet_id, bet_date, comment: commentInput } = req.body || {};
     const bookmakerId = parseInt(bookmaker_id);
+
+    // Optional comment comes from multipart/form-data; normalize defensively.
+    const rawComment = Array.isArray(commentInput) ? commentInput[0] : commentInput;
+    if (rawComment !== undefined && rawComment !== null && typeof rawComment !== 'string') {
+      return res.status(400).json({ error: 'Invalid comment format' });
+    }
+    const normalizedComment = typeof rawComment === 'string'
+      ? rawComment.replace(/\u0000/g, '').trim()
+      : '';
+    if (normalizedComment.length > 4000) {
+      return res.status(400).json({ error: 'Comment is too long' });
+    }
 
     if (!Number.isInteger(bookmakerId) || !loss_amount || !bet_id || !bet_date) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -409,7 +421,7 @@ app.post('/api/claims', authMiddleware, claimLimiter, upload.array('files', 5), 
         INSERT INTO claims (user_id, bookmaker_id, bookmaker_account_id, affiliate_player_id, loss_amount_rub, bet_id, bet_date, comment, status, cashback_percent, cashback_amount_rub, risk_score)
         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'submitted',$9,$10,$11)
         RETURNING *
-      `, [req.tgUser.id, bookmakerId, account.id, account.affiliate_player_id || null, loss_amount, bet_id, bet_date, comment || null, tier.pct, cashback, riskScore]);
+      `, [req.tgUser.id, bookmakerId, account.id, account.affiliate_player_id || null, loss_amount, bet_id, bet_date, normalizedComment || null, tier.pct, cashback, riskScore]);
       
       const claim = claimRes.rows[0];
       
@@ -474,7 +486,12 @@ app.post('/api/claims', authMiddleware, claimLimiter, upload.array('files', 5), 
       client.release();
     }
   } catch(e) {
-    console.error('Claim error:', e);
+    const commentValue = req.body?.comment;
+    console.error('Claim error:', {
+      message: e?.message || e,
+      comment_type: Array.isArray(commentValue) ? 'array' : typeof commentValue,
+      comment_len: typeof commentValue === 'string' ? commentValue.length : null,
+    });
     if (res.headersSent) return;
     res.status(500).json({ error: e.message || 'Server error' });
   }

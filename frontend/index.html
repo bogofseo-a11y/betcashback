@@ -121,6 +121,59 @@
   .tier-hint { font-size: 11px; color: var(--text2); margin-top: 8px; }
   .tier-hint strong { color: var(--yellow); }
 
+  /* ONBOARDING */
+  .onboarding-card {
+    margin: 0 16px 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+  .onboarding-title { font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+  .onboarding-steps { margin: 0 0 10px 18px; display: grid; gap: 6px; }
+  .onboarding-steps li { font-size: 12px; color: var(--text2); line-height: 1.35; }
+  .onboarding-next {
+    font-size: 12px; line-height: 1.4;
+    color: var(--yellow);
+    border: 1px solid rgba(255,209,102,0.25);
+    background: rgba(255,209,102,0.08);
+    border-radius: 10px;
+    padding: 8px 10px;
+  }
+  .onboarding-next.ready {
+    color: var(--accent);
+    border-color: rgba(0,229,160,0.3);
+    background: rgba(0,229,160,0.08);
+  }
+  .onboarding-next.pending {
+    color: var(--blue);
+    border-color: rgba(91,141,238,0.3);
+    background: rgba(91,141,238,0.08);
+  }
+  .onboarding-cta {
+    margin-top: 10px;
+    width: 100%;
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+  }
+  .onboarding-cta:active { transform: scale(0.98); }
+  .list-hint {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.4;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 10px;
+  }
+
   /* SECTION */
   .section { padding: 0 16px; margin-bottom: 24px; }
   .section-title { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; color: var(--text3); text-transform: uppercase; margin-bottom: 12px; }
@@ -192,6 +245,7 @@
   .field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238888aa' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
   .field textarea { resize: none; height: 80px; }
   .field-hint { font-size: 11px; color: var(--text2); margin-top: 6px; }
+  .hint-link { color: var(--accent); font-weight: 700; cursor: pointer; text-decoration: underline; }
 
   /* FILE UPLOAD */
   .upload-area {
@@ -470,7 +524,19 @@
       <div style="font-size:10px;color:var(--text3);margin-top:6px">Нажмите, чтобы посмотреть, как работают уровни</div>
     </div>
 
-    <div class="section animate-in delay-2">
+    <div class="onboarding-card animate-in delay-2">
+      <div class="onboarding-title">Как получить кэшбэк</div>
+      <ol class="onboarding-steps">
+        <li>Выберите букмекера</li>
+        <li>Зарегистрируйтесь по ссылке</li>
+        <li>Отправьте player ID</li>
+        <li>Подавайте заявки и выводите кэшбэк</li>
+      </ol>
+      <div class="onboarding-next" id="home-onboarding-next">Чтобы подать первую заявку, сначала подключите букмекера в разделе «Букмекеры».</div>
+      <button class="onboarding-cta" onclick="showScreen('bookmakers')">Перейти в Букмекеры</button>
+    </div>
+
+    <div class="section animate-in delay-3">
       <div class="section-title">Последние заявки</div>
       <div id="home-claims">
         <div class="empty">
@@ -492,6 +558,7 @@
       <div class="chips" id="bk-filter">
         <div class="chip active">Все букмекеры</div>
       </div>
+      <div class="list-hint">Выберите букмекера, зарегистрируйтесь по кнопке «Зарегистрироваться» и отправьте player ID для проверки.</div>
     </div>
 
     <div class="section" id="bk-list"></div>
@@ -780,6 +847,9 @@
     <div style="font-size:13px;color:var(--text2);line-height:1.45;margin:0 0 10px">
       <strong style="color:#fff">2. После регистрации отправьте player ID.</strong>
     </div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.45;margin:0 0 10px">
+      <strong style="color:#fff">3. Дождитесь статуса «Подтверждён» перед подачей заявки.</strong>
+    </div>
     <div style="font-size:12px;color:var(--yellow);line-height:1.45;margin:0 0 12px">
       Важно: учитываются только аккаунты, зарегистрированные по этой ссылке.
     </div>
@@ -988,8 +1058,9 @@ async function syncPayoutState({ force = false, silent = true } = {}) {
 // FAQ DATA
 // ============================================================
 const FAQ_ITEMS = [
-  { q: 'Как получить кэшбэк?', a: 'Зарегистрируйтесь у букмекера по нашей ссылке, сделайте ставку и при проигрыше отправьте заявку в Mini App. После проверки мы начислим кэшбэк.' },
-  { q: 'Когда можно отправить заявку?', a: 'После регистрации по нашей ссылке и подтверждения вашего player ID в разделе «Букмекеры». Без статуса «Подтверждён» отправка недоступна.' },
+  { q: 'Как начать и получить кэшбэк?', a: 'Шаги: 1) выберите букмекера, 2) зарегистрируйтесь по нашей ссылке, 3) отправьте player ID, 4) после подтверждения подайте заявку на кэшбэк.' },
+  { q: 'Когда можно отправить заявку?', a: 'Только после подтверждения player ID в разделе «Букмекеры». Пока статус не «Подтверждён», отправка недоступна.' },
+  { q: 'Зачем нужна проверка player ID?', a: 'Проверка подтверждает, что аккаунт зарегистрирован по сервисной ссылке. Это защищает программу от ошибок и дубликатов.' },
   { q: 'Как работают уровни / тиры кэшбэка?', a: 'Уровень растёт по мере одобрения заявок: Tier 1 — 5%, Tier 2 — 7%, Tier 3 — 10%. Текущий прогресс можно посмотреть в блоке Tier на главной.' },
   { q: 'Почему могут отказать?', a: 'Причины: аккаунт не зарегистрирован по нашей ссылке, неподходящие скриншоты, дубликат купона, несовпадение данных или признаки фрода.' },
   { q: 'Как и когда происходит выплата?', a: 'Сначала заявка проходит проверку (обычно до 24 часов). После одобрения кэшбэка можно создать запрос на вывод, и выплата обрабатывается администратором.' },
@@ -1077,11 +1148,32 @@ function updateProfile() {
   setEl('stat-ref-income', formatRub(safeAmountValue(state.refStats?.income)));
   
   updateTierUI();
+  updateHomeOnboardingHint();
   renderHomeClaims();
   renderPayoutMethods();
   renderWithdrawSection();
   renderPayoutHistory();
   updatePendingUI();
+}
+
+function updateHomeOnboardingHint() {
+  const hintEl = document.getElementById('home-onboarding-next');
+  if (!hintEl) return;
+  const accounts = Object.values(state.bookmakerAccounts || {});
+  const hasVerified = accounts.some(acc => acc?.status === 'verified');
+  const hasPending = accounts.some(acc => acc?.status === 'pending');
+  if (hasVerified) {
+    hintEl.className = 'onboarding-next ready';
+    hintEl.textContent = 'Букмекер подтверждён: теперь можно подавать заявки в разделе «Заявка».';
+    return;
+  }
+  if (hasPending) {
+    hintEl.className = 'onboarding-next pending';
+    hintEl.textContent = 'Player ID на проверке. После статуса «Подтверждён» откроется подача заявок.';
+    return;
+  }
+  hintEl.className = 'onboarding-next';
+  hintEl.textContent = 'Чтобы подать первую заявку, сначала подключите букмекера в разделе «Букмекеры».';
 }
 
 function updateTierUI() {
@@ -1277,6 +1369,7 @@ function setupForm() {
   document.getElementById('claim-account').addEventListener('change', onAccountChange);
   document.getElementById('claim-amount').addEventListener('input', onAmountChange);
   document.getElementById('file-input').addEventListener('change', onFilesChange);
+  setClaimEligibilityHint('default');
 }
 
 function populateBookmakerSelect() {
@@ -1308,12 +1401,11 @@ function onBKChange(e) {
   const bkId = parseInt(e.target.value);
   const accountField = document.getElementById('field-account');
   const newIdField = document.getElementById('field-new-id');
-  const hint = document.getElementById('claim-eligibility-hint');
 
   if (!bkId) {
     accountField.style.display='none';
     newIdField.style.display='none';
-    hint.textContent = 'Подать заявку можно только по подтверждённому букмекеру. Сначала зарегистрируйтесь по нашей ссылке и отправьте player ID в разделе «Букмекеры».';
+    setClaimEligibilityHint('default');
     return;
   }
 
@@ -1321,15 +1413,29 @@ function onBKChange(e) {
   if (acc?.status === 'verified') {
     accountField.style.display = 'block';
     newIdField.style.display = 'none';
-    hint.textContent = '✅ Этот букмекер подтверждён. Можно отправлять заявку.';
+    setClaimEligibilityHint('verified');
     populateClaimAccounts();
   } else {
     accountField.style.display = 'none';
     newIdField.style.display = 'none';
-    if (!acc) hint.textContent = 'Сначала зарегистрируйтесь по нашей ссылке и отправьте player ID в разделе «Букмекеры».';
-    else if (acc.status === 'pending') hint.textContent = '⏳ Ваш player ID ещё на проверке. Подача заявок пока недоступна.';
-    else hint.textContent = '❌ Player ID отклонён. Обновите player ID в разделе «Букмекеры».';
+    if (!acc) setClaimEligibilityHint('no_account');
+    else if (acc.status === 'pending') setClaimEligibilityHint('pending');
+    else setClaimEligibilityHint('rejected');
   }
+}
+
+function setClaimEligibilityHint(mode = 'default') {
+  const hint = document.getElementById('claim-eligibility-hint');
+  if (!hint) return;
+  const gotoBookmakers = '<span class="hint-link" onclick="showScreen(\'bookmakers\')">Перейти в «Букмекеры»</span>';
+  const map = {
+    default: `Подать заявку можно только по подтверждённому букмекеру. Сначала зарегистрируйтесь по нашей ссылке и отправьте player ID в разделе «Букмекеры». ${gotoBookmakers}`,
+    no_account: `Сначала зарегистрируйтесь по нашей ссылке и отправьте player ID. После проверки откроется подача заявок. ${gotoBookmakers}`,
+    pending: `⏳ Player ID на проверке. Как только статус станет «Подтверждён», вы сможете подать заявку.`,
+    rejected: `❌ Player ID отклонён. Обновите ID в разделе «Букмекеры», чтобы снова отправить на проверку.`,
+    verified: '✅ Этот букмекер подтверждён. Можно отправлять заявку.',
+  };
+  hint.innerHTML = map[mode] || map.default;
 }
 
 function populateClaimAccounts() {

@@ -1165,6 +1165,7 @@ app.post('/api/payout-requests', authMiddleware, async (req, res) => {
   try {
     const payoutMethodId = parseInt(req.body?.payout_method_id);
     const amountRub = parseFloat(req.body?.amount_rub);
+    const EPS = 1e-9;
 
     if (!Number.isInteger(payoutMethodId) || payoutMethodId <= 0) {
       return res.status(400).json({ error: 'Invalid payout_method_id' });
@@ -1192,13 +1193,13 @@ app.post('/api/payout-requests', authMiddleware, async (req, res) => {
     }
 
     const minPayoutRub = await getSettingNumber('min_payout_amount_rub', 500);
-    if (amountRub < minPayoutRub) {
+    if ((amountRub + EPS) < minPayoutRub) {
       await client.query('ROLLBACK');
       return res.status(400).json({ error: `Минимальная сумма выплаты: ${minPayoutRub} ₽` });
     }
 
     const summary = await getUserWithdrawableSummary(req.tgUser.id, client);
-    if (amountRub > summary.available) {
+    if ((amountRub - EPS) > summary.available) {
       await client.query('ROLLBACK');
       return res.status(400).json({ error: `Недостаточно доступного баланса. Доступно: ${Math.floor(summary.available)} ₽` });
     }

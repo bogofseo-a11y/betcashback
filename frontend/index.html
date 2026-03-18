@@ -162,7 +162,7 @@
   }
   .bk-info { flex: 1; }
   .bk-name { font-size: 15px; font-weight: 700; }
-  .bk-details { font-size: 12px; color: var(--text2); margin-top: 3px; }
+  .bk-details { font-size: 12px; color: var(--text2); margin-top: 3px; line-height: 1.35; }
   .bk-cashback { font-size: 18px; font-weight: 800; color: var(--accent); font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
   .bk-tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: rgba(0,229,160,0.12); color: var(--accent); margin-top: 4px; display: inline-block; }
   .bk-tag.connected { background: rgba(91,141,238,0.12); color: var(--blue); }
@@ -440,7 +440,7 @@
     <div class="hero animate-in">
       <div class="hero-label">Доступно к выводу</div>
       <div class="hero-amount" id="home-balance">0<span> ₽</span></div>
-      <div class="hero-sub">Накоплено всего: <strong id="home-total">0 ₽</strong></div>
+      <div class="hero-sub">Всего получено: <strong id="home-total">0 ₽</strong></div>
       <div class="hero-actions">
         <button class="btn-hero primary" onclick="showScreen('submit')">+ Подать заявку</button>
         <button class="btn-hero secondary" onclick="showScreen('profile')">Вывести</button>
@@ -457,7 +457,7 @@
     </div>
 
     <div class="section animate-in delay-2">
-      <div class="section-title">Мои заявки</div>
+      <div class="section-title">Последние заявки</div>
       <div id="home-claims">
         <div class="empty">
           <div class="empty-icon">🎯</div>
@@ -496,7 +496,7 @@
         <select id="claim-bk">
           <option value="">Выберите букмекера...</option>
         </select>
-        <div class="field-hint" id="claim-eligibility-hint">Для подачи заявки нужен подтверждённый (verified) аккаунт букмекера.</div>
+        <div class="field-hint" id="claim-eligibility-hint">Подать заявку можно только по подтверждённому букмекеру. Сначала зарегистрируйтесь по нашей ссылке и отправьте player ID в разделе «Букмекеры».</div>
       </div>
 
       <div class="field" id="field-account" style="display:none">
@@ -537,7 +537,7 @@
         </div>
         <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" multiple>
         <div class="file-previews" id="file-previews"></div>
-        <div class="field-hint">Скрин купона + скрин ЛК с историей ставок</div>
+        <div class="field-hint">Прикрепите скрин купона и скрин личного кабинета / истории ставок.</div>
       </div>
 
       <div class="field">
@@ -548,7 +548,7 @@
       <div style="padding-bottom:8px">
         <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer">
           <input type="checkbox" id="claim-agree" style="width:18px;height:18px;margin-top:2px;accent-color:var(--accent)">
-          <span style="font-size:13px;color:var(--text2);line-height:1.4">Я подтверждаю, что зарегистрирован по реферальной ссылке сервиса и принимаю <span style="color:var(--accent);cursor:pointer" onclick="showScreen('faq')">условия программы</span></span>
+          <span style="font-size:13px;color:var(--text2);line-height:1.4">Подтверждаю, что зарегистрирован по нашей ссылке и принимаю <span style="color:var(--accent);cursor:pointer" onclick="showScreen('faq')">условия программы</span>.</span>
         </label>
       </div>
 
@@ -641,8 +641,8 @@
 
     <div class="ref-hero animate-in">
       <div class="ref-emoji">💰</div>
-      <div class="ref-title">Зарабатывай с друзьями</div>
-      <div class="ref-desc">Приглашай друзей — получай процент от их кэшбэка автоматически</div>
+      <div class="ref-title">Приглашайте друзей</div>
+      <div class="ref-desc">Поделитесь ссылкой: друг регистрируется, а вы получаете 20% от его кэшбэка.</div>
       <div class="ref-levels" style="justify-content:center">
         <div class="ref-level" style="max-width:160px">
           <div class="ref-level-pct">20%</div>
@@ -693,7 +693,7 @@
     <div class="section animate-in delay-3">
       <div class="section-title">Мои рефералы</div>
       <div id="ref-list">
-        <div style="font-size:13px;color:var(--text2);text-align:center;padding:24px">Пока никого нет.<br>Поделитесь ссылкой!</div>
+        <div style="font-size:13px;color:var(--text2);text-align:center;padding:24px">Пока никого нет.<br>Поделитесь ссылкой с друзьями, чтобы начать получать 20% от их кэшбэка.</div>
       </div>
     </div>
   </div>
@@ -762,13 +762,15 @@
     <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:8px" id="modal-bk-status"></div>
     <a id="modal-bk-instruction" href="#" target="_blank" style="display:none;font-size:12px;color:var(--accent);text-decoration:none;margin-bottom:10px">📄 Инструкция букмекера</a>
     <div style="font-size:13px;color:var(--text2);line-height:1.5;margin:8px 0 12px">
-      ⚠️ Важно: зарегистрируйтесь только по этой ссылке. После регистрации отправьте player ID для верификации.
+      1. Зарегистрируйтесь по кнопке ниже.<br>
+      2. После регистрации отправьте player ID.<br>
+      Важно: учитываются только аккаунты, зарегистрированные по этой ссылке.
     </div>
     <button class="btn-submit" id="modal-bk-btn" onclick="registerBookmaker()">Зарегистрироваться</button>
     <div class="field" style="margin-top:10px">
       <label>Player ID букмекера</label>
       <input type="text" id="modal-bk-player-id" placeholder="Введите player ID" autocomplete="off">
-      <div class="field-hint">После регистрации по ссылке выше отправьте player ID для проверки</div>
+      <div class="field-hint">Обычно player ID находится в личном кабинете букмекера в разделе «Профиль», «Партнёрка» или «Реферальная программа».</div>
     </div>
     <button class="btn-submit" id="modal-bk-save-btn" onclick="submitBookmakerPlayerId()">Отправить player ID</button>
     <button style="width:100%;padding:14px;background:none;border:none;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px" onclick="closeModal('modal-bk')">Закрыть</button>
@@ -781,6 +783,7 @@
 // ============================================================
 const API_BASE = '/api'; // REPLACE IN PRODUCTION
 const BOT_USERNAME = 'betcashback_bot'; // REPLACE WITH YOUR BOT
+const HOME_CLAIMS_PREVIEW_LIMIT = 3;
 
 // ============================================================
 // TELEGRAM WEBAPP INIT
@@ -816,6 +819,7 @@ let state = {
   withdrawable: { approvedTotal: 0, reservedTotal: 0, available: 0 },
   payoutRequests: [],
 };
+let showAllHomeClaims = false;
 let activeScreen = 'home';
 let payoutStateSyncPromise = null;
 let lastPayoutStateSyncAt = 0;
@@ -824,13 +828,31 @@ let claimStateSyncPromise = null;
 let lastClaimStateSyncAt = 0;
 const CLAIM_STATE_SYNC_COOLDOWN_MS = 4000;
 
+function safeCountValue(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return Math.floor(n);
+}
+
+function safeAmountValue(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function normalizeRefStats(stats) {
+  return {
+    count: safeCountValue(stats?.count),
+    active: safeCountValue(stats?.active),
+    income: safeAmountValue(stats?.income),
+  };
+}
 function applyUserSnapshot(userRes) {
   if (!userRes) return;
   state.balance = userRes.balance || 0;
   state.pending = userRes.pending || 0;
   state.totalEarned = userRes.totalEarned || 0;
   state.tierInfo = userRes.tierInfo || state.tierInfo;
-  state.refStats = userRes.refStats || state.refStats;
+  state.refStats = normalizeRefStats(userRes.refStats || state.refStats);
 }
 
 function applyClaimsSnapshot(claimsRes) {
@@ -927,14 +949,15 @@ async function syncPayoutState({ force = false, silent = true } = {}) {
 // FAQ DATA
 // ============================================================
 const FAQ_ITEMS = [
-  { q: 'Как работает кэшбэк?', a: 'Вы регистрируетесь у букмекера по нашей реферальной ссылке, делаете ставки. Если ставка проиграла — подаёте заявку через приложение. Мы проверяем и возвращаем 5-10% от проигрыша в крипте.' },
-  { q: 'Какой минимальный размер выплаты?', a: 'Минимальная сумма к выплате — 500₽. Если накоплено меньше, сумма хранится в «копилке» и накапливается с каждой новой заявкой.' },
-  { q: 'Сколько ждать выплату?', a: 'Проверка заявки: до 24 часов. Выплата производится ежедневно после проверки. Итого: обычно 24-48 часов с момента подачи.' },
+  { q: 'Как получить кэшбэк?', a: 'Зарегистрируйтесь у букмекера по нашей ссылке, сделайте ставку и при проигрыше отправьте заявку в Mini App. После проверки мы начислим кэшбэк.' },
+  { q: 'Когда можно отправить заявку?', a: 'После регистрации по нашей ссылке и подтверждения вашего player ID в разделе «Букмекеры». Без статуса «Подтверждён» отправка недоступна.' },
+  { q: 'Почему могут отказать?', a: 'Причины: аккаунт не зарегистрирован по нашей ссылке, неподходящие скриншоты, дубликат купона, несовпадение данных или признаки фрода.' },
+  { q: 'Как и когда происходит выплата?', a: 'Сначала заявка проходит проверку (обычно до 24 часов). После одобрения кэшбэка можно создать запрос на вывод, и выплата обрабатывается администратором.' },
+  { q: 'Какой минимальный размер выплаты?', a: 'Минимальная сумма к выплате — 500₽. Если накоплено меньше, сумма остаётся в копилке и накапливается.' },
+  { q: 'Нужно ли регистрироваться заново?', a: 'Нет. Если аккаунт уже зарегистрирован по нашей ссылке, отправьте player ID в разделе «Букмекеры» для проверки.' },
+  { q: 'Как работает реферальная программа?', a: 'Вы получаете 20% от кэшбэка приглашённых друзей. Начисление происходит автоматически после одобрения их заявок.' },
   { q: 'Какой процент кэшбэка?', a: 'Базовый: 5%. После 5 подтверждённых заявок — 7%. После 15 заявок — 10%. Уровень растёт навсегда.' },
-  { q: 'Почему могут отказать?', a: 'Аккаунт не зарегистрирован по нашей ссылке; скрины не соответствуют требованиям; купон уже был подан; несовпадение данных; попытка фрода.' },
   { q: 'В чём выплачивают?', a: 'USDT (TRC20), USDT (TON), TON или Telegram Wallet. Вы выбираете сами в настройках кабинета.' },
-  { q: 'Реферальная программа — как работает?', a: 'Вы получаете 20% от суммы кэшбэка ваших рефералов. Начисление происходит автоматически после одобрения заявки реферала.' },
-  { q: 'Нужно регистрироваться заново?', a: 'Нет. Зайдите в раздел «Букмекеры» и подключите свой существующий аккаунт, если он зарегистрирован по нашей реферальной ссылке.' },
 ];
 
 // ============================================================
@@ -1010,8 +1033,8 @@ function updateProfile() {
   setEl('home-total', formatRub(state.totalEarned));
   setEl('stat-earned', formatRub(state.totalEarned));
   setEl('stat-claims', state.claims.length);
-  setEl('stat-refs', state.refStats.count);
-  setEl('stat-ref-income', formatRub(state.refStats.income));
+  setEl('stat-refs', safeCountValue(state.refStats?.count));
+  setEl('stat-ref-income', formatRub(safeAmountValue(state.refStats?.income)));
   
   updateTierUI();
   renderHomeClaims();
@@ -1108,7 +1131,7 @@ function renderBookmakers() {
         ${bk.cashback_label ? `<div class="bk-tag">${bk.cashback_label}</div>` : ''}
         <div class="bk-tag" style="margin-top:6px">${status.short}</div>
       </div>
-      <div class="bk-cashback">${bk.cashback_label || 'Оффер'}</div>
+      <div class="bk-cashback">${bk.cashback_label || 'Подробнее'}</div>
     </div>`;
   }).join('');
 
@@ -1130,7 +1153,7 @@ function openBKModal(id) {
   const acc = getBookmakerAccount(id);
   setEl('modal-bk-name', bk.name);
   setEl('modal-bk-rules', bk.rules || 'Условия регистрации будут показаны после перехода.');
-  setEl('modal-bk-offer', bk.offer_text || (bk.cashback_label ? `Оффер: ${bk.cashback_label}` : ''));
+  setEl('modal-bk-offer', bk.offer_text || (bk.cashback_label ? `Предложение: ${bk.cashback_label}` : ''));
   setEl('modal-bk-status', bookmakerStatusMeta(acc?.status || 'none').label);
   document.getElementById('modal-bk-player-id').value = acc?.affiliate_player_id || '';
   const instr = document.getElementById('modal-bk-instruction');
@@ -1214,7 +1237,7 @@ function populateBookmakerSelect() {
   state.bookmakers.forEach(bk => {
     const acc = getBookmakerAccount(bk.id);
     const isVerified = acc?.status === 'verified';
-    const statusText = isVerified ? '✅ verified' : (acc?.status === 'pending' ? '⏳ pending' : (acc?.status === 'rejected' ? '❌ rejected' : '• не начато'));
+    const statusText = isVerified ? '✅ подтверждён' : (acc?.status === 'pending' ? '⏳ на проверке' : (acc?.status === 'rejected' ? '❌ отклонён' : '• не начато'));
     const opt = document.createElement('option');
     opt.value = bk.id;
     opt.textContent = `${bk.name} — ${statusText}`;
@@ -1235,7 +1258,7 @@ function onBKChange(e) {
   if (!bkId) {
     accountField.style.display='none';
     newIdField.style.display='none';
-    hint.textContent = 'Для подачи заявки нужен подтверждённый (verified) аккаунт букмекера.';
+    hint.textContent = 'Подать заявку можно только по подтверждённому букмекеру. Сначала зарегистрируйтесь по нашей ссылке и отправьте player ID в разделе «Букмекеры».';
     return;
   }
 
@@ -1248,7 +1271,7 @@ function onBKChange(e) {
   } else {
     accountField.style.display = 'none';
     newIdField.style.display = 'none';
-    if (!acc) hint.textContent = 'Сначала зарегистрируйтесь и отправьте player ID в разделе «Букмекеры».';
+    if (!acc) hint.textContent = 'Сначала зарегистрируйтесь по нашей ссылке и отправьте player ID в разделе «Букмекеры».';
     else if (acc.status === 'pending') hint.textContent = '⏳ Ваш player ID ещё на проверке. Подача заявок пока недоступна.';
     else hint.textContent = '❌ Player ID отклонён. Обновите player ID в разделе «Букмекеры».';
   }
@@ -1341,7 +1364,7 @@ async function submitClaim() {
   if (!bkId) { showToast('Выберите букмекера', 'error'); return; }
   const acc = getBookmakerAccount(parseInt(bkId));
   if (!acc || acc.status !== 'verified') {
-    showToast('Подача доступна только для verified аккаунтов букмекера', 'error');
+    showToast('Подача доступна только для подтверждённых аккаунтов букмекера', 'error');
     showScreen('bookmakers');
     return;
   }
@@ -1425,7 +1448,10 @@ function renderHomeClaims() {
   }
   const statusMap = { submitted:'submitted', review:'review', approved:'review', paid:'paid', rejected:'rejected' };
   const labelMap = { submitted:'Отправлено', review:'На проверке', approved:'Одобрено', paid:'Выплачено', rejected:'Отклонено' };
-  container.innerHTML = state.claims.slice(0,10).map(c => `
+  const visibleClaims = showAllHomeClaims ? state.claims : state.claims.slice(0, HOME_CLAIMS_PREVIEW_LIMIT);
+  const actionLabel = showAllHomeClaims ? 'Свернуть' : 'Все заявки';
+  const hasMore = state.claims.length > HOME_CLAIMS_PREVIEW_LIMIT;
+  container.innerHTML = visibleClaims.map(c => `
     <div class="claim-card status-${statusMap[c.status]||'submitted'}">
       <div class="claim-top">
         <div class="claim-bk">${c.bkName}</div>
@@ -1436,7 +1462,14 @@ function renderHomeClaims() {
         <div class="claim-loss">Проигрыш: ${formatRub(c.amount)}</div>
         <div class="claim-cashback">+${formatRub(c.cashback)}</div>
       </div>
-    </div>`).join('');
+    </div>`).join('') + (hasMore ? `
+    <div style="margin-top:8px;font-size:12px;color:var(--accent);font-weight:700;cursor:pointer" onclick="toggleHomeClaimsView()">${actionLabel}</div>
+  ` : '');
+}
+
+function toggleHomeClaimsView() {
+  showAllHomeClaims = !showAllHomeClaims;
+  renderHomeClaims();
 }
 
 // ============================================================
@@ -1460,6 +1493,18 @@ function toggleFAQ(i) {
 // ============================================================
 const assetLabels = { USDT_TRC20:'USDT TRC20', USDT_TON:'USDT TON', TON:'TON', TG_WALLET:'Telegram Wallet' };
 const assetIcons = { USDT_TRC20:'💵', USDT_TON:'💎', TON:'🔷', TG_WALLET:'✈️' };
+
+function payoutStatusMeta(status) {
+  const map = {
+    pending: { label: 'Создана', tone: 'submitted' },
+    approved: { label: 'Подтверждена', tone: 'review' },
+    processing: { label: 'В обработке', tone: 'review' },
+    paid: { label: 'Выплачено', tone: 'paid' },
+    rejected: { label: 'Отклонена', tone: 'rejected' },
+    failed: { label: 'Ошибка выплаты', tone: 'rejected' },
+  };
+  return map[status] || { label: status || '—', tone: 'submitted' };
+}
 
 function renderPayoutMethods() {
   const container = document.getElementById('payout-methods-list');
@@ -1535,7 +1580,7 @@ function renderWithdrawSection() {
 
   el.innerHTML = `
     <div style="font-size:13px;color:var(--text2);margin-bottom:8px">Доступно к выводу: <strong style="color:#fff">${formatRub(available)}</strong></div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Минимум: ${formatRubThreshold(minAmount)} · Правило: только подтверждённый кэшбэк (approved), за вычетом уже созданных выплат.</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Минимум: ${formatRubThreshold(minAmount)}. Доступный вывод считается как одобренный кэшбэк минус уже созданные запросы на выплату.</div>
     <div class="field" style="margin-bottom:8px">
       <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:4px">Метод выплаты</label>
       <select id="withdraw-method" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);color:#fff" ${state.payoutMethods.length ? '' : 'disabled'}>
@@ -1566,11 +1611,13 @@ function renderPayoutHistory() {
     return;
   }
 
-  el.innerHTML = state.payoutRequests.map(r => `
-    <div class="claim-card ${r.status === 'paid' ? 'paid' : (r.status === 'rejected' || r.status === 'failed' ? 'rejected' : 'submitted')}">
+  el.innerHTML = state.payoutRequests.map(r => {
+    const meta = payoutStatusMeta(r.status);
+    return `
+    <div class="claim-card ${meta.tone}">
       <div class="claim-top">
         <div class="claim-bk">#${r.id} · ${assetLabels[r.asset] || r.asset || 'PAYOUT'}</div>
-        <div class="claim-status ${r.status === 'paid' ? 'paid' : (r.status === 'rejected' || r.status === 'failed' ? 'rejected' : 'submitted')}">${r.status}</div>
+        <div class="claim-status ${meta.tone}">${meta.label}</div>
       </div>
       <div class="claim-meta">${formatDate(r.created_at)} · ${truncateAddr(r.address_snapshot || '')}</div>
       <div class="claim-amounts">
@@ -1578,7 +1625,8 @@ function renderPayoutHistory() {
         <div class="claim-cashback">${r.tx_hash ? ('TX: ' + r.tx_hash) : ''}</div>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 async function submitWithdrawRequest() {
@@ -1628,9 +1676,9 @@ async function submitWithdrawRequest() {
 function updateRefLink() {
   const link = `t.me/${BOT_USERNAME}?start=ref_${tgUser.id}`;
   setEl('ref-link', link);
-  setEl('ref-count', state.refStats.count);
-  setEl('ref-active', state.refStats.active);
-  setEl('ref-income', formatRub(state.refStats.income));
+  setEl('ref-count', safeCountValue(state.refStats?.count));
+  setEl('ref-active', safeCountValue(state.refStats?.active));
+  setEl('ref-income', formatRub(safeAmountValue(state.refStats?.income)));
 }
 
 function copyRefLink() {

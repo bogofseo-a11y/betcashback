@@ -192,6 +192,79 @@ async function getUserTier(userId) {
   };
 }
 
+function normalizeClaimComment(input) {
+  const raw = Array.isArray(input) ? input[0] : input;
+  if (raw === undefined || raw === null) {
+    return {
+      value: '',
+      meta: {
+        comment_type: String(raw),
+        comment_len: 0,
+        has_newlines: false,
+        contains_non_bmp: false,
+        contains_surrogate_pairs: false,
+        contains_unpaired_surrogates: false,
+      },
+    };
+  }
+  if (typeof raw !== 'string') {
+    return {
+      error: 'Invalid comment format',
+      meta: {
+        comment_type: Array.isArray(input) ? 'array_non_string' : typeof raw,
+        comment_len: null,
+        has_newlines: false,
+        contains_non_bmp: false,
+        contains_surrogate_pairs: false,
+        contains_unpaired_surrogates: false,
+      },
+    };
+  }
+
+  let text = raw.replace(/\u0000/g, '').replace(/\r\n?/g, '\n');
+  try {
+    text = text.normalize('NFC');
+  } catch {
+    // Keep original text if runtime normalization fails for any reason.
+  }
+
+  let cleaned = '';
+  let containsSurrogatePairs = false;
+  let containsUnpairedSurrogates = false;
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    if (code >= 0xD800 && code <= 0xDBFF) {
+      const nextCode = text.charCodeAt(i + 1);
+      if (nextCode >= 0xDC00 && nextCode <= 0xDFFF) {
+        containsSurrogatePairs = true;
+        cleaned += text[i] + text[i + 1];
+        i += 1;
+      } else {
+        containsUnpairedSurrogates = true;
+      }
+      continue;
+    }
+    if (code >= 0xDC00 && code <= 0xDFFF) {
+      containsUnpairedSurrogates = true;
+      continue;
+    }
+    cleaned += text[i];
+  }
+
+  const normalized = cleaned.trim();
+  return {
+    value: normalized,
+    meta: {
+      comment_type: 'string',
+      comment_len: normalized.length,
+      has_newlines: normalized.includes('\n'),
+      contains_non_bmp: containsSurrogatePairs,
+      contains_surrogate_pairs: containsSurrogatePairs,
+      contains_unpaired_surrogates: containsUnpairedSurrogates,
+    },
+  };
+}
+
 // ============================================================
 // RISK SCORING
 // ============================================================
@@ -353,17 +426,14 @@ app.get('/api/claims', authMiddleware, async (req, res) => {
 
 app.post('/api/claims', authMiddleware, claimLimiter, upload.array('files', 5), async (req, res) => {
   try {
-    const { bookmaker_id, affiliate_player_id, loss_amount, bet_id, bet_date, comment: commentInput } = req.body || {};
+    const { bookmaker_id, affiliate_player_id, loss_amount, bet_id, bet_date } = req.body || {};
     const bookmakerId = parseInt(bookmaker_id);
-
-    // Optional comment comes from multipart/form-data; normalize defensively.
-    const rawComment = Array.isArray(commentInput) ? commentInput[0] : commentInput;
-    if (rawComment !== undefined && rawComment !== null && typeof rawComment !== 'string') {
-      return res.status(400).json({ error: 'Invalid comment format' });
+    const normalizedCommentResult = normalizeClaimComment(req.body?.comment);
+    if (normalizedCommentResult.error) {
+      return res.status(400).json({ error: normalizedCommentResult.error });
     }
-    const normalizedComment = typeof rawComment === 'string'
-      ? rawComment.replace(/\u0000/g, '').trim()
-      : '';
+    const normalizedComment = normalizedCommentResult.value;
+
     if (normalizedComment.length > 4000) {
       return res.status(400).json({ error: 'Comment is too long' });
     }
@@ -486,11 +556,9 @@ app.post('/api/claims', authMiddleware, claimLimiter, upload.array('files', 5), 
       client.release();
     }
   } catch(e) {
-    const commentValue = req.body?.comment;
     console.error('Claim error:', {
       message: e?.message || e,
-      comment_type: Array.isArray(commentValue) ? 'array' : typeof commentValue,
-      comment_len: typeof commentValue === 'string' ? commentValue.length : null,
+      ...normalizeClaimComment(req.body?.comment).meta,
     });
     if (res.headersSent) return;
     res.status(500).json({ error: e.message || 'Server error' });

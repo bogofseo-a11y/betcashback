@@ -207,21 +207,20 @@ function normalizeClaimComment(input) {
       },
     };
   }
-  if (typeof raw !== 'string') {
-    return {
-      error: 'Invalid comment format',
-      meta: {
-        comment_type: Array.isArray(input) ? 'array_non_string' : typeof raw,
-        comment_len: null,
-        has_newlines: false,
-        contains_non_bmp: false,
-        contains_surrogate_pairs: false,
-        contains_unpaired_surrogates: false,
-      },
-    };
+
+  let sourceType = typeof raw;
+  let text;
+  if (typeof raw === 'string') {
+    text = raw;
+  } else if (Buffer.isBuffer(raw)) {
+    sourceType = 'buffer';
+    text = raw.toString('utf8');
+  } else {
+    sourceType = Array.isArray(input) ? 'array_non_string' : typeof raw;
+    text = String(raw);
   }
 
-  let text = raw.replace(/\u0000/g, '').replace(/\r\n?/g, '\n');
+  text = text.replace(/\u0000/g, '').replace(/\r\n?/g, '\n');
   try {
     text = text.normalize('NFC');
   } catch {
@@ -255,7 +254,7 @@ function normalizeClaimComment(input) {
   return {
     value: normalized,
     meta: {
-      comment_type: 'string',
+      comment_type: sourceType,
       comment_len: normalized.length,
       has_newlines: normalized.includes('\n'),
       contains_non_bmp: containsSurrogatePairs,
@@ -429,9 +428,6 @@ app.post('/api/claims', authMiddleware, claimLimiter, upload.array('files', 5), 
     const { bookmaker_id, affiliate_player_id, loss_amount, bet_id, bet_date } = req.body || {};
     const bookmakerId = parseInt(bookmaker_id);
     const normalizedCommentResult = normalizeClaimComment(req.body?.comment);
-    if (normalizedCommentResult.error) {
-      return res.status(400).json({ error: normalizedCommentResult.error });
-    }
     const normalizedComment = normalizedCommentResult.value;
 
     if (normalizedComment.length > 4000) {

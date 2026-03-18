@@ -1246,6 +1246,7 @@ async function submitClaim() {
   const amount = parseFloat(document.getElementById('claim-amount').value);
   const date = document.getElementById('claim-date').value;
   const betId = document.getElementById('claim-betid').value.trim();
+  const rawComment = document.getElementById('claim-comment').value;
   const agree = document.getElementById('claim-agree').checked;
   
   if (!bkId) { showToast('Выберите букмекера', 'error'); return; }
@@ -1274,7 +1275,16 @@ async function submitClaim() {
     fd.append('bet_date', date);
     const pid = acc.affiliate_player_id || '';
     fd.append('affiliate_player_id', pid);
-    fd.append('comment', document.getElementById('claim-comment').value.trim());
+    let normalizedComment = String(rawComment || '')
+      .replace(/\r\n?/g, '\n')
+      .replace(/\u0000/g, '');
+    try {
+      normalizedComment = normalizedComment.normalize('NFC');
+    } catch {}
+    normalizedComment = normalizedComment.trim();
+    if (normalizedComment) {
+      fd.append('comment', normalizedComment);
+    }
     uploadedFiles.forEach(f => fd.append('files', f));
     
     const resultRaw = await apiCall('/claims', 'POST', fd, true);

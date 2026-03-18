@@ -1213,8 +1213,9 @@ app.post('/api/payout-requests', authMiddleware, async (req, res) => {
     `, [req.tgUser.id, method.id, amountRub, method.asset, method.address]);
 
     await client.query('COMMIT');
+    const createdRequest = insert.rows[0];
     res.json({
-      request: insert.rows[0],
+      request: createdRequest,
       min_payout_amount_rub: minPayoutRub,
       balance_after: {
         approved_total: summary.approvedTotal,
@@ -1222,6 +1223,29 @@ app.post('/api/payout-requests', authMiddleware, async (req, res) => {
         available: Math.max(0, summary.available - amountRub),
       }
     });
+
+    // Post-response notifications are best-effort and must not break payout UX.
+    try {
+      if (process.env.ADMIN_CHAT_ID) {
+        bot.sendMessage(
+          process.env.ADMIN_CHAT_ID,
+          `💸 Новый запрос на вывод #${createdRequest.id}\n` +
+          `👤 @${req.tgUser.username || req.tgUser.id}\n` +
+          `💰 Сумма: ${parseFloat(createdRequest.amount_rub || 0).toLocaleString('ru-RU')}₽\n` +
+          `🏦 Метод: ${createdRequest.asset || method.asset || '—'}\n` +
+          `📬 Адрес: ${createdRequest.address_snapshot || method.address || '—'}`
+        ).catch(() => {});
+      }
+
+      sendUserNotificationSafe(
+        req.tgUser.id,
+        `💸 Запрос на вывод #${createdRequest.id} создан.\n` +
+        `Сумма: ${parseFloat(createdRequest.amount_rub || 0).toLocaleString('ru-RU')}₽.\n` +
+        `Статус: pending.`
+      ).catch(() => {});
+    } catch (notifyErr) {
+      console.error('Payout post-response notify error:', notifyErr);
+    }
   } catch (e) {
     await client.query('ROLLBACK').catch(() => {});
     res.status(500).json({ error: e.message || 'Server error' });

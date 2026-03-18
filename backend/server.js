@@ -1557,14 +1557,14 @@ app.patch('/admin/payout-requests/:id/status', adminAuth, async (req, res) => {
     const result = await pool.query(`
       UPDATE payout_requests
       SET status = $1,
-          admin_note = COALESCE($2, admin_note),
-          tx_hash = CASE WHEN $3::text IS NULL OR $3::text = '' THEN tx_hash ELSE $3 END,
+          admin_note = COALESCE($3, admin_note),
+          tx_hash = CASE WHEN $4::text IS NULL OR $4::text = '' THEN tx_hash ELSE $4 END,
           processed_by_admin_id = 0,
-          processed_at = CASE WHEN $1 IN ('approved','rejected','processing','paid','failed') THEN NOW() ELSE processed_at END,
+          processed_at = CASE WHEN $2::text IN ('approved','rejected','processing','paid','failed') THEN NOW() ELSE processed_at END,
           updated_at = NOW()
-      WHERE id = $4
+      WHERE id = $5
       RETURNING *
-    `, [status, admin_note || null, tx_hash || null, id]);
+    `, [status, status, admin_note || null, tx_hash || null, id]);
 
     await pool.query(`
       INSERT INTO admin_audit_log (admin_id, action, entity_type, entity_id, payload_json)

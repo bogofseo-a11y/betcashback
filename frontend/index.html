@@ -440,7 +440,7 @@
     <div class="hero animate-in">
       <div class="hero-label">Доступно к выводу</div>
       <div class="hero-amount" id="home-balance">0<span> ₽</span></div>
-      <div class="hero-sub">Всего получено: <strong id="home-total">0 ₽</strong></div>
+      <div class="hero-sub">Всего начислено: <strong id="home-total">0 ₽</strong></div>
       <div class="hero-actions">
         <button class="btn-hero primary" onclick="showScreen('submit')">+ Подать заявку</button>
         <button class="btn-hero secondary" onclick="showScreen('profile')">Вывести</button>
@@ -476,8 +476,7 @@
 
     <div style="padding:0 16px 12px;">
       <div class="chips" id="bk-filter">
-        <div class="chip active" onclick="filterBK('all',this)">Все</div>
-        <div class="chip" onclick="filterBK('bonus',this)">С бонусом</div>
+        <div class="chip active">Все букмекеры</div>
       </div>
     </div>
 
@@ -576,7 +575,7 @@
     <div class="section animate-in delay-1">
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-label">Получено</div>
+          <div class="stat-label">Начислено</div>
           <div class="stat-value green" id="stat-earned">0 ₽</div>
         </div>
         <div class="stat-card">
@@ -758,12 +757,16 @@
     <div class="modal-handle"></div>
     <div class="modal-title" id="modal-bk-name"></div>
     <div class="modal-sub" id="modal-bk-rules"></div>
-    <div class="field-hint" id="modal-bk-offer" style="margin:8px 0 12px"></div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:8px" id="modal-bk-status"></div>
+    <div class="field-hint" id="modal-bk-offer" style="display:none;margin:8px 0 12px;padding:8px 10px;border-radius:10px;background:rgba(0,229,160,0.12);border:1px solid rgba(0,229,160,0.3);color:var(--accent)"></div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:10px;padding:8px 10px;border-radius:10px;background:var(--bg3);border:1px solid var(--border)" id="modal-bk-status"></div>
     <a id="modal-bk-instruction" href="#" target="_blank" style="display:none;font-size:12px;color:var(--accent);text-decoration:none;margin-bottom:10px">📄 Инструкция букмекера</a>
-    <div style="font-size:13px;color:var(--text2);line-height:1.5;margin:8px 0 12px">
-      1. Зарегистрируйтесь по кнопке ниже.<br>
-      2. После регистрации отправьте player ID.<br>
+    <div style="font-size:13px;color:var(--text2);line-height:1.45;margin:8px 0 10px">
+      <strong style="color:#fff">1. Зарегистрируйтесь по кнопке ниже.</strong>
+    </div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.45;margin:0 0 10px">
+      <strong style="color:#fff">2. После регистрации отправьте player ID.</strong>
+    </div>
+    <div style="font-size:12px;color:var(--yellow);line-height:1.45;margin:0 0 12px">
       Важно: учитываются только аккаунты, зарегистрированные по этой ссылке.
     </div>
     <button class="btn-submit" id="modal-bk-btn" onclick="registerBookmaker()">Зарегистрироваться</button>
@@ -1099,8 +1102,6 @@ function showScreen(name) {
 // ============================================================
 // BOOKMAKERS
 // ============================================================
-let bkFilter = 'all';
-
 function bookmakerStatusMeta(status) {
   const map = {
     pending: { label: '⏳ Верификация: ожидает проверки. Подача заявок пока недоступна.', short: 'Проверка' },
@@ -1116,8 +1117,7 @@ function getBookmakerAccount(bookmakerId) {
 }
 
 function renderBookmakers() {
-  let list = [...state.bookmakers];
-  if (bkFilter === 'bonus') list = list.filter(b => (b.cashback_label || '').trim());
+  const list = [...state.bookmakers];
 
   const html = list.map(bk => {
     const logo = (bk.short_name || bk.name || '?').toString().substring(0,3).toUpperCase();
@@ -1138,22 +1138,25 @@ function renderBookmakers() {
   setEl('bk-list', html || '<div style="font-size:13px;color:var(--text2);text-align:center;padding:32px">Нет доступных букмекеров</div>');
 }
 
-function filterBK(type, el) {
-  bkFilter = type;
-  document.querySelectorAll('#bk-filter .chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  renderBookmakers();
-}
-
 let activeBKId = null;
 function openBKModal(id) {
   activeBKId = id;
   const bk = state.bookmakers.find(b => b.id === id);
   if (!bk) return;
   const acc = getBookmakerAccount(id);
+  const offerEl = document.getElementById('modal-bk-offer');
+  const promoText = String(bk.offer_text || bk.cashback_label || '').trim();
   setEl('modal-bk-name', bk.name);
   setEl('modal-bk-rules', bk.rules || 'Условия регистрации будут показаны после перехода.');
-  setEl('modal-bk-offer', bk.offer_text || (bk.cashback_label ? `Предложение: ${bk.cashback_label}` : ''));
+  if (offerEl) {
+    if (promoText) {
+      offerEl.style.display = 'block';
+      offerEl.textContent = `🎁 ${promoText}`;
+    } else {
+      offerEl.style.display = 'none';
+      offerEl.textContent = '';
+    }
+  }
   setEl('modal-bk-status', bookmakerStatusMeta(acc?.status || 'none').label);
   document.getElementById('modal-bk-player-id').value = acc?.affiliate_player_id || '';
   const instr = document.getElementById('modal-bk-instruction');

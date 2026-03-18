@@ -1277,12 +1277,14 @@ async function submitClaim() {
     fd.append('comment', document.getElementById('claim-comment').value.trim());
     uploadedFiles.forEach(f => fd.append('files', f));
     
-    const result = await apiCall('/claims', 'POST', fd, true);
+    const resultRaw = await apiCall('/claims', 'POST', fd, true);
+    const result = (resultRaw && typeof resultRaw === 'object') ? resultRaw : {};
     
     const bk = state.bookmakers.find(b => b.id == bkId) || { name: 'Букмекер' };
-    const cashback = result.cashback || (amount * state.tierInfo.pct / 100);
+    const parsedCashback = parseFloat(result.cashback);
+    const cashback = Number.isFinite(parsedCashback) ? parsedCashback : (amount * state.tierInfo.pct / 100);
     state.claims.unshift({
-      id: result.claim_id, bkName: bk.name, amount, cashback, date,
+      id: result.claim_id || ('tmp_' + Date.now()), bkName: bk.name, amount, cashback, date,
       status: 'submitted', betId,
     });
     state.pending += cashback;

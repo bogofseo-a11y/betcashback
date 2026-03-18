@@ -111,6 +111,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 16px;
+    cursor: pointer;
   }
   .tier-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   .tier-name { font-size: 12px; font-weight: 700; color: var(--text2); }
@@ -152,7 +153,7 @@
   .bk-card {
     background: var(--card); border: 1px solid var(--border);
     border-radius: var(--radius); padding: 16px; margin-bottom: 10px;
-    cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 14px;
+    cursor: pointer; transition: all 0.15s; display: flex; align-items: flex-start; gap: 14px;
   }
   .bk-card:active { transform: scale(0.98); }
   .bk-logo {
@@ -160,12 +161,20 @@
     background: var(--bg3); display: flex; align-items: center; justify-content: center;
     font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--accent); flex-shrink: 0;
   }
-  .bk-info { flex: 1; }
+  .bk-info { flex: 1; min-width: 0; }
   .bk-name { font-size: 15px; font-weight: 700; }
   .bk-details { font-size: 12px; color: var(--text2); margin-top: 3px; line-height: 1.35; }
-  .bk-cashback { font-size: 18px; font-weight: 800; color: var(--accent); font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
   .bk-tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: rgba(0,229,160,0.12); color: var(--accent); margin-top: 4px; display: inline-block; }
   .bk-tag.connected { background: rgba(91,141,238,0.12); color: var(--blue); }
+  .bk-status-tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; margin-top: 6px; display: inline-block; }
+  .bk-status-tag.status-verified { background: rgba(0,229,160,0.15); color: var(--accent); }
+  .bk-status-tag.status-pending { background: rgba(91,141,238,0.15); color: var(--blue); }
+  .bk-status-tag.status-none { background: rgba(255,209,102,0.16); color: var(--yellow); }
+  .bk-status-tag.status-rejected { background: rgba(255,77,109,0.15); color: var(--red); }
+  .bk-action {
+    align-self: center; font-size: 11px; font-weight: 700; color: var(--text2);
+    border: 1px solid var(--border); border-radius: 999px; padding: 5px 9px; white-space: nowrap;
+  }
 
   /* FORM */
   .form-screen { padding: 0 16px; }
@@ -334,6 +343,10 @@
   .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
   .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 1px; margin-bottom: 4px; }
   .modal-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+  .modal-status.status-verified { background: rgba(0,229,160,0.12) !important; border-color: rgba(0,229,160,0.25) !important; color: var(--accent) !important; }
+  .modal-status.status-pending { background: rgba(91,141,238,0.12) !important; border-color: rgba(91,141,238,0.28) !important; color: var(--blue) !important; }
+  .modal-status.status-none { background: rgba(255,209,102,0.12) !important; border-color: rgba(255,209,102,0.25) !important; color: var(--yellow) !important; }
+  .modal-status.status-rejected { background: rgba(255,77,109,0.12) !important; border-color: rgba(255,77,109,0.28) !important; color: var(--red) !important; }
 
   /* ADD PAYOUT FORM */
   .asset-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
@@ -447,13 +460,14 @@
       </div>
     </div>
 
-    <div class="tier-bar animate-in delay-1">
+    <div class="tier-bar animate-in delay-1" onclick="openTierInfo()">
       <div class="tier-top">
         <div class="tier-name" id="tier-name">ПРОГРЕСС К TIER 2 · 7%</div>
         <div class="tier-pct" id="tier-pct">5%</div>
       </div>
       <div class="progress-track"><div class="progress-fill" id="tier-progress" style="width:0%"></div></div>
       <div class="tier-hint" id="tier-hint-text">Ещё <strong>5 заявок</strong> — и ставка вырастет до 7%</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:6px">Нажмите, чтобы посмотреть, как работают уровни</div>
     </div>
 
     <div class="section animate-in delay-2">
@@ -758,7 +772,7 @@
     <div class="modal-title" id="modal-bk-name"></div>
     <div class="modal-sub" id="modal-bk-rules"></div>
     <div class="field-hint" id="modal-bk-offer" style="display:none;margin:8px 0 12px;padding:8px 10px;border-radius:10px;background:rgba(0,229,160,0.12);border:1px solid rgba(0,229,160,0.3);color:var(--accent)"></div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:10px;padding:8px 10px;border-radius:10px;background:var(--bg3);border:1px solid var(--border)" id="modal-bk-status"></div>
+    <div class="modal-status status-none" style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:10px;padding:8px 10px;border-radius:10px;background:var(--bg3);border:1px solid var(--border)" id="modal-bk-status"></div>
     <a id="modal-bk-instruction" href="#" target="_blank" style="display:none;font-size:12px;color:var(--accent);text-decoration:none;margin-bottom:10px">📄 Инструкция букмекера</a>
     <div style="font-size:13px;color:var(--text2);line-height:1.45;margin:8px 0 10px">
       <strong style="color:#fff">1. Зарегистрируйтесь по кнопке ниже.</strong>
@@ -777,6 +791,27 @@
     </div>
     <button class="btn-submit" id="modal-bk-save-btn" onclick="submitBookmakerPlayerId()">Отправить player ID</button>
     <button style="width:100%;padding:14px;background:none;border:none;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px" onclick="closeModal('modal-bk')">Закрыть</button>
+  </div>
+</div>
+
+<!-- MODAL: Tier info -->
+<div class="modal-overlay" id="modal-tier-info">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Как работают уровни кэшбэка</div>
+    <div class="modal-sub">Чем больше одобренных заявок, тем выше процент возврата.</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.45;margin-bottom:10px">
+      <strong style="color:#fff">Tier 1 — 5%</strong> · 0–4 одобренных заявок
+    </div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.45;margin-bottom:10px">
+      <strong style="color:#fff">Tier 2 — 7%</strong> · 5–14 одобренных заявок
+    </div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.45;margin-bottom:12px">
+      <strong style="color:#fff">Tier 3 — 10%</strong> · 15+ одобренных заявок
+    </div>
+    <div id="tier-info-current" style="font-size:13px;color:var(--accent);font-weight:700;margin-bottom:6px"></div>
+    <div id="tier-info-next" style="font-size:12px;color:var(--text2);margin-bottom:8px"></div>
+    <button class="btn-submit" onclick="closeModal('modal-tier-info')">Понятно</button>
   </div>
 </div>
 
@@ -955,6 +990,7 @@ async function syncPayoutState({ force = false, silent = true } = {}) {
 const FAQ_ITEMS = [
   { q: 'Как получить кэшбэк?', a: 'Зарегистрируйтесь у букмекера по нашей ссылке, сделайте ставку и при проигрыше отправьте заявку в Mini App. После проверки мы начислим кэшбэк.' },
   { q: 'Когда можно отправить заявку?', a: 'После регистрации по нашей ссылке и подтверждения вашего player ID в разделе «Букмекеры». Без статуса «Подтверждён» отправка недоступна.' },
+  { q: 'Как работают уровни / тиры кэшбэка?', a: 'Уровень растёт по мере одобрения заявок: Tier 1 — 5%, Tier 2 — 7%, Tier 3 — 10%. Текущий прогресс можно посмотреть в блоке Tier на главной.' },
   { q: 'Почему могут отказать?', a: 'Причины: аккаунт не зарегистрирован по нашей ссылке, неподходящие скриншоты, дубликат купона, несовпадение данных или признаки фрода.' },
   { q: 'Как и когда происходит выплата?', a: 'Сначала заявка проходит проверку (обычно до 24 часов). После одобрения кэшбэка можно создать запрос на вывод, и выплата обрабатывается администратором.' },
   { q: 'Какой минимальный размер выплаты?', a: 'Минимальная сумма к выплате — 500₽. Если накоплено меньше, сумма остаётся в копилке и накапливается.' },
@@ -1056,13 +1092,15 @@ function updateTierUI() {
   setEl('prof-tier', 'TIER ' + t.tier + ' · ' + t.pct + '%');
   const left = Math.max(0, t.nextTierAt - t.progress);
   const nextPct = t.tier === 1 ? 7 : 10;
-  setEl('tier-name', 'ПРОГРЕСС К TIER ' + (t.tier + 1) + ' · ' + nextPct + '%');
-  setEl('tier-hint-text', `Ещё <strong>${left} заявок</strong> — и ставка вырастет до ${nextPct}%`);
-  document.getElementById('tier-progress').style.width = pct + '%';
   if (t.tier >= 3) {
-    const tierBar = document.querySelector('.tier-bar');
-    if (tierBar) tierBar.style.display = 'none';
+    setEl('tier-name', 'TIER 3 · МАКСИМАЛЬНЫЙ УРОВЕНЬ');
+    setEl('tier-hint-text', 'У вас максимальная ставка кэшбэка — <strong>10%</strong>.');
+    document.getElementById('tier-progress').style.width = '100%';
+    return;
   }
+  setEl('tier-name', 'ПРОГРЕСС К TIER ' + (t.tier + 1) + ' · ' + nextPct + '%');
+  setEl('tier-hint-text', `Ещё <strong>${left} одобренных заявок</strong> — и ставка вырастет до ${nextPct}%`);
+  document.getElementById('tier-progress').style.width = pct + '%';
 }
 
 function updatePendingUI() {
@@ -1105,12 +1143,20 @@ function showScreen(name) {
 // ============================================================
 function bookmakerStatusMeta(status) {
   const map = {
-    pending: { label: '⏳ Верификация: ожидает проверки. Подача заявок пока недоступна.', short: 'Проверка' },
-    verified: { label: '✅ Верификация: подтверждено. Можно подавать заявки.', short: 'Подтверждено' },
-    rejected: { label: '❌ Верификация: отклонено. Обновите player ID или обратитесь в поддержку.', short: 'Отклонено' },
-    none: { label: '🟦 Статус: не начато. Сначала зарегистрируйтесь и отправьте player ID.', short: 'Не начато' },
+    pending: { label: '⏳ Статус: на проверке. Подача заявок пока недоступна.', short: 'На проверке', tone: 'pending' },
+    verified: { label: '✅ Статус: подтверждён. Можно подавать заявки.', short: 'Подтверждён', tone: 'verified' },
+    rejected: { label: '❌ Статус: отклонён. Обновите player ID или обратитесь в поддержку.', short: 'Отклонён', tone: 'rejected' },
+    none: { label: '🟨 Статус: не подключён. Сначала зарегистрируйтесь и отправьте player ID.', short: 'Не подключён', tone: 'none' },
   };
   return map[status] || map.none;
+}
+
+function applyBookmakerModalStatus(status) {
+  const meta = bookmakerStatusMeta(status);
+  const statusEl = document.getElementById('modal-bk-status');
+  if (!statusEl) return;
+  statusEl.textContent = meta.label;
+  statusEl.className = `modal-status status-${meta.tone}`;
 }
 
 function getBookmakerAccount(bookmakerId) {
@@ -1130,9 +1176,9 @@ function renderBookmakers() {
         <div class="bk-name">${bk.name}</div>
         <div class="bk-details">${bk.offer_text || bk.rules || 'Условия доступны после регистрации'}</div>
         ${bk.cashback_label ? `<div class="bk-tag">${bk.cashback_label}</div>` : ''}
-        <div class="bk-tag" style="margin-top:6px">${status.short}</div>
+        <div class="bk-status-tag status-${status.tone}">${status.short}</div>
       </div>
-      <div class="bk-cashback">${bk.cashback_label || 'Подробнее'}</div>
+      <div class="bk-action">Открыть ›</div>
     </div>`;
   }).join('');
 
@@ -1158,7 +1204,7 @@ function openBKModal(id) {
       offerEl.textContent = '';
     }
   }
-  setEl('modal-bk-status', bookmakerStatusMeta(acc?.status || 'none').label);
+  applyBookmakerModalStatus(acc?.status || 'none');
   document.getElementById('modal-bk-player-id').value = acc?.affiliate_player_id || '';
   const instr = document.getElementById('modal-bk-instruction');
   if (bk.instruction_asset_url) {
@@ -1205,7 +1251,7 @@ async function submitBookmakerPlayerId() {
     });
     state.connectedBKs[activeBKId] = account.affiliate_player_id || playerId;
     state.bookmakerAccounts[activeBKId] = account;
-    setEl('modal-bk-status', bookmakerStatusMeta(account.status || 'pending').label);
+    applyBookmakerModalStatus(account.status || 'pending');
     renderBookmakers();
     populateClaimAccounts();
     showToast('✓ Player ID отправлен. Статус: на проверке', 'success');
@@ -1241,7 +1287,12 @@ function populateBookmakerSelect() {
   state.bookmakers.forEach(bk => {
     const acc = getBookmakerAccount(bk.id);
     const isVerified = acc?.status === 'verified';
-    const statusText = isVerified ? '✅ подтверждён' : (acc?.status === 'pending' ? '⏳ на проверке' : (acc?.status === 'rejected' ? '❌ отклонён' : '• не начато'));
+    const statusMeta = bookmakerStatusMeta(acc?.status || 'none');
+    const statusText = statusMeta.tone === 'verified'
+      ? `✅ ${statusMeta.short}`
+      : (statusMeta.tone === 'pending'
+        ? `⏳ ${statusMeta.short}`
+        : (statusMeta.tone === 'rejected' ? `❌ ${statusMeta.short}` : `• ${statusMeta.short}`));
     const opt = document.createElement('option');
     opt.value = bk.id;
     opt.textContent = `${bk.name} — ${statusText}`;
@@ -1583,8 +1634,11 @@ function renderWithdrawSection() {
   ).join('');
 
   el.innerHTML = `
-    <div style="font-size:13px;color:var(--text2);margin-bottom:8px">Доступно к выводу: <strong style="color:#fff">${formatRub(available)}</strong></div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Минимум: ${formatRubThreshold(minAmount)}. Доступный вывод считается как одобренный кэшбэк минус уже созданные запросы на выплату.</div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px">
+      <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px">Доступно к выводу</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;line-height:1;color:var(--accent);margin-top:4px">${Math.round(available).toLocaleString('ru-RU')}<span style="font-size:22px;color:var(--accent2)"> ₽</span></div>
+    </div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Минимум: ${formatRubThreshold(minAmount)}. Считается как одобренный кэшбэк минус уже созданные запросы на выплату.</div>
     <div class="field" style="margin-bottom:8px">
       <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:4px">Метод выплаты</label>
       <select id="withdraw-method" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);color:#fff" ${state.payoutMethods.length ? '' : 'disabled'}>
@@ -1605,6 +1659,20 @@ function renderWithdrawSection() {
       state.selectedPayoutMethodId = parseInt(e.target.value) || null;
     });
   }
+}
+
+function openTierInfo() {
+  const t = state.tierInfo || { tier: 1, pct: 5, progress: 0, nextTierAt: 0 };
+  const approvedProgress = Math.max(0, parseInt(t.progress || 0));
+  const nextAt = Math.max(0, parseInt(t.nextTierAt || 0));
+  const left = Math.max(0, nextAt - approvedProgress);
+  setEl('tier-info-current', `Ваш текущий уровень: Tier ${t.tier} · ${t.pct}%`);
+  if (t.tier >= 3) {
+    setEl('tier-info-next', 'Вы уже на максимальном уровне. Новые одобренные заявки сохраняют ставку 10%.');
+  } else {
+    setEl('tier-info-next', `До следующего уровня: ${left} одобренных заявок.`);
+  }
+  openModal('modal-tier-info');
 }
 
 function renderPayoutHistory() {

@@ -816,6 +816,53 @@ let state = {
   withdrawable: { approvedTotal: 0, reservedTotal: 0, available: 0 },
   payoutRequests: [],
 };
+let activeScreen = 'home';
+let payoutStateSyncPromise = null;
+let lastPayoutStateSyncAt = 0;
+const PAYOUT_STATE_SYNC_COOLDOWN_MS = 4000;
+
+function applyPayoutSnapshot(payoutReqRes) {
+  if (!payoutReqRes) return;
+  state.minPayoutAmountRub = parseFloat(payoutReqRes.min_payout_amount_rub || 500) || 500;
+  state.withdrawable = {
+    approvedTotal: parseFloat(payoutReqRes.balance?.approved_total || 0) || 0,
+    reservedTotal: parseFloat(payoutReqRes.balance?.reserved_total || 0) || 0,
+    available: parseFloat(payoutReqRes.balance?.available || 0) || 0,
+  };
+  state.payoutRequests = Array.isArray(payoutReqRes.requests) ? payoutReqRes.requests : [];
+  // Home "Доступно к выводу" must reflect backend withdrawable summary.
+  state.balance = state.withdrawable.available;
+}
+
+function shouldSyncPayoutForScreen(screenName = activeScreen) {
+  return screenName === 'home' || screenName === 'profile';
+}
+
+async function syncPayoutState({ force = false, silent = true } = {}) {
+  if (!shouldSyncPayoutForScreen()) return;
+  const now = Date.now();
+  if (!force && now - lastPayoutStateSyncAt < PAYOUT_STATE_SYNC_COOLDOWN_MS) return;
+  if (payoutStateSyncPromise) return payoutStateSyncPromise;
+
+  payoutStateSyncPromise = (async () => {
+    const payoutReqRes = await apiCall('/payout-requests');
+    applyPayoutSnapshot(payoutReqRes);
+    lastPayoutStateSyncAt = Date.now();
+    updateProfile();
+  })();
+
+  try {
+    await payoutStateSyncPromise;
+  } catch (e) {
+    if (!silent) {
+      showToast(e.message || 'Не удалось обновить выплаты', 'error');
+    } else {
+      console.log('[payout-sync] failed', e?.message || e);
+    }
+  } finally {
+    payoutStateSyncPromise = null;
+  }
+}
 
 // ============================================================
 // FAQ DATA
@@ -897,15 +944,7 @@ async function loadUserData() {
       }
     }
 
-    if (payoutReqRes) {
-      state.minPayoutAmountRub = parseFloat(payoutReqRes.min_payout_amount_rub || 500) || 500;
-      state.withdrawable = {
-        approvedTotal: parseFloat(payoutReqRes.balance?.approved_total || 0) || 0,
-        reservedTotal: parseFloat(payoutReqRes.balance?.reserved_total || 0) || 0,
-        available: parseFloat(payoutReqRes.balance?.available || 0) || 0,
-      };
-      state.payoutRequests = Array.isArray(payoutReqRes.requests) ? payoutReqRes.requests : [];
-    }
+    applyPayoutSnapshot(payoutReqRes);
   } catch(e) {
     console.log('API not available, using demo mode:', e.message);
     if (!state.bookmakers.length) {
@@ -924,7 +963,8 @@ function updateProfile() {
   setEl('prof-avatar', initials);
   setEl('prof-name', name);
   setEl('prof-id', '@' + (tgUser.username || 'user'));
-  document.getElementById('home-balance').innerHTML = Math.round(state.balance || 0).toLocaleString('ru-RU') + '<span> ₽</span>';
+  const homeAvailable = Number.isFinite(state.withdrawable?.available) ? state.withdrawable.available : (state.balance || 0);
+  document.getElementById('home-balance').innerHTML = Math.round(homeAvailable).toLocaleString('ru-RU') + '<span> ₽</span>';
   setEl('home-total', formatRub(state.totalEarned));
   setEl('stat-earned', formatRub(state.totalEarned));
   setEl('stat-claims', state.claims.length);
@@ -975,6 +1015,7 @@ function updatePendingUI() {
 const screens = ['home','bookmakers','submit','referral','profile','faq'];
 
 function showScreen(name) {
+  activeScreen = name;
   screens.forEach(s => {
     document.getElementById('screen-' + s)?.classList.remove('active');
     document.getElementById('nav-' + s)?.classList.remove('active');
@@ -982,6 +1023,9 @@ function showScreen(name) {
   document.getElementById('screen-' + name)?.classList.add('active');
   document.getElementById('nav-' + name)?.classList.add('active');
   document.getElementById('screen-' + name)?.scrollTo(0,0);
+  if (shouldSyncPayoutForScreen(name)) {
+    syncPayoutState({ silent: true }).catch(() => {});
+  }
 }
 
 // ============================================================
@@ -1445,7 +1489,7 @@ function renderWithdrawSection() {
 
   el.innerHTML = `
     <div style="font-size:13px;color:var(--text2);margin-bottom:8px">Доступно к выводу: <strong style="color:#fff">${formatRub(available)}</strong></div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Минимум: ${formatRub(minAmount)} · Правило: только подтверждённый кэшбэк (approved), за вычетом уже созданных выплат.</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Минимум: ${formatRubThreshold(minAmount)} · Правило: только подтверждённый кэшбэк (approved), за вычетом уже созданных выплат.</div>
     <div class="field" style="margin-bottom:8px">
       <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:4px">Метод выплаты</label>
       <select id="withdraw-method" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);color:#fff" ${state.payoutMethods.length ? '' : 'disabled'}>
@@ -1457,7 +1501,7 @@ function renderWithdrawSection() {
       <input id="withdraw-amount" type="number" min="1" step="1" placeholder="Например, 1000" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);color:#fff" ${disabled ? 'disabled' : ''}>
     </div>
     <button class="btn-submit" onclick="submitWithdrawRequest()" ${disabled ? 'disabled style="opacity:.6;cursor:not-allowed"' : ''}>Запросить вывод</button>
-    ${available < minAmount ? `<div style="margin-top:8px;font-size:12px;color:var(--yellow)">Недостаточно средств для вывода. Накопите минимум ${formatRub(minAmount)}.</div>` : ''}
+    ${available < minAmount ? `<div style="margin-top:8px;font-size:12px;color:var(--yellow)">Недостаточно средств для вывода. Накопите минимум ${formatRubThreshold(minAmount)}.</div>` : ''}
   `;
 
   const methodSelect = document.getElementById('withdraw-method');
@@ -1494,6 +1538,7 @@ function renderPayoutHistory() {
 async function submitWithdrawRequest() {
   const amount = parseFloat(document.getElementById('withdraw-amount')?.value || '0');
   const methodId = parseInt(document.getElementById('withdraw-method')?.value || state.selectedPayoutMethodId || '0');
+  const minAmount = Number(state.minPayoutAmountRub || 500);
 
   if (!Number.isInteger(methodId) || methodId <= 0) {
     showToast('Выберите метод выплаты', 'error');
@@ -1501,6 +1546,10 @@ async function submitWithdrawRequest() {
   }
   if (!Number.isFinite(amount) || amount <= 0) {
     showToast('Введите корректную сумму', 'error');
+    return;
+  }
+  if (Number.isFinite(minAmount) && amount < minAmount) {
+    showToast(`Минимальная сумма выплаты: ${formatRubThreshold(minAmount)}`, 'error');
     return;
   }
 
@@ -1516,10 +1565,11 @@ async function submitWithdrawRequest() {
         reservedTotal: parseFloat(data.balance_after.reserved_total || 0),
         available: parseFloat(data.balance_after.available || 0),
       };
+      state.balance = state.withdrawable.available;
     }
     document.getElementById('withdraw-amount').value = '';
-    renderWithdrawSection();
-    renderPayoutHistory();
+    updateProfile();
+    syncPayoutState({ force: true, silent: true }).catch(() => {});
     showToast('✓ Запрос на вывод создан', 'success');
   } catch (e) {
     showToast(e.message || 'Ошибка создания запроса', 'error');
@@ -1610,6 +1660,13 @@ function formatRub(n) {
   return Math.round(n || 0).toLocaleString('ru-RU') + ' ₽';
 }
 
+function formatRubThreshold(n) {
+  const value = Number(n);
+  if (!Number.isFinite(value)) return '500 ₽';
+  const text = Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.?0+$/, '');
+  return text + ' ₽';
+}
+
 function formatDate(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
@@ -1638,6 +1695,18 @@ function closeModal(id) { document.getElementById(id)?.classList.remove('open');
 // Close modal on overlay click
 document.querySelectorAll('.modal-overlay').forEach(o => {
   o.addEventListener('click', e => { if(e.target === o) o.classList.remove('open'); });
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && shouldSyncPayoutForScreen()) {
+    syncPayoutState({ silent: true }).catch(() => {});
+  }
+});
+
+window.addEventListener('focus', () => {
+  if (shouldSyncPayoutForScreen()) {
+    syncPayoutState({ silent: true }).catch(() => {});
+  }
 });
 
 // ============================================================

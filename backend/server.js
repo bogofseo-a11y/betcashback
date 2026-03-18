@@ -434,35 +434,39 @@ app.post('/api/claims', authMiddleware, claimLimiter, upload.array('files', 5), 
       `, [req.tgUser.id, claim.id, JSON.stringify({ risk_score: riskScore })]);
       
       await client.query('COMMIT');
-      
-      // Notify admin
-      if (process.env.ADMIN_CHAT_ID) {
-        const riskEmoji = riskScore > 60 ? '🔴' : riskScore > 30 ? '🟡' : '🟢';
-        bot.sendMessage(process.env.ADMIN_CHAT_ID, 
-          `${riskEmoji} Новая заявка #${claim.id}\n` +
-          `👤 @${req.tgUser.username || req.tgUser.id}\n` +
-          `🏦 BK ID: ${bookmakerId}\n` +
-          `💸 Проигрыш: ${parseFloat(loss_amount).toLocaleString('ru-RU')}₽\n` +
-          `💰 Кэшбэк: ${cashback.toLocaleString('ru-RU')}₽ (${tier.pct}%)\n` +
-          `⚠️ Риск: ${riskScore}/100`
-        ).catch(() => {});
-      }
-      
-      // Notify user with exact SLA deadline
-      const deadline = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      const deadlineStr = deadline.toLocaleString('ru-RU', {
-        day: '2-digit', month: '2-digit',
-        hour: '2-digit', minute: '2-digit',
-        timeZone: 'Europe/Moscow'
-      });
-      bot.sendMessage(req.tgUser.id,
-        `✅ Заявка #${claim.id} принята!\n\n` +
-        `💰 Ожидаемый кэшбэк: ${cashback.toLocaleString('ru-RU')}₽\n` +
-        `⏱ Проверим до ${deadlineStr} МСК\n\n` +
-        `Если появятся вопросы — пишите в поддержку.`
-      ).catch(() => {});
-      
+
+      // Return success to client immediately after commit to avoid false client-side failures.
       res.json({ success: true, claim_id: claim.id, cashback });
+
+      // Post-response notifications are best-effort and must not break claim UX.
+      try {
+        if (process.env.ADMIN_CHAT_ID) {
+          const riskEmoji = riskScore > 60 ? '🔴' : riskScore > 30 ? '🟡' : '🟢';
+          bot.sendMessage(process.env.ADMIN_CHAT_ID, 
+            `${riskEmoji} Новая заявка #${claim.id}\n` +
+            `👤 @${req.tgUser.username || req.tgUser.id}\n` +
+            `🏦 BK ID: ${bookmakerId}\n` +
+            `💸 Проигрыш: ${parseFloat(loss_amount).toLocaleString('ru-RU')}₽\n` +
+            `💰 Кэшбэк: ${cashback.toLocaleString('ru-RU')}₽ (${tier.pct}%)\n` +
+            `⚠️ Риск: ${riskScore}/100`
+          ).catch(() => {});
+        }
+
+        const deadline = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        const deadlineStr = deadline.toLocaleString('ru-RU', {
+          day: '2-digit', month: '2-digit',
+          hour: '2-digit', minute: '2-digit',
+          timeZone: 'Europe/Moscow'
+        });
+        bot.sendMessage(req.tgUser.id,
+          `✅ Заявка #${claim.id} принята!\n\n` +
+          `💰 Ожидаемый кэшбэк: ${cashback.toLocaleString('ru-RU')}₽\n` +
+          `⏱ Проверим до ${deadlineStr} МСК\n\n` +
+          `Если появятся вопросы — пишите в поддержку.`
+        ).catch(() => {});
+      } catch (notifyErr) {
+        console.error('Claim post-response notify error:', notifyErr);
+      }
     } catch(e) {
       await client.query('ROLLBACK');
       throw e;
@@ -471,6 +475,7 @@ app.post('/api/claims', authMiddleware, claimLimiter, upload.array('files', 5), 
     }
   } catch(e) {
     console.error('Claim error:', e);
+    if (res.headersSent) return;
     res.status(500).json({ error: e.message || 'Server error' });
   }
 });

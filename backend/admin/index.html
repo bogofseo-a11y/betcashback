@@ -1507,6 +1507,18 @@ function openLightbox(src) {
 function setEl(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
 function formatRub(n) { return Math.round(parseFloat(n) || 0).toLocaleString('ru-RU') + ' ₽'; }
 function formatDate(d) { if (!d) return '—'; return new Date(d).toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'2-digit' }); }
+function formatDateTime(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  if (Number.isNaN(dt.getTime())) return '—';
+  return dt.toLocaleString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
 function statusLabel(s) { return { submitted:'Новая', in_review:'Проверка', approved:'Одобрена', rejected:'Отклонена', paid:'Выплачена' }[s] || s; }
 function escapeHtml(v) { return String(v || '').replace(/[&<>'"]/g, ch => ({ '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[ch])); }
 function escapeAttr(v) { return escapeHtml(v).replace(/`/g, '&#96;'); }

@@ -677,16 +677,16 @@
   <!-- SCREEN: HOME -->
   <div class="screen active" id="screen-home">
     <div class="page-header">
-      <div class="logo">BET<span>CASH</span></div>
+      <div class="logo">BET<span>CASHBACK</span></div>
       <div style="display:flex;gap:8px;align-items:center">
         <div style="font-size:11px;font-weight:700;color:var(--text2);" id="header-tier">TIER 1 · 5%</div>
       </div>
     </div>
 
     <div class="hero animate-in">
-      <div class="hero-label">Доступно к выводу</div>
+      <div class="hero-label">Баланс кэшбэка</div>
       <div class="hero-amount" id="home-balance">0<span> ₽</span></div>
-      <div class="hero-sub">Всего начислено: <strong id="home-total">0 ₽</strong></div>
+      <div class="hero-sub">Всего заработано: <strong id="home-total">0 ₽</strong></div>
       <div class="hero-actions">
         <button class="btn-hero primary" onclick="showScreen('submit')">+ Подать заявку</button>
         <button class="btn-hero secondary" onclick="showScreen('profile')">Вывести</button>
@@ -700,18 +700,17 @@
       </div>
       <div class="progress-track"><div class="progress-fill" id="tier-progress" style="width:0%"></div></div>
       <div class="tier-hint" id="tier-hint-text">Ещё <strong>5 заявок</strong> — и ставка вырастет до 7%</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:6px">Нажмите, чтобы посмотреть, как работают уровни</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:6px">Нажмите, чтобы узнать подробнее</div>
     </div>
 
     <div class="onboarding-card animate-in delay-2">
-      <div class="onboarding-title">Как получить кэшбэк</div>
+      <div class="onboarding-title">Начните получать кэшбэк за 3 шага</div>
       <ol class="onboarding-steps">
-        <li>Выберите букмекера</li>
-        <li>Зарегистрируйтесь по ссылке</li>
-        <li>Отправьте player ID</li>
-        <li>Подавайте заявки и выводите кэшбэк</li>
+        <li>Зарегистрируйтесь у букмекера по нашей ссылке</li>
+        <li>Отправьте свой Player ID на проверку</li>
+        <li>Подайте заявку на кэшбэк по проигранной ставке</li>
       </ol>
-      <div class="onboarding-next" id="home-onboarding-next">Чтобы подать первую заявку, сначала подключите букмекера в разделе «Букмекеры».</div>
+      <div class="onboarding-next" id="home-onboarding-next">Сначала выберите букмекера и зарегистрируйтесь — это займёт пару минут</div>
       <button class="onboarding-cta" onclick="showScreen('bookmakers')">Перейти в Букмекеры</button>
     </div>
 
@@ -737,7 +736,7 @@
       <div class="chips" id="bk-filter">
         <div class="chip active">Все букмекеры</div>
       </div>
-      <div class="list-hint">Выберите букмекера, зарегистрируйтесь по кнопке «Зарегистрироваться» и отправьте player ID для проверки.</div>
+      <div class="list-hint">Зарегистрируйтесь у букмекера по нашей ссылке — так мы сможем начислить вам кэшбэк</div>
     </div>
 
     <div class="section" id="bk-list"></div>
@@ -751,11 +750,11 @@
 
     <div class="form-screen">
       <div class="field">
-        <label>Букмекер</label>
+        <label>Выберите букмекера</label>
         <select id="claim-bk">
           <option value="">Выберите букмекера...</option>
         </select>
-        <div class="field-hint" id="claim-eligibility-hint">Подать заявку можно только по подтверждённому букмекеру. Сначала зарегистрируйтесь по нашей ссылке и отправьте player ID в разделе «Букмекеры».</div>
+        <div class="field-hint" id="claim-eligibility-hint">Заявки доступны после проверки вашего аккаунта у букмекера</div>
       </div>
 
       <div class="field" id="field-account" style="display:none">
@@ -766,13 +765,13 @@
       </div>
 
       <div class="field" id="field-new-id" style="display:none">
-        <label>ID в партнёрской программе</label>
-        <input type="text" id="claim-pid" placeholder="Ваш ID у букмекера" autocomplete="off">
-        <div class="field-hint">Найдите в ЛК букмекера в разделе «Партнёры» или «Реферальная программа»</div>
+        <label>Ваш Player ID у букмекера</label>
+        <input type="text" id="claim-pid" placeholder="Например: 12345678" autocomplete="off">
+        <div class="field-hint">Найдите его в личном кабинете букмекера в разделе «Профиль»</div>
       </div>
 
       <div class="field">
-        <label>Сумма проигрыша (₽)</label>
+        <label>Сумма проигрыша, ₽</label>
         <input type="number" id="claim-amount" placeholder="0" min="0" inputmode="numeric">
         <div class="field-hint" id="cashback-preview" style="color:var(--accent);font-weight:700;"></div>
       </div>
@@ -783,7 +782,7 @@
       </div>
 
       <div class="field">
-        <label>Номер купона / ставки</label>
+        <label>Номер ставки (ID купона)</label>
         <input type="text" id="claim-betid" placeholder="Например: 1234567890" autocomplete="off">
       </div>
 
@@ -807,18 +806,18 @@
       <div style="padding-bottom:8px">
         <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer">
           <input type="checkbox" id="claim-agree" style="width:18px;height:18px;margin-top:2px;accent-color:var(--accent)">
-          <span style="font-size:13px;color:var(--text2);line-height:1.4">Подтверждаю, что зарегистрирован по нашей ссылке и принимаю <span style="color:var(--accent);cursor:pointer" onclick="showScreen('faq')">условия программы</span>.</span>
+          <span style="font-size:13px;color:var(--text2);line-height:1.4">Подтверждаю, что зарегистрировался по ссылке BetCashback и принимаю <span style="color:var(--accent);cursor:pointer" onclick="showScreen('faq')">правила сервиса</span>.</span>
         </label>
       </div>
 
-      <button class="btn-submit" id="btn-submit" onclick="submitClaim()">Отправить заявку</button>
+      <button class="btn-submit" id="btn-submit" onclick="submitClaim()">Подать заявку на кэшбэк</button>
     </div>
   </div>
 
   <!-- SCREEN: PROFILE -->
   <div class="screen" id="screen-profile">
     <div class="page-header">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;">Кабинет</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;">Мой профиль</div>
     </div>
 
     <div class="profile-header animate-in">
@@ -835,7 +834,7 @@
     <div class="section animate-in delay-1">
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-label">Начислено</div>
+          <div class="stat-label">Заработано</div>
           <div class="stat-value green" id="stat-earned">0 ₽</div>
         </div>
         <div class="stat-card">
@@ -847,7 +846,7 @@
           <div class="stat-value yellow" id="stat-refs">0</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Реф. доход</div>
+          <div class="stat-label">Доход от друзей</div>
           <div class="stat-value green" id="stat-ref-income">0 ₽</div>
         </div>
       </div>
@@ -858,8 +857,8 @@
         <div style="display:flex;align-items:center;gap:12px">
           <div class="pending-icon">🪙</div>
           <div style="flex:1">
-            <div class="pending-text"><span class="pending-amount" id="pending-amount">0 ₽</span> в копилке!</div>
-            <div class="pending-hint">Ещё <span id="pending-left">0 ₽</span> — и можно вывести 💸</div>
+            <div class="pending-text"><span class="pending-amount" id="pending-amount">0 ₽</span> накоплено</div>
+            <div class="pending-hint">Ещё <span id="pending-left">0 ₽</span> до минимального вывода</div>
           </div>
         </div>
         <div>
@@ -868,7 +867,7 @@
           </div>
           <div style="display:flex;justify-content:space-between;margin-top:4px">
             <div style="font-size:10px;color:var(--text3)">0 ₽</div>
-            <div style="font-size:10px;color:var(--text3)">500 ₽ → вывод</div>
+            <div style="font-size:10px;color:var(--text3)">мин. вывод: 500 ₽</div>
           </div>
         </div>
         <button onclick="showScreen('submit')" style="width:100%;padding:10px;background:rgba(255,209,102,0.1);border:1px solid rgba(255,209,102,0.25);border-radius:10px;color:var(--yellow);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s" onmousedown="this.style.background='rgba(255,209,102,0.18)'" onmouseup="this.style.background='rgba(255,209,102,0.1)'">+ Подать ещё заявку</button>
@@ -876,19 +875,19 @@
     </div>
 
     <div class="section animate-in delay-2">
-      <div class="section-title">Запрос на вывод</div>
+      <div class="section-title">Вывести средства</div>
       <div id="withdraw-box" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px"></div>
 
-      <div class="section-title">Методы выплат</div>
+      <div class="section-title">Куда выводить</div>
       <div id="payout-methods-list"></div>
-      <button class="btn-submit" style="margin-top:4px;background:var(--bg3);color:var(--text);border:1px solid var(--border)" onclick="openAddPayout()">+ Добавить кошелёк</button>
+      <button class="btn-submit" style="margin-top:4px;background:var(--bg3);color:var(--text);border:1px solid var(--border)" onclick="openAddPayout()">+ Добавить крипто-кошелёк</button>
     </div>
 
     <div class="section animate-in delay-3">
       <div class="section-title">Поддержка</div>
       <div class="support-entry">
-        <div class="support-entry-title">Нужна помощь?</div>
-        <div class="support-entry-sub">Создайте тикет, и мы ответим в чате поддержки внутри Mini App.</div>
+        <div class="support-entry-title">Есть вопросы?</div>
+        <div class="support-entry-sub">Напишите нам — ответим в течение 24 часов</div>
         <div class="support-entry-meta">Открытых тикетов: <strong id="support-open-count">0</strong></div>
         <button class="btn-submit" style="margin-top:0;background:var(--bg3);color:var(--text);border:1px solid var(--border)" onclick="showScreen('support')">Открыть поддержку</button>
       </div>
@@ -912,22 +911,22 @@
 
     <div class="section animate-in">
       <div class="support-entry">
-        <div class="support-entry-title">Как быстро решить вопрос</div>
-        <div class="support-entry-sub">Опишите ситуацию в тикете и при необходимости добавьте скриншоты (до 3 файлов).</div>
+        <div class="support-entry-title">Служба поддержки</div>
+        <div class="support-entry-sub">Опишите проблему, приложите скриншоты — и мы разберёмся</div>
         <button class="btn-submit" style="margin-top:0;background:var(--bg3);color:var(--text);border:1px solid var(--border)" onclick="showScreen('faq')">Открыть FAQ</button>
       </div>
     </div>
 
     <div class="section animate-in delay-1">
-      <button class="btn-submit" onclick="openSupportCreateModal()">+ Создать тикет</button>
+      <button class="btn-submit" onclick="openSupportCreateModal()">+ Написать в поддержку</button>
     </div>
 
     <div class="section animate-in delay-2">
-      <div class="section-title">Мои тикеты</div>
+      <div class="section-title">Мои обращения</div>
       <div id="support-ticket-list">
         <div class="empty">
           <div class="empty-icon">🛟</div>
-          <div class="empty-text">Тикетов пока нет.<br>Создайте первый, если нужна помощь.</div>
+          <div class="empty-text">Обращений пока нет.<br>Если что-то пойдёт не так — мы на связи</div>
         </div>
       </div>
     </div>
@@ -936,17 +935,17 @@
   <!-- SCREEN: REFERRAL -->
   <div class="screen" id="screen-referral">
     <div class="page-header">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;">Реферальная</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;">Пригласи друзей</div>
     </div>
 
     <div class="ref-hero animate-in">
       <div class="ref-emoji">💰</div>
-      <div class="ref-title">Приглашайте друзей</div>
-      <div class="ref-desc">Поделитесь ссылкой: друг регистрируется, а вы получаете 20% от его кэшбэка.</div>
+      <div class="ref-title">Зарабатывайте вместе</div>
+      <div class="ref-desc">Ваш друг получает кэшбэк — а вы получаете 20% бонус с каждой его выплаты</div>
       <div class="ref-levels" style="justify-content:center">
         <div class="ref-level" style="max-width:160px">
           <div class="ref-level-pct">20%</div>
-          <div class="ref-level-label">от кэшбэка<br>ваших рефералов</div>
+          <div class="ref-level-label">бонус от кэшбэка<br>каждого друга</div>
         </div>
       </div>
       <div class="ref-link-box">
@@ -977,15 +976,15 @@
       <div class="wallet-step">
         <div class="step-num">1</div>
         <div>
-          <div class="step-title">Поделитесь ссылкой</div>
-          <div class="step-desc">Ваш друг регистрируется и подключает аккаунт букмекера по вашей реферальной ссылке</div>
+          <div class="step-title">Отправьте ссылку другу</div>
+          <div class="step-desc">Друг регистрируется у букмекера по вашей ссылке</div>
         </div>
       </div>
       <div class="wallet-step">
         <div class="step-num">2</div>
         <div>
-          <div class="step-title">Друг получает кэшбэк</div>
-          <div class="step-desc">Когда заявка друга одобрена — вы автоматически получаете 20% от его кэшбэка</div>
+          <div class="step-title">Вы получаете бонус</div>
+          <div class="step-desc">Каждый раз, когда другу начисляют кэшбэк — вам автоматически капает 20% бонус</div>
         </div>
       </div>
     </div>
@@ -993,7 +992,7 @@
     <div class="section animate-in delay-3">
       <div class="section-title">Мои рефералы</div>
       <div id="ref-list">
-        <div style="font-size:13px;color:var(--text2);text-align:center;padding:24px">Пока никого нет.<br>Поделитесь ссылкой с друзьями, чтобы начать получать 20% от их кэшбэка.</div>
+        <div style="font-size:13px;color:var(--text2);text-align:center;padding:24px">Пока никого нет.<br>Отправьте ссылку другу — и получайте бонус с его кэшбэка</div>
       </div>
     </div>
   </div>
@@ -1497,7 +1496,7 @@ function updateHomeOnboardingHint() {
     return;
   }
   hintEl.className = 'onboarding-next';
-  hintEl.textContent = 'Чтобы подать первую заявку, сначала подключите букмекера в разделе «Букмекеры».';
+  hintEl.textContent = 'Сначала выберите букмекера и зарегистрируйтесь — это займёт пару минут';
 }
 
 function updateSupportEntryMeta() {
@@ -1765,7 +1764,7 @@ function setClaimEligibilityHint(mode = 'default') {
   if (!hint) return;
   const gotoBookmakers = '<span class="hint-link" onclick="showScreen(\'bookmakers\')">Перейти в «Букмекеры»</span>';
   const map = {
-    default: `Подать заявку можно только по подтверждённому букмекеру. Сначала зарегистрируйтесь по нашей ссылке и отправьте player ID в разделе «Букмекеры». ${gotoBookmakers}`,
+    default: `Заявки доступны после проверки вашего аккаунта у букмекера. ${gotoBookmakers}`,
     no_account: `Сначала зарегистрируйтесь по нашей ссылке и отправьте player ID. После проверки откроется подача заявок. ${gotoBookmakers}`,
     pending: `⏳ Player ID на проверке. Как только статус станет «Подтверждён», вы сможете подать заявку.`,
     rejected: `❌ Player ID отклонён. Обновите ID в разделе «Букмекеры», чтобы снова отправить на проверку.`,
@@ -1930,7 +1929,7 @@ async function submitClaim() {
     showToast('Ошибка: ' + (e.message || 'попробуйте ещё раз'), 'error');
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Отправить заявку';
+    btn.textContent = 'Подать заявку на кэшбэк';
   }
 }
 
@@ -2002,7 +2001,7 @@ function renderSupportTickets() {
   const container = document.getElementById('support-ticket-list');
   if (!container) return;
   if (!state.supportTickets.length) {
-    container.innerHTML = `<div class="empty"><div class="empty-icon">🛟</div><div class="empty-text">Тикетов пока нет.<br>Создайте первый, если нужна помощь.</div></div>`;
+    container.innerHTML = `<div class="empty"><div class="empty-icon">🛟</div><div class="empty-text">Обращений пока нет.<br>Если что-то пойдёт не так — мы на связи</div></div>`;
     return;
   }
 
@@ -2138,7 +2137,7 @@ async function createSupportTicket() {
     showToast(e.message || 'Ошибка создания тикета', 'error');
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Создать тикет';
+    btn.textContent = 'Написать в поддержку';
   }
 }
 

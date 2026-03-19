@@ -40,6 +40,7 @@ app.use('/api/', limiter);
 
 // Stricter limiter for claim submission
 const claimLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 10, message: { error: 'Too many claims' } });
+const supportLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 20, message: { error: 'Too many support requests' } });
 
 // ============================================================
 // FILE UPLOAD (secure)
@@ -262,6 +263,69 @@ function normalizeClaimComment(input) {
       contains_unpaired_surrogates: containsUnpairedSurrogates,
     },
   };
+}
+
+function normalizeSupportMessage(input) {
+  const normalized = normalizeClaimComment(input);
+  return {
+    value: normalized.value,
+    meta: {
+      message_type: normalized.meta.comment_type,
+      message_len: normalized.meta.comment_len,
+      has_newlines: normalized.meta.has_newlines,
+      contains_non_bmp: normalized.meta.contains_non_bmp,
+      contains_surrogate_pairs: normalized.meta.contains_surrogate_pairs,
+      contains_unpaired_surrogates: normalized.meta.contains_unpaired_surrogates,
+    },
+  };
+}
+
+function supportUploadArray(maxFiles = 3) {
+  return (req, res, next) => {
+    upload.array('files', maxFiles)(req, res, (err) => {
+      if (!err) return next();
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') return res.status(400).json({ error: 'File too large (max 8MB)' });
+        if (err.code === 'LIMIT_FILE_COUNT') return res.status(400).json({ error: `Too many files (max ${maxFiles})` });
+        if (err.code === 'LIMIT_UNEXPECTED_FILE') return res.status(400).json({ error: `Too many files (max ${maxFiles})` });
+        return res.status(400).json({ error: err.message || 'Invalid upload payload' });
+      }
+      if (err?.message === 'Invalid file type') {
+        return res.status(400).json({ error: 'Only JPG, PNG, WebP are allowed' });
+      }
+      return res.status(400).json({ error: err?.message || 'Invalid upload payload' });
+    });
+  };
+}
+
+async function buildSupportAttachments(files = []) {
+  const out = [];
+  for (const file of (files || [])) {
+    const { filename } = await processAndSaveImage(file.buffer, file.originalname);
+    out.push({
+      url: `/uploads/${filename}`,
+      mime_type: 'image/jpeg',
+      size_bytes: file.size || null,
+      original_name: file.originalname || null,
+    });
+  }
+  return out;
+}
+
+function supportStatusLabelRu(status) {
+  return {
+    open: 'Новый',
+    in_progress: 'В работе',
+    waiting_user: 'Ждём ваш ответ',
+    closed: 'Закрыт',
+  }[status] || status;
+}
+
+function compactPreview(text, maxLen = 140) {
+  const s = String(text || '').replace(/\s+/g, ' ').trim();
+  if (!s) return '—';
+  if (s.length <= maxLen) return s;
+  return s.slice(0, maxLen - 1) + '…';
 }
 
 // ============================================================
@@ -1254,6 +1318,219 @@ app.post('/api/payout-requests', authMiddleware, async (req, res) => {
   }
 });
 
+// ---- SUPPORT TICKETS ----
+app.get('/api/support-tickets', authMiddleware, async (req, res) => {
+  try {
+    await ensureUser(req.tgUser);
+    const result = await pool.query(`
+      SELECT st.id, st.user_id, st.status, st.created_at, st.updated_at, st.closed_at,
+             lm.message AS last_message, lm.sender_type AS last_sender_type, lm.created_at AS last_message_at,
+             COALESCE(mc.message_count, 0) AS message_count
+      FROM support_tickets st
+      LEFT JOIN LATERAL (
+        SELECT m.message, m.sender_type, m.created_at
+        FROM support_ticket_messages m
+        WHERE m.ticket_id = st.id
+        ORDER BY m.created_at DESC, m.id DESC
+        LIMIT 1
+      ) lm ON TRUE
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::int AS message_count
+        FROM support_ticket_messages m
+        WHERE m.ticket_id = st.id
+      ) mc ON TRUE
+      WHERE st.user_id = $1
+      ORDER BY st.updated_at DESC, st.id DESC
+      LIMIT 100
+    `, [req.tgUser.id]);
+    res.json(result.rows);
+  } catch (e) {
+    res.status(500).json({ error: e.message || 'Server error' });
+  }
+});
+
+app.get('/api/support-tickets/:id', authMiddleware, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'Invalid ticket id' });
+
+    const ticketRes = await pool.query(`
+      SELECT id, user_id, status, created_at, updated_at, closed_at
+      FROM support_tickets
+      WHERE id = $1 AND user_id = $2
+      LIMIT 1
+    `, [id, req.tgUser.id]);
+    if (!ticketRes.rows.length) return res.status(404).json({ error: 'Ticket not found' });
+
+    const messagesRes = await pool.query(`
+      SELECT id, ticket_id, sender_type, sender_admin_id, message, attachments_json, created_at
+      FROM support_ticket_messages
+      WHERE ticket_id = $1
+      ORDER BY created_at ASC, id ASC
+      LIMIT 500
+    `, [id]);
+
+    res.json({
+      ticket: ticketRes.rows[0],
+      messages: messagesRes.rows,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message || 'Server error' });
+  }
+});
+
+app.post('/api/support-tickets', authMiddleware, supportLimiter, supportUploadArray(3), async (req, res) => {
+  const normalized = normalizeSupportMessage(req.body?.message);
+  const message = normalized.value;
+  if (!message) return res.status(400).json({ error: 'Message is required' });
+  if (message.length > 2000) return res.status(400).json({ error: 'Message is too long (max 2000)' });
+
+  const client = await pool.connect();
+  let createdTicket = null;
+  let createdMessage = null;
+  let attachmentCount = 0;
+  try {
+    await client.query('BEGIN');
+    await ensureUser(req.tgUser);
+
+    const ticketRes = await client.query(`
+      INSERT INTO support_tickets (user_id, status, created_at, updated_at, closed_at)
+      VALUES ($1, 'open', NOW(), NOW(), NULL)
+      RETURNING *
+    `, [req.tgUser.id]);
+    createdTicket = ticketRes.rows[0];
+
+    const attachments = await buildSupportAttachments(req.files || []);
+    attachmentCount = attachments.length;
+    const msgRes = await client.query(`
+      INSERT INTO support_ticket_messages (ticket_id, sender_type, sender_admin_id, message, attachments_json, created_at)
+      VALUES ($1, 'user', NULL, $2, $3, NOW())
+      RETURNING *
+    `, [createdTicket.id, message, attachments.length ? JSON.stringify(attachments) : null]);
+    createdMessage = msgRes.rows[0];
+
+    await client.query('COMMIT');
+    res.json({
+      success: true,
+      ticket: createdTicket,
+      message: createdMessage,
+    });
+
+    try {
+      if (process.env.ADMIN_CHAT_ID) {
+        const userLabel = req.tgUser.username ? `@${req.tgUser.username}` : `${req.tgUser.id}`;
+        bot.sendMessage(
+          process.env.ADMIN_CHAT_ID,
+          `🆘 Новый тикет поддержки #${createdTicket.id}\n` +
+          `👤 Пользователь: ${userLabel}\n` +
+          `📝 ${compactPreview(message, 180)}\n` +
+          `📎 Вложения: ${attachmentCount > 0 ? 'есть' : 'нет'}`
+        ).catch(() => {});
+      }
+      sendUserNotificationSafe(
+        req.tgUser.id,
+        `✅ Тикет поддержки #${createdTicket.id} создан.\n` +
+        `Мы ответим в ближайшее время.`
+      ).catch(() => {});
+    } catch (notifyErr) {
+      console.error('Support ticket notify error:', notifyErr);
+    }
+  } catch (e) {
+    await client.query('ROLLBACK').catch(() => {});
+    if (res.headersSent) return;
+    res.status(500).json({ error: e.message || 'Server error' });
+  } finally {
+    client.release();
+  }
+});
+
+app.post('/api/support-tickets/:id/messages', authMiddleware, supportLimiter, supportUploadArray(3), async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'Invalid ticket id' });
+
+  const normalized = normalizeSupportMessage(req.body?.message);
+  const message = normalized.value;
+  if (!message) return res.status(400).json({ error: 'Message is required' });
+  if (message.length > 2000) return res.status(400).json({ error: 'Message is too long (max 2000)' });
+
+  const client = await pool.connect();
+  let updatedTicket = null;
+  let createdMessage = null;
+  let attachmentCount = 0;
+  try {
+    await client.query('BEGIN');
+
+    const ticketRes = await client.query(`
+      SELECT *
+      FROM support_tickets
+      WHERE id = $1 AND user_id = $2
+      FOR UPDATE
+      LIMIT 1
+    `, [id, req.tgUser.id]);
+    if (!ticketRes.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    const ticket = ticketRes.rows[0];
+    if (ticket.status === 'closed') {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'Ticket is closed' });
+    }
+
+    const attachments = await buildSupportAttachments(req.files || []);
+    attachmentCount = attachments.length;
+
+    const nextStatus = ticket.status === 'waiting_user' ? 'in_progress' : ticket.status;
+    const updRes = await client.query(`
+      UPDATE support_tickets
+      SET status = $1, updated_at = NOW(), closed_at = CASE WHEN $1 = 'closed' THEN closed_at ELSE NULL END
+      WHERE id = $2
+      RETURNING *
+    `, [nextStatus, id]);
+    updatedTicket = updRes.rows[0];
+
+    const msgRes = await client.query(`
+      INSERT INTO support_ticket_messages (ticket_id, sender_type, sender_admin_id, message, attachments_json, created_at)
+      VALUES ($1, 'user', NULL, $2, $3, NOW())
+      RETURNING *
+    `, [id, message, attachments.length ? JSON.stringify(attachments) : null]);
+    createdMessage = msgRes.rows[0];
+
+    await client.query('COMMIT');
+    res.json({
+      success: true,
+      ticket: updatedTicket,
+      message: createdMessage,
+    });
+
+    try {
+      if (process.env.ADMIN_CHAT_ID) {
+        const userLabel = req.tgUser.username ? `@${req.tgUser.username}` : `${req.tgUser.id}`;
+        bot.sendMessage(
+          process.env.ADMIN_CHAT_ID,
+          `✉️ Ответ пользователя в тикете #${id}\n` +
+          `👤 Пользователь: ${userLabel}\n` +
+          `📝 ${compactPreview(message, 180)}\n` +
+          `📎 Вложения: ${attachmentCount > 0 ? 'есть' : 'нет'}`
+        ).catch(() => {});
+      }
+    } catch (notifyErr) {
+      console.error('Support reply notify error:', notifyErr);
+    }
+  } catch (e) {
+    await client.query('ROLLBACK').catch(() => {});
+    if (res.headersSent) return;
+    console.error('Support reply error:', {
+      message: e?.message || e,
+      ...normalized.meta,
+    });
+    res.status(500).json({ error: e.message || 'Server error' });
+  } finally {
+    client.release();
+  }
+});
+
 // ---- REFERRAL ----
 app.get('/api/referrals', authMiddleware, async (req, res) => {
   try {
@@ -1612,6 +1889,189 @@ app.patch('/admin/payout-requests/:id/status', adminAuth, async (req, res) => {
     res.json(result.rows[0]);
   } catch (e) {
     res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/admin/support-tickets', adminAuth, async (req, res) => {
+  try {
+    const status = String(req.query?.status || '').trim();
+    const allowedStatuses = ['open', 'in_progress', 'waiting_user', 'closed'];
+    const params = [];
+    let where = '';
+    if (status) {
+      if (!allowedStatuses.includes(status)) return res.status(400).json({ error: 'Invalid status' });
+      params.push(status);
+      where = `WHERE st.status = $${params.length}`;
+    }
+
+    const result = await pool.query(`
+      SELECT st.id, st.user_id, st.status, st.created_at, st.updated_at, st.closed_at,
+             u.first_name, u.username,
+             lm.message AS last_message, lm.sender_type AS last_sender_type, lm.created_at AS last_message_at,
+             COALESCE(mc.message_count, 0) AS message_count
+      FROM support_tickets st
+      JOIN users u ON u.id = st.user_id
+      LEFT JOIN LATERAL (
+        SELECT m.message, m.sender_type, m.created_at
+        FROM support_ticket_messages m
+        WHERE m.ticket_id = st.id
+        ORDER BY m.created_at DESC, m.id DESC
+        LIMIT 1
+      ) lm ON TRUE
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::int AS message_count
+        FROM support_ticket_messages m
+        WHERE m.ticket_id = st.id
+      ) mc ON TRUE
+      ${where}
+      ORDER BY CASE st.status
+        WHEN 'open' THEN 0
+        WHEN 'in_progress' THEN 1
+        WHEN 'waiting_user' THEN 2
+        ELSE 3 END,
+        st.updated_at DESC, st.id DESC
+      LIMIT 500
+    `, params);
+
+    res.json(result.rows);
+  } catch (e) {
+    res.status(500).json({ error: e.message || 'Server error' });
+  }
+});
+
+app.get('/admin/support-tickets/:id', adminAuth, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'Invalid ticket id' });
+
+    const ticketRes = await pool.query(`
+      SELECT st.*, u.first_name, u.last_name, u.username
+      FROM support_tickets st
+      JOIN users u ON u.id = st.user_id
+      WHERE st.id = $1
+      LIMIT 1
+    `, [id]);
+    if (!ticketRes.rows.length) return res.status(404).json({ error: 'Ticket not found' });
+
+    const messagesRes = await pool.query(`
+      SELECT id, ticket_id, sender_type, sender_admin_id, message, attachments_json, created_at
+      FROM support_ticket_messages
+      WHERE ticket_id = $1
+      ORDER BY created_at ASC, id ASC
+      LIMIT 1000
+    `, [id]);
+
+    res.json({
+      ticket: ticketRes.rows[0],
+      messages: messagesRes.rows,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message || 'Server error' });
+  }
+});
+
+app.post('/admin/support-tickets/:id/messages', adminAuth, async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'Invalid ticket id' });
+
+  const normalized = normalizeSupportMessage(req.body?.message);
+  const message = normalized.value;
+  if (!message) return res.status(400).json({ error: 'message is required' });
+  if (message.length > 2000) return res.status(400).json({ error: 'message is too long (max 2000)' });
+
+  const client = await pool.connect();
+  let updatedTicket = null;
+  let createdMessage = null;
+  try {
+    await client.query('BEGIN');
+
+    const ticketRes = await client.query(`
+      SELECT *
+      FROM support_tickets
+      WHERE id = $1
+      FOR UPDATE
+      LIMIT 1
+    `, [id]);
+    if (!ticketRes.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+    const ticket = ticketRes.rows[0];
+    if (ticket.status === 'closed') {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'Cannot reply to closed ticket' });
+    }
+
+    const messageRes = await client.query(`
+      INSERT INTO support_ticket_messages (ticket_id, sender_type, sender_admin_id, message, attachments_json, created_at)
+      VALUES ($1, 'admin', $2, $3, NULL, NOW())
+      RETURNING *
+    `, [id, 0, message]);
+    createdMessage = messageRes.rows[0];
+
+    const updRes = await client.query(`
+      UPDATE support_tickets
+      SET updated_at = NOW()
+      WHERE id = $1
+      RETURNING *
+    `, [id]);
+    updatedTicket = updRes.rows[0];
+
+    await client.query(`
+      INSERT INTO admin_audit_log (admin_id, action, entity_type, entity_id, payload_json)
+      VALUES ($1, 'support_ticket_admin_reply', 'support_ticket', $2, $3)
+    `, [0, id, JSON.stringify({ message_preview: compactPreview(message, 160) })]).catch(() => {});
+
+    await client.query('COMMIT');
+    res.json({
+      success: true,
+      ticket: updatedTicket,
+      message: createdMessage,
+    });
+
+    const statusRu = supportStatusLabelRu(updatedTicket.status);
+    await sendUserNotificationSafe(
+      updatedTicket.user_id,
+      `💬 Новый ответ поддержки по тикету #${id}.\n` +
+      `Статус: ${statusRu}.\n` +
+      `Откройте раздел «Поддержка» в Mini App, чтобы прочитать ответ.`
+    );
+  } catch (e) {
+    await client.query('ROLLBACK').catch(() => {});
+    if (res.headersSent) return;
+    res.status(500).json({ error: e.message || 'Server error' });
+  } finally {
+    client.release();
+  }
+});
+
+app.patch('/admin/support-tickets/:id/status', adminAuth, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const status = String(req.body?.status || '').trim();
+    if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'Invalid ticket id' });
+    if (!['open', 'in_progress', 'waiting_user', 'closed'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    const result = await pool.query(`
+      UPDATE support_tickets
+      SET status = $1,
+          updated_at = NOW(),
+          closed_at = CASE WHEN $1 = 'closed' THEN NOW() ELSE NULL END
+      WHERE id = $2
+      RETURNING *
+    `, [status, id]);
+    if (!result.rows.length) return res.status(404).json({ error: 'Ticket not found' });
+
+    await pool.query(`
+      INSERT INTO admin_audit_log (admin_id, action, entity_type, entity_id, payload_json)
+      VALUES ($1, $2, 'support_ticket', $3, $4)
+    `, [0, `support_ticket_status_${status}`, id, JSON.stringify({ status })]).catch(() => {});
+
+    res.json(result.rows[0]);
+  } catch (e) {
+    res.status(500).json({ error: e.message || 'Server error' });
   }
 });
 

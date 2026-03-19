@@ -189,6 +189,26 @@ CREATE TABLE IF NOT EXISTS payouts (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- SUPPORT TICKETS (MVP)
+CREATE TABLE IF NOT EXISTS support_tickets (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status VARCHAR(20) NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'in_progress', 'waiting_user', 'closed')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  closed_at TIMESTAMPTZ
+);
+
+CREATE TABLE IF NOT EXISTS support_ticket_messages (
+  id BIGSERIAL PRIMARY KEY,
+  ticket_id BIGINT NOT NULL REFERENCES support_tickets(id) ON DELETE CASCADE,
+  sender_type VARCHAR(10) NOT NULL CHECK (sender_type IN ('user', 'admin')),
+  sender_admin_id BIGINT,
+  message TEXT NOT NULL,
+  attachments_json JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- REFERRAL LEDGER
 CREATE TABLE IF NOT EXISTS referral_ledger (
   id SERIAL PRIMARY KEY,
@@ -321,6 +341,12 @@ CREATE INDEX IF NOT EXISTS idx_claim_attachments_hash ON claim_attachments(file_
 
 CREATE INDEX IF NOT EXISTS idx_payout_requests_user_id ON payout_requests(user_id);
 CREATE INDEX IF NOT EXISTS idx_payout_requests_status ON payout_requests(status);
+
+CREATE INDEX IF NOT EXISTS idx_support_tickets_user_id ON support_tickets(user_id);
+CREATE INDEX IF NOT EXISTS idx_support_tickets_status ON support_tickets(status);
+CREATE INDEX IF NOT EXISTS idx_support_tickets_updated_at ON support_tickets(updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_support_messages_ticket_id ON support_ticket_messages(ticket_id);
+CREATE INDEX IF NOT EXISTS idx_support_messages_created_at ON support_ticket_messages(created_at);
 
 CREATE INDEX IF NOT EXISTS idx_internal_notes_entity ON internal_notes(entity_type, entity_id);
 CREATE INDEX IF NOT EXISTS idx_partner_match_suggestions_account ON partner_match_suggestions(bookmaker_account_id);

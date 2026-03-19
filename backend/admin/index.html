@@ -100,6 +100,14 @@
   .claim-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
   .detail-item .d-label { font-size: 11px; color: var(--text2); font-weight: 600; margin-bottom: 3px; }
   .detail-item .d-value { font-weight: 600; }
+  .support-thread { max-height: 360px; overflow: auto; border: 1px solid var(--border); border-radius: 10px; padding: 10px; background: var(--card); margin-bottom: 12px; }
+  .support-msg { margin-bottom: 10px; padding: 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg2); }
+  .support-msg.admin { border-color: rgba(0,229,160,0.25); background: rgba(0,229,160,0.06); }
+  .support-msg.user { border-color: rgba(91,141,238,0.25); background: rgba(91,141,238,0.06); }
+  .support-msg-meta { font-size: 11px; color: var(--text2); margin-bottom: 5px; }
+  .support-msg-body { white-space: pre-wrap; line-height: 1.45; }
+  .support-msg-files { margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .support-msg-files a { font-size: 11px; color: var(--accent); text-decoration: none; border: 1px solid rgba(0,229,160,0.3); border-radius: 999px; padding: 3px 8px; }
   
   .pagination { display: flex; gap: 8px; align-items: center; margin-top: 16px; }
   .page-btn { padding: 6px 12px; border-radius: 6px; cursor: pointer; background: var(--card); border: 1px solid var(--border); color: var(--text2); }
@@ -147,6 +155,7 @@
       <div class="nav-link" onclick="showPage('bk-verify')" id="nav-bk-verify"><span class="nav-icon">🛂</span> Верификация BK</div>
       <div class="nav-link" onclick="showPage('imports')" id="nav-imports"><span class="nav-icon">📥</span> Импорты</div>
       <div class="nav-link" onclick="showPage('payouts')" id="nav-payouts"><span class="nav-icon">💸</span> Выплаты</div>
+      <div class="nav-link" onclick="showPage('tickets')" id="nav-tickets"><span class="nav-icon">🛟</span> Tickets</div>
       <div class="nav-link" onclick="showPage('broadcast')" id="nav-broadcast"><span class="nav-icon">📢</span> Рассылка</div>
       <div style="position:absolute;bottom:20px;left:0;right:0;padding:0 20px">
         <button class="btn" style="width:100%;background:var(--card);color:var(--text2)" onclick="doLogout()">Выйти</button>
@@ -304,6 +313,27 @@
         </div>
       </div>
 
+      <!-- SUPPORT TICKETS -->
+      <div class="page" id="page-tickets">
+        <h1>Support Tickets</h1>
+        <div class="toolbar">
+          <div class="filter-btn active" onclick="filterSupportTickets('', this)">Все</div>
+          <div class="filter-btn" onclick="filterSupportTickets('open', this)">open</div>
+          <div class="filter-btn" onclick="filterSupportTickets('in_progress', this)">in_progress</div>
+          <div class="filter-btn" onclick="filterSupportTickets('waiting_user', this)">waiting_user</div>
+          <div class="filter-btn" onclick="filterSupportTickets('closed', this)">closed</div>
+          <button class="btn btn-primary" style="margin-left:auto" onclick="loadSupportTicketsAdmin()">Обновить</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>ID</th><th>User</th><th>Status</th><th>Messages</th><th>Last message</th><th>Updated</th><th>Действия</th></tr>
+            </thead>
+            <tbody id="support-tickets-table"></tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- BROADCAST -->
       <div class="page" id="page-broadcast">
         <h1>Рассылка</h1>
@@ -444,6 +474,35 @@
   </div>
 </div>
 
+<!-- SUPPORT TICKET MODAL -->
+<div class="modal-overlay" id="modal-support-ticket">
+  <div class="modal" style="width:760px">
+    <div class="modal-title" id="support-modal-title">Ticket #—</div>
+    <div id="support-modal-meta" style="font-size:13px;color:var(--text2);margin-bottom:10px"></div>
+    <div class="field">
+      <label>Статус</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="support-modal-status" style="max-width:240px">
+          <option value="open">open</option>
+          <option value="in_progress">in_progress</option>
+          <option value="waiting_user">waiting_user</option>
+          <option value="closed">closed</option>
+        </select>
+        <button class="btn btn-sm" style="background:var(--bg2);border:1px solid var(--border);color:#fff" onclick="updateSupportTicketStatusAdmin()">Сохранить статус</button>
+      </div>
+    </div>
+    <div class="support-thread" id="support-modal-thread"></div>
+    <div class="field">
+      <label>Ответ пользователю</label>
+      <textarea id="support-modal-reply" placeholder="Ответ поддержки..." style="min-height:90px"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" onclick="closeModal('modal-support-ticket')">Закрыть</button>
+      <button class="btn btn-primary" onclick="sendSupportReplyAdmin()">Отправить ответ</button>
+    </div>
+  </div>
+</div>
+
 <!-- GENERIC INTERNAL NOTES MODAL -->
 <div class="modal-overlay" id="modal-entity-notes">
   <div class="modal" style="width:640px">
@@ -481,6 +540,9 @@ let currentImportBatches = [];
 let currentMatchSuggestions = [];
 let payoutRequestFilter = '';
 let currentPayoutRequests = [];
+let supportTicketFilter = '';
+let currentSupportTickets = [];
+let currentSupportTicket = null;
 let entityNotesContext = { entityType: '', entityId: null, title: '' };
 
 function doLogin() {
@@ -549,6 +611,7 @@ function showPage(name) {
   if (name === 'bk-verify') loadBookmakerAccounts();
   if (name === 'imports') loadPartnerImports();
   if (name === 'payouts') loadPayoutRequests();
+  if (name === 'tickets') loadSupportTicketsAdmin();
 }
 
 // ---- DASHBOARD ----
@@ -1139,6 +1202,156 @@ async function updatePayoutRequestStatus(id, status) {
   }
 }
 
+// ---- SUPPORT TICKETS ----
+async function loadSupportTicketsAdmin() {
+  try {
+    const suffix = supportTicketFilter ? ('?status=' + encodeURIComponent(supportTicketFilter)) : '';
+    const rows = await adminFetch('/admin/support-tickets' + suffix);
+    currentSupportTickets = rows || [];
+    renderSupportTicketsTable(currentSupportTickets);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function filterSupportTickets(status, el) {
+  supportTicketFilter = status;
+  document.querySelectorAll('#page-tickets .filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  loadSupportTicketsAdmin();
+}
+
+function supportStatusLabel(status) {
+  return {
+    open: 'Новый',
+    in_progress: 'В работе',
+    waiting_user: 'Ждём ответ',
+    closed: 'Закрыт',
+  }[status] || status || '—';
+}
+
+function compactSupportText(text, max = 80) {
+  const s = String(text || '').replace(/\s+/g, ' ').trim();
+  if (!s) return '—';
+  if (s.length <= max) return s;
+  return s.slice(0, max - 1) + '…';
+}
+
+function renderSupportTicketsTable(rows) {
+  const tbody = document.getElementById('support-tickets-table');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text2);padding:32px">Тикетов пока нет</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map((r) => `
+    <tr>
+      <td>#${r.id}</td>
+      <td>${escapeHtml(r.first_name || '')} ${r.username ? '@' + escapeHtml(r.username) : ''} <small style="color:var(--text2)">(${r.user_id})</small></td>
+      <td>${renderStatusBadge(r.status, 'support_ticket')}</td>
+      <td>${Number(r.message_count || 0)}</td>
+      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escapeAttr(r.last_message || '')}">${escapeHtml(compactSupportText(r.last_message, 120))}</td>
+      <td style="color:var(--text2)">${formatDate(r.updated_at)}</td>
+      <td><button class="btn btn-sm" style="background:var(--bg2);border:1px solid var(--border);color:#fff" onclick="openSupportTicketAdmin(${r.id})">Открыть</button></td>
+    </tr>
+  `).join('');
+}
+
+function parseSupportAttachments(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function renderSupportMessageThread(messages) {
+  const el = document.getElementById('support-modal-thread');
+  if (!messages.length) {
+    el.innerHTML = '<div style="color:var(--text2);font-size:13px">Сообщений пока нет</div>';
+    return;
+  }
+
+  el.innerHTML = messages.map((m) => {
+    const sender = m.sender_type === 'admin' ? 'Поддержка' : 'Пользователь';
+    const attachments = parseSupportAttachments(m.attachments_json);
+    const files = attachments.map((a, idx) => {
+      const rawUrl = String(a?.url || '');
+      const safeUrl = rawUrl.startsWith('http') ? rawUrl : (rawUrl.startsWith('/uploads/') ? API + rawUrl : '');
+      if (!safeUrl) return '';
+      return `<a href="${escapeAttr(safeUrl)}" target="_blank" rel="noopener noreferrer">📎 Файл ${idx + 1}</a>`;
+    }).join('');
+    return `
+      <div class="support-msg ${m.sender_type === 'admin' ? 'admin' : 'user'}">
+        <div class="support-msg-meta">${sender} · ${formatDate(m.created_at)}</div>
+        <div class="support-msg-body">${escapeHtml(m.message || '')}</div>
+        ${files ? `<div class="support-msg-files">${files}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+
+  el.scrollTop = el.scrollHeight;
+}
+
+async function openSupportTicketAdmin(id) {
+  try {
+    const data = await adminFetch(`/admin/support-tickets/${id}`);
+    currentSupportTicket = data?.ticket || null;
+    if (!currentSupportTicket) throw new Error('Ticket not found');
+
+    const userLabel = `${currentSupportTicket.first_name || ''} ${currentSupportTicket.username ? '@' + currentSupportTicket.username : ''} (${currentSupportTicket.user_id})`;
+    setEl('support-modal-title', `Ticket #${currentSupportTicket.id}`);
+    setEl('support-modal-meta', `${userLabel} · создан: ${formatDate(currentSupportTicket.created_at)} · обновлён: ${formatDate(currentSupportTicket.updated_at)}`);
+    document.getElementById('support-modal-status').value = currentSupportTicket.status || 'open';
+    document.getElementById('support-modal-reply').value = '';
+    renderSupportMessageThread(data?.messages || []);
+    openModal('modal-support-ticket');
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+async function sendSupportReplyAdmin() {
+  if (!currentSupportTicket?.id) return;
+  const message = (document.getElementById('support-modal-reply').value || '').trim();
+  if (!message) {
+    alert('Введите ответ');
+    return;
+  }
+  try {
+    await adminFetch(`/admin/support-tickets/${currentSupportTicket.id}/messages`, {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    });
+    document.getElementById('support-modal-reply').value = '';
+    await openSupportTicketAdmin(currentSupportTicket.id);
+    await loadSupportTicketsAdmin();
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+async function updateSupportTicketStatusAdmin() {
+  if (!currentSupportTicket?.id) return;
+  const status = document.getElementById('support-modal-status').value;
+  try {
+    await adminFetch(`/admin/support-tickets/${currentSupportTicket.id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+    await openSupportTicketAdmin(currentSupportTicket.id);
+    await loadSupportTicketsAdmin();
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
 function renderNoteRows(rows) {
   if (!rows.length) {
     return '<div style="color:var(--text2);padding:8px 0">Заметок пока нет</div>';
@@ -1250,6 +1463,10 @@ function renderStatusBadge(status, kind = 'generic', score = null) {
   if (kind === 'payout_request') {
     const cls = (s === 'paid' || s === 'approved') ? 'approved' : (s === 'rejected' || s === 'failed' ? 'rejected' : 'submitted');
     return `<span class="badge badge-${cls}">${escapeHtml(s)}</span>`;
+  }
+  if (kind === 'support_ticket') {
+    const cls = s === 'closed' ? 'rejected' : (s === 'waiting_user' ? 'in_review' : (s === 'in_progress' ? 'approved' : 'submitted'));
+    return `<span class="badge badge-${cls}">${escapeHtml(supportStatusLabel(s))}</span>`;
   }
   return `<span class="badge badge-submitted">${escapeHtml(s)}</span>`;
 }

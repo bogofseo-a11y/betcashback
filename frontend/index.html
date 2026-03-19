@@ -288,9 +288,45 @@
   #modal-support-ticket .support-ticket-modal-compose {
     flex-shrink: 0;
     border-top: 1px solid var(--border);
-    padding: 12px 20px max(20px, env(safe-area-inset-bottom));
+    padding: 10px 20px max(16px, env(safe-area-inset-bottom));
   }
-  #modal-support-ticket #support-reply-block .field { margin-bottom: 10px; }
+  #modal-support-ticket #support-reply-block .field { margin-bottom: 8px; }
+  #modal-support-ticket #support-reply-message {
+    height: 92px;
+    min-height: 92px;
+  }
+  #modal-support-ticket .support-reply-attachments { margin: 4px 0 6px; }
+  #modal-support-ticket .support-reply-attach-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  #modal-support-ticket .support-attach-btn {
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  #modal-support-ticket .support-attach-btn:active { transform: scale(0.98); }
+  #modal-support-ticket .support-attach-hint {
+    font-size: 11px;
+    color: var(--text3);
+    line-height: 1.35;
+  }
+  #modal-support-ticket #support-reply-file-previews {
+    margin-top: 8px;
+    gap: 6px;
+  }
+  #modal-support-ticket #support-reply-file-previews .file-preview {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+  }
   #modal-support-ticket #support-ticket-closed-note { margin: 2px 0 0; }
   #modal-support-ticket .support-ticket-modal-actions { margin-top: 8px; }
   #modal-support-ticket .support-close-btn {
@@ -1111,12 +1147,10 @@
           <label>Ваш ответ</label>
           <textarea id="support-reply-message" placeholder="Уточните детали..." maxlength="2000"></textarea>
         </div>
-        <div class="field">
-          <label>Вложения (необязательно)</label>
-          <div class="upload-area" onclick="document.getElementById('support-reply-file-input').click()" id="support-reply-upload-area">
-            <div class="upload-icon">📎</div>
-            <div class="upload-text"><strong>Нажмите для загрузки</strong></div>
-            <div class="upload-limit">JPG, PNG, WebP · до 8 МБ · максимум 3 файла</div>
+        <div class="support-reply-attachments">
+          <div class="support-reply-attach-row">
+            <button type="button" class="support-attach-btn" id="support-reply-upload-area" onclick="document.getElementById('support-reply-file-input').click()">+ Добавить фото</button>
+            <div class="support-attach-hint">Необязательно · до 3 файлов · JPG/PNG/WebP · до 8 МБ</div>
           </div>
           <input type="file" id="support-reply-file-input" accept="image/jpeg,image/png,image/webp" multiple>
           <div class="file-previews" id="support-reply-file-previews"></div>

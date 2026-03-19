@@ -202,6 +202,97 @@
   .claim-loss { font-size: 12px; color: var(--text2); }
   .claim-cashback { font-size: 16px; font-weight: 800; color: var(--accent); }
 
+  /* SUPPORT */
+  .btn-back {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    border-radius: 10px;
+    padding: 7px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .support-entry {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+  .support-entry-title { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .support-entry-sub { font-size: 12px; color: var(--text2); line-height: 1.4; margin-bottom: 10px; }
+  .support-entry-meta { font-size: 11px; color: var(--text2); margin-bottom: 10px; }
+  .support-ticket-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+  .support-ticket-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .support-ticket-id { font-size: 13px; font-weight: 800; color: #fff; }
+  .support-ticket-preview { font-size: 12px; color: var(--text2); margin-top: 6px; line-height: 1.35; }
+  .support-ticket-meta { font-size: 11px; color: var(--text3); margin-top: 8px; }
+  .support-status {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.4px;
+    border-radius: 999px; padding: 3px 8px;
+  }
+  .support-status.open { background: rgba(91,141,238,0.15); color: var(--blue); }
+  .support-status.in_progress { background: rgba(0,229,160,0.15); color: var(--accent); }
+  .support-status.waiting_user { background: rgba(255,209,102,0.15); color: var(--yellow); }
+  .support-status.closed { background: rgba(255,255,255,0.08); color: var(--text2); }
+  .support-thread {
+    max-height: 320px;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg2);
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  .support-msg { margin-bottom: 10px; display: flex; flex-direction: column; gap: 4px; }
+  .support-msg.admin { align-items: flex-start; }
+  .support-msg.user { align-items: flex-end; }
+  .support-msg-bubble {
+    max-width: 90%;
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-word;
+    border: 1px solid var(--border);
+  }
+  .support-msg.admin .support-msg-bubble {
+    background: rgba(91,141,238,0.12);
+    color: #dbe8ff;
+    border-color: rgba(91,141,238,0.25);
+  }
+  .support-msg.user .support-msg-bubble {
+    background: rgba(0,229,160,0.12);
+    color: #e1fff5;
+    border-color: rgba(0,229,160,0.25);
+  }
+  .support-msg-meta { font-size: 10px; color: var(--text3); }
+  .support-attachments {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .support-attachment {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--accent);
+    text-decoration: none;
+    border: 1px solid rgba(0,229,160,0.25);
+    background: rgba(0,229,160,0.08);
+    border-radius: 999px;
+    padding: 4px 8px;
+  }
+
   /* BOOKMAKER LIST */
   .bk-card {
     background: var(--card); border: 1px solid var(--border);
@@ -258,7 +349,7 @@
   .upload-text { font-size: 13px; color: var(--text2); }
   .upload-text strong { color: var(--text); }
   .upload-limit { font-size: 11px; color: var(--text3); margin-top: 4px; }
-  #file-input { display: none; }
+  #file-input, #support-new-file-input, #support-reply-file-input { display: none; }
   .file-previews { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
   .file-preview { position: relative; width: 72px; height: 72px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
   .file-preview img { width: 100%; height: 100%; object-fit: cover; }
@@ -706,9 +797,50 @@
     </div>
 
     <div class="section animate-in delay-3">
+      <div class="section-title">Поддержка</div>
+      <div class="support-entry">
+        <div class="support-entry-title">Нужна помощь?</div>
+        <div class="support-entry-sub">Создайте тикет, и мы ответим в чате поддержки внутри Mini App.</div>
+        <div class="support-entry-meta">Открытых тикетов: <strong id="support-open-count">0</strong></div>
+        <button class="btn-submit" style="margin-top:0;background:var(--bg3);color:var(--text);border:1px solid var(--border)" onclick="showScreen('support')">Открыть поддержку</button>
+      </div>
+    </div>
+
+    <div class="section animate-in delay-4">
       <div class="section-title">История выплат</div>
       <div id="payout-history">
         <div style="font-size:13px;color:var(--text2);text-align:center;padding:24px">Выплат пока нет</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN: SUPPORT -->
+  <div class="screen" id="screen-support">
+    <div class="page-header">
+      <button class="btn-back" onclick="showScreen('profile')">← Назад</button>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;">Поддержка</div>
+      <div style="width:56px"></div>
+    </div>
+
+    <div class="section animate-in">
+      <div class="support-entry">
+        <div class="support-entry-title">Как быстро решить вопрос</div>
+        <div class="support-entry-sub">Опишите ситуацию в тикете и при необходимости добавьте скриншоты (до 3 файлов).</div>
+        <button class="btn-submit" style="margin-top:0;background:var(--bg3);color:var(--text);border:1px solid var(--border)" onclick="showScreen('faq')">Открыть FAQ</button>
+      </div>
+    </div>
+
+    <div class="section animate-in delay-1">
+      <button class="btn-submit" onclick="openSupportCreateModal()">+ Создать тикет</button>
+    </div>
+
+    <div class="section animate-in delay-2">
+      <div class="section-title">Мои тикеты</div>
+      <div id="support-ticket-list">
+        <div class="empty">
+          <div class="empty-icon">🛟</div>
+          <div class="empty-text">Тикетов пока нет.<br>Создайте первый, если нужна помощь.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -885,6 +1017,60 @@
   </div>
 </div>
 
+<!-- MODAL: Support create -->
+<div class="modal-overlay" id="modal-support-create">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Новый тикет</div>
+    <div class="modal-sub">Опишите вопрос. Можно прикрепить до 3 изображений.</div>
+    <div class="field">
+      <label>Сообщение</label>
+      <textarea id="support-new-message" placeholder="Напишите, что случилось..." maxlength="2000"></textarea>
+    </div>
+    <div class="field">
+      <label>Вложения (необязательно)</label>
+      <div class="upload-area" onclick="document.getElementById('support-new-file-input').click()" id="support-new-upload-area">
+        <div class="upload-icon">📎</div>
+        <div class="upload-text"><strong>Нажмите для загрузки</strong></div>
+        <div class="upload-limit">JPG, PNG, WebP · до 8 МБ · максимум 3 файла</div>
+      </div>
+      <input type="file" id="support-new-file-input" accept="image/jpeg,image/png,image/webp" multiple>
+      <div class="file-previews" id="support-new-file-previews"></div>
+    </div>
+    <button class="btn-submit" id="support-create-btn" onclick="createSupportTicket()">Создать тикет</button>
+    <button style="width:100%;padding:14px;background:none;border:none;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px" onclick="closeModal('modal-support-create')">Отмена</button>
+  </div>
+</div>
+
+<!-- MODAL: Support ticket -->
+<div class="modal-overlay" id="modal-support-ticket">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="support-ticket-title">Тикет #—</div>
+    <div class="modal-sub" id="support-ticket-status">Статус: —</div>
+    <div class="support-thread" id="support-ticket-messages"></div>
+    <div id="support-reply-block">
+      <div class="field">
+        <label>Ваш ответ</label>
+        <textarea id="support-reply-message" placeholder="Уточните детали..." maxlength="2000"></textarea>
+      </div>
+      <div class="field">
+        <label>Вложения (необязательно)</label>
+        <div class="upload-area" onclick="document.getElementById('support-reply-file-input').click()" id="support-reply-upload-area">
+          <div class="upload-icon">📎</div>
+          <div class="upload-text"><strong>Нажмите для загрузки</strong></div>
+          <div class="upload-limit">JPG, PNG, WebP · до 8 МБ · максимум 3 файла</div>
+        </div>
+        <input type="file" id="support-reply-file-input" accept="image/jpeg,image/png,image/webp" multiple>
+        <div class="file-previews" id="support-reply-file-previews"></div>
+      </div>
+      <button class="btn-submit" id="support-reply-btn" onclick="sendSupportReply()">Отправить ответ</button>
+    </div>
+    <div id="support-ticket-closed-note" style="display:none;font-size:12px;color:var(--text2);margin:6px 0 2px">Тикет закрыт. Для нового вопроса создайте новый тикет.</div>
+    <button style="width:100%;padding:14px;background:none;border:none;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px" onclick="closeModal('modal-support-ticket')">Закрыть</button>
+  </div>
+</div>
+
 <script>
 // ============================================================
 // CONFIG
@@ -926,6 +1112,7 @@ let state = {
   minPayoutAmountRub: 500,
   withdrawable: { approvedTotal: 0, reservedTotal: 0, available: 0 },
   payoutRequests: [],
+  supportTickets: [],
 };
 let showAllHomeClaims = false;
 let activeScreen = 'home';
@@ -935,6 +1122,10 @@ const PAYOUT_STATE_SYNC_COOLDOWN_MS = 4000;
 let claimStateSyncPromise = null;
 let lastClaimStateSyncAt = 0;
 const CLAIM_STATE_SYNC_COOLDOWN_MS = 4000;
+let supportTicketSyncPromise = null;
+let activeSupportTicket = null;
+const supportNewFiles = [];
+const supportReplyFiles = [];
 
 function safeCountValue(value) {
   const n = Number(value);
@@ -987,6 +1178,22 @@ function applyPayoutSnapshot(payoutReqRes) {
   state.payoutRequests = Array.isArray(payoutReqRes.requests) ? payoutReqRes.requests : [];
   // Home "Доступно к выводу" must reflect backend withdrawable summary.
   state.balance = state.withdrawable.available;
+}
+
+function applySupportTicketsSnapshot(ticketsRes) {
+  if (!Array.isArray(ticketsRes)) return;
+  state.supportTickets = ticketsRes.map(t => ({
+    id: t.id,
+    status: t.status,
+    created_at: t.created_at,
+    updated_at: t.updated_at,
+    closed_at: t.closed_at || null,
+    message_count: Number(t.message_count || 0),
+    last_message: t.last_message || '',
+    last_sender_type: t.last_sender_type || null,
+    last_message_at: t.last_message_at || null,
+  }));
+  updateSupportEntryMeta();
 }
 
 function shouldSyncPayoutForScreen(screenName = activeScreen) {
@@ -1053,6 +1260,24 @@ async function syncPayoutState({ force = false, silent = true } = {}) {
   }
 }
 
+async function loadSupportTickets({ silent = true } = {}) {
+  if (supportTicketSyncPromise) return supportTicketSyncPromise;
+  supportTicketSyncPromise = (async () => {
+    const tickets = await apiCall('/support-tickets');
+    applySupportTicketsSnapshot(tickets);
+    renderSupportTickets();
+  })();
+
+  try {
+    await supportTicketSyncPromise;
+  } catch (e) {
+    if (!silent) showToast(e.message || 'Не удалось загрузить тикеты', 'error');
+    else console.log('[support-sync] failed', e?.message || e);
+  } finally {
+    supportTicketSyncPromise = null;
+  }
+}
+
 // ============================================================
 // FAQ DATA
 // ============================================================
@@ -1076,6 +1301,7 @@ const FAQ_ITEMS = [
 async function init() {
   renderFAQ();
   setupForm();
+  setupSupportUploads();
   await loadUserData();
   updateRefLink();
 }
@@ -1129,6 +1355,7 @@ async function loadUserData() {
   renderBookmakers();
   populateBookmakerSelect();
   updateProfile();
+  loadSupportTickets({ silent: true }).catch(() => {});
 }
 
 function updateProfile() {
@@ -1152,6 +1379,7 @@ function updateProfile() {
   renderPayoutMethods();
   renderWithdrawSection();
   renderPayoutHistory();
+  updateSupportEntryMeta();
   updatePendingUI();
 }
 
@@ -1173,6 +1401,12 @@ function updateHomeOnboardingHint() {
   }
   hintEl.className = 'onboarding-next';
   hintEl.textContent = 'Чтобы подать первую заявку, сначала подключите букмекера в разделе «Букмекеры».';
+}
+
+function updateSupportEntryMeta() {
+  const openCount = state.supportTickets.filter(t => t.status !== 'closed').length;
+  const el = document.getElementById('support-open-count');
+  if (el) el.textContent = String(openCount);
 }
 
 function updateTierUI() {
@@ -1210,7 +1444,7 @@ function updatePendingUI() {
 // ============================================================
 // NAVIGATION
 // ============================================================
-const screens = ['home','bookmakers','submit','referral','profile','faq'];
+const screens = ['home','bookmakers','submit','referral','profile','support','faq'];
 
 function showScreen(name) {
   activeScreen = name;
@@ -1226,6 +1460,9 @@ function showScreen(name) {
   }
   if (shouldSyncPayoutForScreen(name)) {
     syncPayoutState({ silent: true }).catch(() => {});
+  }
+  if (name === 'support') {
+    loadSupportTickets({ silent: false }).catch(() => {});
   }
 }
 
@@ -1649,6 +1886,287 @@ function toggleFAQ(i) {
 }
 
 // ============================================================
+// SUPPORT
+// ============================================================
+function supportStatusMeta(status) {
+  const map = {
+    open: { label: 'Новый', tone: 'open' },
+    in_progress: { label: 'В работе', tone: 'in_progress' },
+    waiting_user: { label: 'Ждём ваш ответ', tone: 'waiting_user' },
+    closed: { label: 'Закрыт', tone: 'closed' },
+  };
+  return map[status] || { label: status || '—', tone: 'open' };
+}
+
+function renderSupportTickets() {
+  const container = document.getElementById('support-ticket-list');
+  if (!container) return;
+  if (!state.supportTickets.length) {
+    container.innerHTML = `<div class="empty"><div class="empty-icon">🛟</div><div class="empty-text">Тикетов пока нет.<br>Создайте первый, если нужна помощь.</div></div>`;
+    return;
+  }
+
+  container.innerHTML = state.supportTickets.map((t) => {
+    const meta = supportStatusMeta(t.status);
+    const senderPrefix = t.last_sender_type === 'admin' ? 'Поддержка: ' : (t.last_sender_type === 'user' ? 'Вы: ' : '');
+    const preview = compactText(t.last_message || 'Сообщений пока нет', 140);
+    const dt = formatDateTime(t.last_message_at || t.updated_at);
+    return `
+      <div class="support-ticket-card" onclick="openSupportTicket(${t.id})">
+        <div class="support-ticket-top">
+          <div class="support-ticket-id">Тикет #${t.id}</div>
+          <div class="support-status ${meta.tone}">${meta.label}</div>
+        </div>
+        <div class="support-ticket-preview">${escapeHtml(senderPrefix + preview)}</div>
+        <div class="support-ticket-meta">${dt} · сообщений: ${Number(t.message_count || 0)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function setupSupportUploads() {
+  const newInput = document.getElementById('support-new-file-input');
+  if (newInput && !newInput.dataset.bound) {
+    newInput.addEventListener('change', onSupportNewFilesChange);
+    newInput.dataset.bound = '1';
+  }
+  const replyInput = document.getElementById('support-reply-file-input');
+  if (replyInput && !replyInput.dataset.bound) {
+    replyInput.addEventListener('change', onSupportReplyFilesChange);
+    replyInput.dataset.bound = '1';
+  }
+}
+
+function addSupportFiles(target, files, max = 3) {
+  files.forEach((f) => {
+    if (target.length >= max) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(f.type)) {
+      showToast('Только JPG, PNG, WebP', 'error');
+      return;
+    }
+    if (f.size > 8 * 1024 * 1024) {
+      showToast('Файл > 8МБ', 'error');
+      return;
+    }
+    target.push(f);
+  });
+}
+
+function renderSupportFilePreviews(list, previewsId, removeFnName, uploadAreaId, max = 3) {
+  const container = document.getElementById(previewsId);
+  if (!container) return;
+  container.innerHTML = list.map((f, i) => {
+    const url = URL.createObjectURL(f);
+    return `<div class="file-preview"><img src="${url}"><div class="file-remove" onclick="${removeFnName}(${i})">×</div></div>`;
+  }).join('');
+
+  const area = document.getElementById(uploadAreaId);
+  if (!area) return;
+  if (list.length >= max) {
+    area.style.opacity = '0.4';
+    area.style.pointerEvents = 'none';
+  } else {
+    area.style.opacity = '1';
+    area.style.pointerEvents = '';
+  }
+}
+
+function onSupportNewFilesChange(e) {
+  addSupportFiles(supportNewFiles, Array.from(e.target.files || []), 3);
+  renderSupportFilePreviews(supportNewFiles, 'support-new-file-previews', 'removeSupportNewFile', 'support-new-upload-area', 3);
+  e.target.value = '';
+}
+
+function onSupportReplyFilesChange(e) {
+  addSupportFiles(supportReplyFiles, Array.from(e.target.files || []), 3);
+  renderSupportFilePreviews(supportReplyFiles, 'support-reply-file-previews', 'removeSupportReplyFile', 'support-reply-upload-area', 3);
+  e.target.value = '';
+}
+
+function removeSupportNewFile(idx) {
+  supportNewFiles.splice(idx, 1);
+  renderSupportFilePreviews(supportNewFiles, 'support-new-file-previews', 'removeSupportNewFile', 'support-new-upload-area', 3);
+}
+
+function removeSupportReplyFile(idx) {
+  supportReplyFiles.splice(idx, 1);
+  renderSupportFilePreviews(supportReplyFiles, 'support-reply-file-previews', 'removeSupportReplyFile', 'support-reply-upload-area', 3);
+}
+
+function openSupportCreateModal() {
+  document.getElementById('support-new-message').value = '';
+  supportNewFiles.length = 0;
+  renderSupportFilePreviews(supportNewFiles, 'support-new-file-previews', 'removeSupportNewFile', 'support-new-upload-area', 3);
+  openModal('modal-support-create');
+}
+
+function normalizeSupportTextInput(raw) {
+  let text = String(raw || '').replace(/\u0000/g, '').replace(/\r\n?/g, '\n');
+  try {
+    text = text.normalize('NFC');
+  } catch {}
+  return text.trim();
+}
+
+async function createSupportTicket() {
+  const btn = document.getElementById('support-create-btn');
+  const message = normalizeSupportTextInput(document.getElementById('support-new-message').value);
+  if (!message) {
+    showToast('Опишите ваш вопрос', 'error');
+    return;
+  }
+  if (message.length > 2000) {
+    showToast('Сообщение слишком длинное (макс. 2000)', 'error');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Создаём...';
+  try {
+    const fd = new FormData();
+    fd.append('message', message);
+    supportNewFiles.forEach((f) => fd.append('files', f));
+    const result = await apiCall('/support-tickets', 'POST', fd, true);
+    closeModal('modal-support-create');
+    showToast('✓ Тикет создан', 'success');
+    supportNewFiles.length = 0;
+    await loadSupportTickets({ silent: true });
+    if (result?.ticket?.id) {
+      await openSupportTicket(result.ticket.id);
+    }
+  } catch (e) {
+    showToast(e.message || 'Ошибка создания тикета', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Создать тикет';
+  }
+}
+
+function normalizeSupportAttachments(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function resolveSupportAttachmentUrl(rawUrl) {
+  const url = String(rawUrl || '').trim();
+  if (!url) return '';
+  if (url.startsWith('/uploads/')) return url;
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return '';
+}
+
+function renderSupportTicketMessages(messages = []) {
+  const container = document.getElementById('support-ticket-messages');
+  if (!container) return;
+  if (!messages.length) {
+    container.innerHTML = '<div style="font-size:12px;color:var(--text2)">Сообщений пока нет</div>';
+    return;
+  }
+
+  container.innerHTML = messages.map((m) => {
+    const senderClass = m.sender_type === 'admin' ? 'admin' : 'user';
+    const senderLabel = m.sender_type === 'admin' ? 'Поддержка' : 'Вы';
+    const attachments = normalizeSupportAttachments(m.attachments_json);
+    const attachHtml = attachments.map((a, idx) => {
+      const safeUrl = resolveSupportAttachmentUrl(a?.url);
+      if (!safeUrl) return '';
+      return `<a class="support-attachment" href="${safeUrl}" target="_blank" rel="noopener noreferrer">📎 Файл ${idx + 1}</a>`;
+    }).join('');
+    return `
+      <div class="support-msg ${senderClass}">
+        <div class="support-msg-bubble">${escapeHtml(m.message || '')}</div>
+        ${attachHtml ? `<div class="support-attachments">${attachHtml}</div>` : ''}
+        <div class="support-msg-meta">${senderLabel} · ${formatDateTime(m.created_at)}</div>
+      </div>
+    `;
+  }).join('');
+
+  container.scrollTop = container.scrollHeight;
+}
+
+async function openSupportTicket(ticketId) {
+  try {
+    const data = await apiCall(`/support-tickets/${ticketId}`);
+    activeSupportTicket = data?.ticket || null;
+    if (!activeSupportTicket) throw new Error('Тикет не найден');
+
+    const meta = supportStatusMeta(activeSupportTicket.status);
+    setEl('support-ticket-title', `Тикет #${activeSupportTicket.id}`);
+    setEl('support-ticket-status', `Статус: <span class="support-status ${meta.tone}">${meta.label}</span>`);
+    renderSupportTicketMessages(data?.messages || []);
+
+    const isClosed = activeSupportTicket.status === 'closed';
+    document.getElementById('support-reply-block').style.display = isClosed ? 'none' : 'block';
+    document.getElementById('support-ticket-closed-note').style.display = isClosed ? 'block' : 'none';
+    document.getElementById('support-reply-message').value = '';
+    supportReplyFiles.length = 0;
+    renderSupportFilePreviews(supportReplyFiles, 'support-reply-file-previews', 'removeSupportReplyFile', 'support-reply-upload-area', 3);
+
+    const idx = state.supportTickets.findIndex(t => t.id === activeSupportTicket.id);
+    if (idx >= 0) {
+      state.supportTickets[idx] = { ...state.supportTickets[idx], ...activeSupportTicket };
+      renderSupportTickets();
+      updateSupportEntryMeta();
+    }
+
+    openModal('modal-support-ticket');
+  } catch (e) {
+    showToast(e.message || 'Не удалось открыть тикет', 'error');
+  }
+}
+
+async function sendSupportReply() {
+  if (!activeSupportTicket?.id) return;
+  if (activeSupportTicket.status === 'closed') {
+    showToast('Тикет закрыт. Создайте новый.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('support-reply-btn');
+  const message = normalizeSupportTextInput(document.getElementById('support-reply-message').value);
+  if (!message) {
+    showToast('Введите сообщение', 'error');
+    return;
+  }
+  if (message.length > 2000) {
+    showToast('Сообщение слишком длинное (макс. 2000)', 'error');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Отправляем...';
+  try {
+    const fd = new FormData();
+    fd.append('message', message);
+    supportReplyFiles.forEach((f) => fd.append('files', f));
+    const result = await apiCall(`/support-tickets/${activeSupportTicket.id}/messages`, 'POST', fd, true);
+
+    document.getElementById('support-reply-message').value = '';
+    supportReplyFiles.length = 0;
+    renderSupportFilePreviews(supportReplyFiles, 'support-reply-file-previews', 'removeSupportReplyFile', 'support-reply-upload-area', 3);
+
+    if (result?.ticket) activeSupportTicket = result.ticket;
+    await loadSupportTickets({ silent: true });
+    await openSupportTicket(activeSupportTicket.id);
+    showToast('✓ Ответ отправлен', 'success');
+  } catch (e) {
+    showToast(e.message || 'Ошибка отправки', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Отправить ответ';
+  }
+}
+
+// ============================================================
 // PAYOUT METHODS
 // ============================================================
 const assetLabels = { USDT_TRC20:'USDT TRC20', USDT_TON:'USDT TON', TON:'TON', TG_WALLET:'Telegram Wallet' };
@@ -1944,6 +2462,35 @@ function formatDate(dateStr) {
   return d.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'2-digit' });
 }
 
+function formatDateTime(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function compactText(text, maxLen = 120) {
+  const src = String(text || '').replace(/\s+/g, ' ').trim();
+  if (!src) return '';
+  if (src.length <= maxLen) return src;
+  return src.slice(0, maxLen - 1) + '…';
+}
+
+function escapeHtml(value) {
+  return String(value || '').replace(/[&<>'"]/g, (ch) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;',
+  }[ch]));
+}
+
 function truncateAddr(addr) {
   if (!addr || addr.length < 12) return addr;
   return addr.substring(0,6) + '...' + addr.substring(addr.length-4);
@@ -1975,6 +2522,9 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && shouldSyncPayoutForScreen()) {
     syncPayoutState({ silent: true }).catch(() => {});
   }
+  if (document.visibilityState === 'visible' && activeScreen === 'support') {
+    loadSupportTickets({ silent: true }).catch(() => {});
+  }
 });
 
 window.addEventListener('focus', () => {
@@ -1983,6 +2533,9 @@ window.addEventListener('focus', () => {
   }
   if (shouldSyncPayoutForScreen()) {
     syncPayoutState({ silent: true }).catch(() => {});
+  }
+  if (activeScreen === 'support') {
+    loadSupportTickets({ silent: true }).catch(() => {});
   }
 });
 

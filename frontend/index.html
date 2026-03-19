@@ -806,7 +806,7 @@
       <div style="padding-bottom:8px">
         <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer">
           <input type="checkbox" id="claim-agree" style="width:18px;height:18px;margin-top:2px;accent-color:var(--accent)">
-          <span style="font-size:13px;color:var(--text2);line-height:1.4">Подтверждаю, что зарегистрировался по ссылке BetCashback и принимаю <span style="color:var(--accent);cursor:pointer" onclick="showScreen('faq')">правила сервиса</span>.</span>
+          <span style="font-size:13px;color:var(--text2);line-height:1.4">Подтверждаю, что зарегистрировался по ссылке BetCashback и принимаю <span style="color:var(--accent);cursor:pointer" onclick="showScreen('terms')">правила сервиса</span>.</span>
         </label>
       </div>
 
@@ -1003,6 +1003,75 @@
       <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;">FAQ</div>
     </div>
     <div class="section" id="faq-list"></div>
+    <div style="padding:16px;text-align:center">
+      <div style="font-size:13px;color:var(--accent);cursor:pointer" onclick="showScreen('terms')">Правила сервиса и конфиденциальность →</div>
+    </div>
+  </div>
+
+  <!-- SCREEN: TERMS -->
+  <div class="screen" id="screen-terms">
+    <div class="page-header">
+      <button class="btn-back" onclick="showScreen('faq')">← Назад</button>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;">Правила сервиса</div>
+      <div style="width:56px"></div>
+    </div>
+    <div class="section animate-in">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;">
+
+        <div style="margin-bottom:20px">
+          <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">Что такое BetCashback</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.6">
+            BetCashback — сервис, который возвращает часть проигрыша у букмекеров. Вы регистрируетесь у букмекера по нашей ссылке, делаете ставки, а если проиграли — подаёте заявку на кэшбэк. Мы проверяем заявку и начисляем возврат.
+          </div>
+        </div>
+        <div style="margin-bottom:20px">
+          <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">Размер кэшбэка</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.6">
+            Базовая ставка — 5% от суммы проигрыша. При увеличении числа одобренных заявок ставка растёт: 7% (от 5 заявок) и 10% (от 15 заявок). Размер кэшбэка рассчитывается автоматически при подаче заявки.
+          </div>
+        </div>
+        <div style="margin-bottom:20px">
+          <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">Как происходит выплата</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.6">
+            Кэшбэк начисляется в рублях, а выплата производится в криптовалюте (USDT TRC-20, USDT TON или TON) по курсу на момент обработки. Минимальная сумма для вывода — 500 ₽. Выплаты обрабатываются вручную, обычно в течение 24–72 часов.
+          </div>
+        </div>
+        <div style="margin-bottom:20px">
+          <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">Обязательные условия</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.6">
+            • Регистрация у букмекера только по ссылке из BetCashback<br>
+            • Player ID должен пройти проверку перед подачей заявок<br>
+            • К заявке обязательно прикрепить скриншот ставки<br>
+            • Один аккаунт букмекера — один пользователь<br>
+            • Мультиаккаунты и фрод приводят к блокировке без возврата средств
+          </div>
+        </div>
+        <div style="margin-bottom:20px">
+          <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">Реферальная программа</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.6">
+            Пригласите друга по вашей реферальной ссылке — и получайте 20% бонус с каждого его одобренного кэшбэка. Бонус начисляется автоматически.
+          </div>
+        </div>
+        <div style="margin-bottom:20px">
+          <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">Отказ от ответственности</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.6">
+            BetCashback не является букмекерской конторой и не принимает ставки. Сервис не гарантирует доход и не несёт ответственности за результаты ставок. Пользуясь сервисом, вы подтверждаете, что вам исполнилось 18 лет и вы осознаёте риски, связанные со ставками на спорт.
+          </div>
+        </div>
+        <div style="margin-bottom:20px">
+          <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">Конфиденциальность</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.6">
+            Мы получаем ваши данные из Telegram (имя, username, ID) и используем их только для работы сервиса. Мы не передаём ваши данные третьим лицам, кроме случаев, необходимых для выплат. Крипто-адреса хранятся для обработки переводов.
+          </div>
+        </div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">Прочие условия</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.6">
+            Администрация сервиса оставляет за собой право отказать в начислении или выплате кэшбэка, а также ограничить доступ к сервису любому пользователю без объяснения причин. Условия сервиса могут быть изменены; актуальная версия всегда доступна в этом разделе.
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- BOTTOM NAV -->
@@ -1540,7 +1609,7 @@ function updatePendingUI() {
 // ============================================================
 // NAVIGATION
 // ============================================================
-const screens = ['home','bookmakers','submit','referral','profile','support','faq'];
+const screens = ['home','bookmakers','submit','referral','profile','support','faq','terms'];
 
 function showScreen(name) {
   activeScreen = name;

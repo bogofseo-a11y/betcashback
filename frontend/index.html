@@ -992,7 +992,7 @@
     </div>
 
     <div class="section animate-in delay-3">
-      <div class="section-title">Мои рефералы</div>
+      <div class="section-title">Мои друзья</div>
       <div id="ref-list">
         <div style="font-size:13px;color:var(--text2);text-align:center;padding:24px">Пока никого нет.<br>Отправьте ссылку другу — и получайте бонус с его кэшбэка</div>
       </div>
@@ -1682,7 +1682,7 @@ function showScreen(name) {
 function bookmakerStatusMeta(status) {
   const map = {
     pending: { label: '⏳ Player ID на проверке. Обычно до 24 часов.', short: 'На проверке', tone: 'pending' },
-    verified: { label: '✅ Статус: подтверждён. Можно подавать заявки.', short: 'Подтверждён', tone: 'verified' },
+    verified: { label: '✅ Статус: подключён. Можно подавать заявки.', short: 'Подключён', tone: 'verified' },
     rejected: { label: '❌ Player ID отклонён. Проверьте ID и отправьте заново.', short: 'Отклонён', tone: 'rejected' },
     none: { label: '🟨 Статус: не подключён. Сначала зарегистрируйтесь и отправьте player ID.', short: 'Не подключён', tone: 'none' },
   };
@@ -1716,7 +1716,7 @@ function renderBookmakers() {
         ${bk.cashback_label ? `<div class="bk-tag">${bk.cashback_label}</div>` : ''}
         <div class="bk-status-tag status-${status.tone}">${status.short}</div>
       </div>
-      <div class="bk-action">Открыть ›</div>
+      <div class="bk-action">Подробнее</div>
     </div>`;
   }).join('');
 
@@ -1877,7 +1877,7 @@ function setClaimEligibilityHint(mode = 'default') {
   const map = {
     default: `Заявки доступны после проверки вашего аккаунта у букмекера. ${gotoBookmakers}`,
     no_account: `Сначала зарегистрируйтесь по нашей ссылке и отправьте player ID. После проверки откроется подача заявок. ${gotoBookmakers}`,
-    pending: `⏳ Player ID на проверке. Как только статус станет «Подтверждён», вы сможете подать заявку.`,
+    pending: `⏳ Player ID на проверке. Как только статус станет «Подключён», вы сможете подать заявку.`,
     rejected: `❌ Player ID отклонён. Обновите ID в разделе «Букмекеры», чтобы снова отправить на проверку.`,
     verified: '✅ Этот букмекер подтверждён. Можно отправлять заявку.',
   };

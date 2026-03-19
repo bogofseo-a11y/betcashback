@@ -252,19 +252,30 @@
     margin-bottom: 10px;
   }
   #modal-support-ticket .modal {
-    max-height: calc(100vh - max(12px, env(safe-area-inset-top)));
-    max-height: calc(100dvh - max(12px, env(safe-area-inset-top)));
+    max-height: calc(100vh - max(10px, env(safe-area-inset-top)));
+    max-height: calc(100dvh - max(10px, env(safe-area-inset-top)));
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-top: 14px;
   }
+  #modal-support-ticket .modal-handle { margin-bottom: 12px; flex-shrink: 0; }
+  #modal-support-ticket .modal-title { flex-shrink: 0; }
+  #modal-support-ticket .modal-sub { margin-bottom: 10px; flex-shrink: 0; }
   #modal-support-ticket .support-thread {
-    flex: 1;
-    min-height: 180px;
+    flex: 1 1 auto;
+    min-height: 120px;
     max-height: none;
     overflow: auto;
+    margin-bottom: 8px;
   }
-  #modal-support-ticket #support-reply-block { flex-shrink: 0; }
+  #modal-support-ticket #support-reply-block {
+    flex: 0 1 auto;
+    min-height: 0;
+  }
+  #modal-support-ticket #support-reply-block .field { margin-bottom: 10px; }
+  #modal-support-ticket #support-ticket-closed-note { flex-shrink: 0; }
   .support-msg { margin-bottom: 10px; display: flex; flex-direction: column; gap: 4px; }
   .support-msg.admin { align-items: flex-start; }
   .support-msg.user { align-items: flex-end; }

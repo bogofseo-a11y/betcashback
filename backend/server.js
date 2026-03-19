@@ -609,9 +609,9 @@ app.post('/api/claims', authMiddleware, claimLimiter, upload.array('files', 5), 
         });
         bot.sendMessage(req.tgUser.id,
           `✅ Заявка #${claim.id} принята!\n\n` +
-          `💰 Ожидаемый кэшбэк: ${cashback.toLocaleString('ru-RU')}₽\n` +
-          `⏱ Проверим до ${deadlineStr} МСК\n\n` +
-          `Если появятся вопросы — пишите в поддержку.`
+          `💰 Ожидаемый кэшбэк: ${cashback.toLocaleString('ru-RU')} ₽\n` +
+          `⏱ Проверим в течение 24 часов\n\n` +
+          `Следите за статусом в приложении.`
         ).catch(() => {});
       } catch (notifyErr) {
         console.error('Claim post-response notify error:', notifyErr);
@@ -2099,7 +2099,7 @@ app.patch('/admin/bookmaker-accounts/:id/status', adminAuth, async (req, res) =>
     // Best-effort user notification (verified/rejected only)
     if (status === 'verified') {
       await sendUserNotificationSafe(result.rows[0].user_id,
-        `✅ Ваш аккаунт букмекера подтверждён.\nТеперь можно отправлять заявки на кэшбэк.`
+        `✅ Аккаунт букмекера подтверждён!\n\nТеперь вы можете подавать заявки на кэшбэк. Откройте приложение и нажмите «Подать заявку».`
       );
     }
     if (status === 'rejected') {

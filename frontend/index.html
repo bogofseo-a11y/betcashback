@@ -788,7 +788,7 @@
       </div>
 
       <div class="field">
-        <label>Прикрепите скрины</label>
+        <label>Скриншоты ставки</label>
         <div class="upload-area" onclick="document.getElementById('file-input').click()" id="upload-area">
           <div class="upload-icon">📎</div>
           <div class="upload-text"><strong>Нажмите для загрузки</strong></div>
@@ -796,12 +796,12 @@
         </div>
         <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" multiple>
         <div class="file-previews" id="file-previews"></div>
-        <div class="field-hint">Прикрепите скрин купона и скрин личного кабинета / истории ставок.</div>
+        <div class="field-hint">Прикрепите скриншот проигранной ставки. Если есть — добавьте скрин истории из личного кабинета.</div>
       </div>
 
       <div class="field">
         <label>Комментарий (необязательно)</label>
-        <textarea id="claim-comment" placeholder="Дополнительная информация..."></textarea>
+        <textarea id="claim-comment" placeholder="Например: ставка на матч Реал — Барса, экспресс из 3 событий"></textarea>
       </div>
 
       <div style="padding-bottom:8px">
@@ -1132,22 +1132,22 @@
     <div class="modal-status status-none" style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:10px;padding:8px 10px;border-radius:10px;background:var(--bg3);border:1px solid var(--border)" id="modal-bk-status"></div>
     <a id="modal-bk-instruction" href="#" target="_blank" style="display:none;font-size:12px;color:var(--accent);text-decoration:none;margin-bottom:10px">📄 Инструкция букмекера</a>
     <div style="font-size:13px;color:var(--text2);line-height:1.45;margin:8px 0 10px">
-      <strong style="color:#fff">1. Зарегистрируйтесь по кнопке ниже.</strong>
+      <strong style="color:#fff">1. Нажмите «Зарегистрироваться» — откроется сайт букмекера</strong>
     </div>
     <div style="font-size:13px;color:var(--text2);line-height:1.45;margin:0 0 10px">
-      <strong style="color:#fff">2. После регистрации отправьте player ID.</strong>
+      <strong style="color:#fff">2. Создайте аккаунт и найдите свой Player ID в профиле</strong>
     </div>
     <div style="font-size:13px;color:var(--text2);line-height:1.45;margin:0 0 10px">
-      <strong style="color:#fff">3. Дождитесь статуса «Подтверждён» перед подачей заявки.</strong>
+      <strong style="color:#fff">3. Вернитесь сюда и отправьте Player ID на проверку</strong>
     </div>
     <div style="font-size:12px;color:var(--yellow);line-height:1.45;margin:0 0 12px">
-      Важно: учитываются только аккаунты, зарегистрированные по этой ссылке.
+      Обязательно: регистрируйтесь именно по этой ссылке, иначе мы не сможем подтвердить аккаунт
     </div>
     <button class="btn-submit" id="modal-bk-btn" onclick="registerBookmaker()">Зарегистрироваться</button>
     <div class="field" style="margin-top:10px">
       <label>Player ID букмекера</label>
       <input type="text" id="modal-bk-player-id" placeholder="Введите player ID" autocomplete="off">
-      <div class="field-hint">Обычно player ID находится в личном кабинете букмекера в разделе «Профиль», «Партнёрка» или «Реферальная программа».</div>
+      <div class="field-hint">Откройте личный кабинет букмекера → раздел «Профиль» или «Мои данные» → скопируйте числовой ID</div>
     </div>
     <button class="btn-submit" id="modal-bk-save-btn" onclick="submitBookmakerPlayerId()">Отправить player ID</button>
     <button style="width:100%;padding:14px;background:none;border:none;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px" onclick="closeModal('modal-bk')">Закрыть</button>
@@ -1678,9 +1678,9 @@ function showScreen(name) {
 // ============================================================
 function bookmakerStatusMeta(status) {
   const map = {
-    pending: { label: '⏳ Статус: на проверке. Подача заявок пока недоступна.', short: 'На проверке', tone: 'pending' },
+    pending: { label: '⏳ Player ID на проверке. Обычно до 24 часов.', short: 'На проверке', tone: 'pending' },
     verified: { label: '✅ Статус: подтверждён. Можно подавать заявки.', short: 'Подтверждён', tone: 'verified' },
-    rejected: { label: '❌ Статус: отклонён. Обновите player ID или обратитесь в поддержку.', short: 'Отклонён', tone: 'rejected' },
+    rejected: { label: '❌ Player ID отклонён. Проверьте ID и отправьте заново.', short: 'Отклонён', tone: 'rejected' },
     none: { label: '🟨 Статус: не подключён. Сначала зарегистрируйтесь и отправьте player ID.', short: 'Не подключён', tone: 'none' },
   };
   return map[status] || map.none;
@@ -1825,13 +1825,13 @@ function populateBookmakerSelect() {
     const isVerified = acc?.status === 'verified';
     const statusMeta = bookmakerStatusMeta(acc?.status || 'none');
     const statusText = statusMeta.tone === 'verified'
-      ? `✅ ${statusMeta.short}`
+      ? '✓'
       : (statusMeta.tone === 'pending'
-        ? `⏳ ${statusMeta.short}`
-        : (statusMeta.tone === 'rejected' ? `❌ ${statusMeta.short}` : `• ${statusMeta.short}`));
+        ? '⏳ На проверке'
+        : (statusMeta.tone === 'rejected' ? '❌ Отклонён' : '— не подключен'));
     const opt = document.createElement('option');
     opt.value = bk.id;
-    opt.textContent = `${bk.name} — ${statusText}`;
+    opt.textContent = `${bk.name} ${statusText}`;
     opt.disabled = !isVerified;
     bkSel.appendChild(opt);
   });

@@ -712,7 +712,7 @@
         <li>Подайте заявку на кэшбэк по проигранной ставке</li>
       </ol>
       <div class="onboarding-next" id="home-onboarding-next">Сначала выберите букмекера и зарегистрируйтесь — это займёт пару минут</div>
-      <button class="onboarding-cta" onclick="showScreen('bookmakers')">Перейти в Букмекеры</button>
+      <button class="onboarding-cta" onclick="showScreen('bookmakers')">Выбрать букмекера</button>
     </div>
 
     <div class="section animate-in delay-3">
@@ -1552,23 +1552,59 @@ function updateProfile() {
 }
 
 function updateHomeOnboardingHint() {
+  const card = document.querySelector('.onboarding-card');
+  const titleEl = card?.querySelector('.onboarding-title');
+  const stepsEl = card?.querySelector('.onboarding-steps');
   const hintEl = document.getElementById('home-onboarding-next');
-  if (!hintEl) return;
+  const ctaEl = card?.querySelector('.onboarding-cta');
+  if (!card || !hintEl) return;
+
   const accounts = Object.values(state.bookmakerAccounts || {});
   const hasVerified = accounts.some(acc => acc?.status === 'verified');
   const hasPending = accounts.some(acc => acc?.status === 'pending');
+  const hasClaims = state.claims && state.claims.length > 0;
+
   if (hasVerified) {
+    if (hasClaims) {
+      card.style.display = 'none';
+      return;
+    }
+    card.style.display = '';
+    if (titleEl) titleEl.textContent = 'Всё готово! Подайте первую заявку';
+    if (stepsEl) stepsEl.style.display = 'none';
     hintEl.className = 'onboarding-next ready';
-    hintEl.textContent = 'Букмекер подтверждён: теперь можно подавать заявки в разделе «Заявка».';
+    hintEl.textContent = 'Букмекер подтверждён — теперь отправляйте заявки на кэшбэк по проигранным ставкам';
+    if (ctaEl) {
+      ctaEl.textContent = 'Подать заявку';
+      ctaEl.onclick = function() { showScreen('submit'); };
+      ctaEl.style.display = '';
+    }
     return;
   }
   if (hasPending) {
+    card.style.display = '';
+    if (titleEl) titleEl.textContent = 'Почти готово!';
+    if (stepsEl) stepsEl.style.display = 'none';
     hintEl.className = 'onboarding-next pending';
-    hintEl.textContent = 'Player ID на проверке. После статуса «Подтверждён» откроется подача заявок.';
+    hintEl.textContent = 'Ваш Player ID на проверке — обычно это занимает до 24 часов. После подтверждения вы сможете подавать заявки.';
+    if (ctaEl) {
+      ctaEl.textContent = 'Проверить статус';
+      ctaEl.onclick = function() { showScreen('bookmakers'); };
+      ctaEl.style.display = '';
+    }
     return;
   }
+  // STATE_NEW
+  card.style.display = '';
+  if (titleEl) titleEl.textContent = 'Начните получать кэшбэк за 3 шага';
+  if (stepsEl) stepsEl.style.display = '';
   hintEl.className = 'onboarding-next';
   hintEl.textContent = 'Сначала выберите букмекера и зарегистрируйтесь — это займёт пару минут';
+  if (ctaEl) {
+    ctaEl.textContent = 'Выбрать букмекера';
+    ctaEl.onclick = function() { showScreen('bookmakers'); };
+    ctaEl.style.display = '';
+  }
 }
 
 function updateSupportEntryMeta() {
@@ -2014,8 +2050,8 @@ function renderHomeClaims() {
     container.innerHTML = `<div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">Заявок пока нет.<br>Подайте первую — получите кэшбэк за проигрыш.</div><div class="empty-btn" onclick="showScreen('submit')">Подать заявку</div></div>`;
     return;
   }
-  const statusMap = { submitted:'submitted', review:'review', approved:'review', paid:'paid', rejected:'rejected' };
-  const labelMap = { submitted:'Отправлено', review:'На проверке', approved:'Одобрено', paid:'Выплачено', rejected:'Отклонено' };
+  const statusMap = { submitted:'submitted', in_review:'review', review:'review', approved:'review', paid:'paid', rejected:'rejected' };
+  const labelMap = { submitted:'На проверке', in_review:'Проверяется', review:'На проверке', approved:'Одобрено', paid:'Выплачено', rejected:'Отклонено' };
   const visibleClaims = showAllHomeClaims ? state.claims : state.claims.slice(0, HOME_CLAIMS_PREVIEW_LIMIT);
   const actionLabel = showAllHomeClaims ? 'Свернуть' : 'Все заявки';
   const hasMore = state.claims.length > HOME_CLAIMS_PREVIEW_LIMIT;

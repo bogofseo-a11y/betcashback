@@ -29,7 +29,21 @@ const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: false });
 // ============================================================
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors({ origin: '*' }));
+const ALLOWED_ORIGINS = [
+  process.env.FRONTEND_URL,
+  process.env.BACKEND_URL,
+].filter(Boolean);
+
+app.use(cors({
+  origin: function(origin, callback) {
+    if (!origin || ALLOWED_ORIGINS.some(allowed => origin.startsWith(allowed))) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
+  },
+  credentials: true,
+}));
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 app.use('/admin-panel', express.static(path.join(__dirname, 'admin')));
@@ -151,14 +165,7 @@ function authMiddleware(req, res, next) {
 
   const initData = req.headers['x-telegram-init-data'];
 
-  console.log('[AUTH] NODE_ENV =', process.env.NODE_ENV);
-  console.log('[AUTH] BOT_TOKEN exists =', !!process.env.BOT_TOKEN);
-  console.log('[AUTH] initData exists =', !!initData);
-  console.log('[AUTH] initData preview =', initData ? String(initData).slice(0, 120) : null);
-
   const user = verifyTelegramInitData(initData);
-
-  console.log('[AUTH] verify result =', user ? 'OK' : 'FAIL');
 
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
@@ -1636,10 +1643,8 @@ app.get('/admin/bookmakers', adminAuth, async (req, res) => {
 app.post('/admin/bookmakers', adminAuth, async (req, res) => {
   try {
     const payload = req.body || {};
-    console.log('[ADMIN BOOKMAKER POST] start', summarizeBookmakerPayload(payload));
     const errors = validateBookmakerPayload(payload);
     if (errors.length) {
-      console.log('[ADMIN BOOKMAKER POST] validation_failed', { errors });
       return res.status(400).json({ error: errors.join('; ') });
     }
 
@@ -1647,7 +1652,6 @@ app.post('/admin/bookmakers', adminAuth, async (req, res) => {
       ? payload.required_proofs.filter(Boolean)
       : String(payload.required_proofs || '').split(',').map(v => v.trim()).filter(Boolean);
 
-    console.log('[ADMIN BOOKMAKER POST] before_insert');
     const result = await pool.query(`
       INSERT INTO bookmakers
         (name, short_name, logo_url, rules, required_proofs, min_loss_rub, is_active, sort_order,
@@ -1672,13 +1676,10 @@ app.post('/admin/bookmakers', adminAuth, async (req, res) => {
       payload.cashback_label || null,
       payload.instruction_asset_url || null,
     ]);
-    console.log('[ADMIN BOOKMAKER POST] after_insert', { id: result.rows[0]?.id });
-
     await pool.query(`
       INSERT INTO admin_audit_log (admin_id, action, entity_type, entity_id, payload_json)
       VALUES ($1, 'bookmaker_created', 'bookmaker', $2, $3)
     `, [0, result.rows[0].id, JSON.stringify({ name: result.rows[0].name })])
-      .then(() => console.log('[ADMIN BOOKMAKER POST] audit_logged', { id: result.rows[0]?.id }))
       .catch((auditErr) => console.error('[ADMIN BOOKMAKER POST] audit_log_failed', { id: result.rows[0]?.id, message: auditErr?.message }));
 
     res.json(result.rows[0]);
@@ -1693,18 +1694,13 @@ app.patch('/admin/bookmakers/:id', adminAuth, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'Invalid id' });
-    console.log('[ADMIN BOOKMAKER PATCH] start', { id });
 
-    console.log('[ADMIN BOOKMAKER PATCH] before_select_current', { id });
     const currentRes = await pool.query('SELECT * FROM bookmakers WHERE id = $1', [id]);
     if (!currentRes.rows.length) return res.status(404).json({ error: 'Not found' });
-    console.log('[ADMIN BOOKMAKER PATCH] current_found', { id });
 
     const payload = { ...currentRes.rows[0], ...(req.body || {}) };
-    console.log('[ADMIN BOOKMAKER PATCH] payload_summary', { id, ...summarizeBookmakerPayload(payload) });
     const errors = validateBookmakerPayload(payload);
     if (errors.length) {
-      console.log('[ADMIN BOOKMAKER PATCH] validation_failed', { id, errors });
       return res.status(400).json({ error: errors.join('; ') });
     }
 
@@ -1712,7 +1708,6 @@ app.patch('/admin/bookmakers/:id', adminAuth, async (req, res) => {
       ? payload.required_proofs.filter(Boolean)
       : String(payload.required_proofs || '').split(',').map(v => v.trim()).filter(Boolean);
 
-    console.log('[ADMIN BOOKMAKER PATCH] before_update', { id });
     const result = await pool.query(`
       UPDATE bookmakers SET
         name=$1, short_name=$2, logo_url=$3, rules=$4, required_proofs=$5, min_loss_rub=$6,
@@ -1739,13 +1734,10 @@ app.patch('/admin/bookmakers/:id', adminAuth, async (req, res) => {
       payload.instruction_asset_url || null,
       id,
     ]);
-    console.log('[ADMIN BOOKMAKER PATCH] after_update', { id, updated_id: result.rows[0]?.id });
-
     await pool.query(`
       INSERT INTO admin_audit_log (admin_id, action, entity_type, entity_id, payload_json)
       VALUES ($1, 'bookmaker_updated', 'bookmaker', $2, $3)
     `, [0, id, JSON.stringify({ name: result.rows[0].name })])
-      .then(() => console.log('[ADMIN BOOKMAKER PATCH] audit_logged', { id }))
       .catch((auditErr) => console.error('[ADMIN BOOKMAKER PATCH] audit_log_failed', { id, message: auditErr?.message }));
 
     res.json(result.rows[0]);

@@ -1484,7 +1484,7 @@ app.post('/api/support-tickets/:id/messages', authMiddleware, supportLimiter, su
     const nextStatus = ticket.status === 'waiting_user' ? 'in_progress' : ticket.status;
     const updRes = await client.query(`
       UPDATE support_tickets
-      SET status = $1, updated_at = NOW(), closed_at = CASE WHEN $1 = 'closed' THEN closed_at ELSE NULL END
+      SET status = $1, updated_at = NOW(), closed_at = NULL
       WHERE id = $2
       RETURNING *
     `, [nextStatus, id]);
@@ -2058,10 +2058,10 @@ app.patch('/admin/support-tickets/:id/status', adminAuth, async (req, res) => {
       UPDATE support_tickets
       SET status = $1,
           updated_at = NOW(),
-          closed_at = CASE WHEN $1 = 'closed' THEN NOW() ELSE NULL END
-      WHERE id = $2
+          closed_at = CASE WHEN $2::text = 'closed' THEN NOW() ELSE NULL END
+      WHERE id = $3
       RETURNING *
-    `, [status, id]);
+    `, [status, status, id]);
     if (!result.rows.length) return res.status(404).json({ error: 'Ticket not found' });
 
     await pool.query(`

@@ -47,6 +47,14 @@ app.use(cors({
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 app.use('/admin-panel', express.static(path.join(__dirname, 'admin')));
+app.use((req, res, next) => {
+  if (req.path === '/' || req.path.endsWith('.html')) {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
 app.use('/', express.static(path.join(__dirname, '../frontend')));
 
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100, message: { error: 'Too many requests' } });
@@ -436,7 +444,7 @@ async function getUserWithdrawableSummary(userId, client = pool) {
 // ============================================================
 
 // Health check
-app.get('/health', (req, res) => res.json({ ok: true, ts: new Date() }));
+app.get('/health', (req, res) => res.json({ ok: true, ts: new Date().toISOString(), version: '2.1.0' }));
 
 // ---- USER ----
 app.post('/api/auth/start', authMiddleware, async (req, res) => {

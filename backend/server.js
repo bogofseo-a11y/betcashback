@@ -2608,18 +2608,6 @@ async function processReferralCommission(claim) {
       `💰 +${l1Amount.toFixed(0)}₽ реф. бонус!\n@${claim.username || claim.user_id} получил кэшбэк`
     ).catch(() => {});
     
-    // Get L2 referrer
-    const l2 = await pool.query('SELECT referrer_id FROM users WHERE id = $1', [l1Id]);
-    if (!l2.rows[0]?.referrer_id) return;
-    
-    const l2Id = l2.rows[0].referrer_id;
-    const l2Amount = claim.cashback_amount_rub * 0.05;
-    
-    await pool.query(`
-      INSERT INTO referral_ledger (referrer_user_id, referred_user_id, claim_id, level, amount_rub, status)
-      VALUES ($1,$2,$3,2,$4,'pending')
-      ON CONFLICT DO NOTHING
-    `, [l2Id, claim.user_id, claim.id, l2Amount]);
   } catch(e) {
     console.error('Referral error:', e);
   }

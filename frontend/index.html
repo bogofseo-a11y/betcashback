@@ -687,7 +687,7 @@
       <div class="hero-label">Баланс кэшбэка</div>
       <div class="hero-amount" id="home-balance">0<span> ₽</span></div>
       <div class="hero-sub">Всего заработано: <strong id="home-total">0 ₽</strong></div>
-      <div class="hero-sub" style="margin-top:4px">Выплаты в крипте: USDT · TON</div>
+      <div class="hero-sub" style="margin-top:4px;opacity:0.7">Выплаты в крипте: USDT · TON</div>
       <div class="hero-actions">
         <button class="btn-hero primary" onclick="showScreen('submit')">+ Подать заявку</button>
         <button class="btn-hero secondary" onclick="showScreen('profile')">Вывести</button>
@@ -890,7 +890,7 @@
       <div class="support-entry">
         <div class="support-entry-title">Есть вопросы?</div>
         <div class="support-entry-sub">Напишите нам — ответим в течение 24 часов</div>
-        <div class="support-entry-meta">Открытых тикетов: <strong id="support-open-count">0</strong></div>
+        <div class="support-entry-meta">Открытых обращений: <strong id="support-open-count">0</strong></div>
         <button class="btn-submit" style="margin-top:0;background:var(--bg3);color:var(--text);border:1px solid var(--border)" onclick="showScreen('support')">Открыть поддержку</button>
       </div>
     </div>
@@ -967,7 +967,7 @@
           <div class="stat-value green" id="ref-active">0</div>
         </div>
         <div class="stat-card" style="grid-column:1/-1">
-          <div class="stat-label">Реф. доход</div>
+          <div class="stat-label">Доход от друзей</div>
           <div class="stat-value green" id="ref-income">0 ₽</div>
         </div>
       </div>
@@ -1096,7 +1096,7 @@
     </div>
     <div class="nav-item" onclick="showScreen('profile')" id="nav-profile">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      <span>Кабинет</span>
+      <span>Профиль</span>
     </div>
   </nav>
 </div>
@@ -1179,7 +1179,7 @@
 <div class="modal-overlay" id="modal-support-create">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">Новый тикет</div>
+    <div class="modal-title">Новое обращение</div>
     <div class="modal-sub">Опишите вопрос. Можно прикрепить до 3 изображений.</div>
     <div class="field">
       <label>Сообщение</label>
@@ -1195,7 +1195,7 @@
       <input type="file" id="support-new-file-input" accept="image/jpeg,image/png,image/webp" multiple>
       <div class="file-previews" id="support-new-file-previews"></div>
     </div>
-    <button class="btn-submit" id="support-create-btn" onclick="createSupportTicket()">Создать тикет</button>
+    <button class="btn-submit" id="support-create-btn" onclick="createSupportTicket()">Создать обращение</button>
     <button style="width:100%;padding:14px;background:none;border:none;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px" onclick="closeModal('modal-support-create')">Отмена</button>
   </div>
 </div>
@@ -1205,7 +1205,7 @@
   <div class="modal">
     <div class="support-ticket-modal-head">
       <div class="modal-handle"></div>
-      <div class="modal-title" id="support-ticket-title">Тикет #—</div>
+      <div class="modal-title" id="support-ticket-title">Обращение #—</div>
       <div class="modal-sub" id="support-ticket-status">Статус: —</div>
     </div>
     <div class="support-ticket-modal-body">
@@ -1227,7 +1227,7 @@
         </div>
         <button class="btn-submit" id="support-reply-btn" onclick="sendSupportReply()">Отправить ответ</button>
       </div>
-      <div id="support-ticket-closed-note" style="display:none;font-size:12px;color:var(--text2)">Тикет закрыт. Для нового вопроса создайте новый тикет.</div>
+      <div id="support-ticket-closed-note" style="display:none;font-size:12px;color:var(--text2)">Обращение закрыто. Если нужна помощь — создайте новое.</div>
       <div class="support-ticket-modal-actions">
         <button class="support-close-btn" onclick="closeModal('modal-support-ticket')">Закрыть</button>
       </div>
@@ -1438,7 +1438,7 @@ async function loadSupportTickets({ silent = true } = {}) {
   try {
     await supportTicketSyncPromise;
   } catch (e) {
-    if (!silent) showToast(e.message || 'Не удалось загрузить тикеты', 'error');
+    if (!silent) showToast(e.message || 'Не удалось загрузить обращения', 'error');
     else console.log('[support-sync] failed', e?.message || e);
   } finally {
     supportTicketSyncPromise = null;
@@ -2085,7 +2085,7 @@ function renderSupportTickets() {
     return `
       <div class="support-ticket-card" onclick="openSupportTicket(${t.id})">
         <div class="support-ticket-top">
-          <div class="support-ticket-id">Тикет #${t.id}</div>
+          <div class="support-ticket-id">Обращение #${t.id}</div>
           <div class="support-status ${meta.tone}">${meta.label}</div>
         </div>
         <div class="support-ticket-preview">${escapeHtml(senderPrefix + preview)}</div>
@@ -2199,17 +2199,17 @@ async function createSupportTicket() {
     supportNewFiles.forEach((f) => fd.append('files', f));
     const result = await apiCall('/support-tickets', 'POST', fd, true);
     closeModal('modal-support-create');
-    showToast('✓ Тикет создан', 'success');
+    showToast('✓ Обращение создано', 'success');
     supportNewFiles.length = 0;
     await loadSupportTickets({ silent: true });
     if (result?.ticket?.id) {
       await openSupportTicket(result.ticket.id);
     }
   } catch (e) {
-    showToast(e.message || 'Ошибка создания тикета', 'error');
+    showToast(e.message || 'Ошибка создания обращения', 'error');
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Написать в поддержку';
+    btn.textContent = 'Создать обращение';
   }
 }
 
@@ -2293,10 +2293,10 @@ async function openSupportTicket(ticketId, options = {}) {
   try {
     const data = await apiCall(`/support-tickets/${ticketId}`);
     activeSupportTicket = data?.ticket || null;
-    if (!activeSupportTicket) throw new Error('Тикет не найден');
+    if (!activeSupportTicket) throw new Error('Обращение не найдено');
 
     const meta = supportStatusMeta(activeSupportTicket.status);
-    setEl('support-ticket-title', `Тикет #${activeSupportTicket.id}`);
+    setEl('support-ticket-title', `Обращение #${activeSupportTicket.id}`);
     setEl('support-ticket-status', `Статус: <span class="support-status ${meta.tone}">${meta.label}</span>`);
     renderSupportTicketMessages(data?.messages || []);
 
@@ -2323,7 +2323,7 @@ async function openSupportTicket(ticketId, options = {}) {
       startSupportOpenTicketPolling();
     }
   } catch (e) {
-    if (!silent) showToast(e.message || 'Не удалось открыть тикет', 'error');
+    if (!silent) showToast(e.message || 'Не удалось открыть обращение', 'error');
     else console.log('[support-ticket-refresh] failed', e?.message || e);
   }
 }
@@ -2331,7 +2331,7 @@ async function openSupportTicket(ticketId, options = {}) {
 async function sendSupportReply() {
   if (!activeSupportTicket?.id) return;
   if (activeSupportTicket.status === 'closed') {
-    showToast('Тикет закрыт. Создайте новый.', 'error');
+    showToast('Обращение закрыто. Создайте новое.', 'error');
     return;
   }
 
@@ -2465,7 +2465,7 @@ function renderWithdrawSection() {
       <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px">Доступно к выводу</div>
       <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;line-height:1;color:var(--accent);margin-top:4px">${Math.round(available).toLocaleString('ru-RU')}<span style="font-size:22px;color:var(--accent2)"> ₽</span></div>
     </div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Минимум: ${formatRubThreshold(minAmount)}. Считается как одобренный кэшбэк минус уже созданные запросы на выплату.</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Минимум: ${formatRubThreshold(minAmount)}. Это сумма одобренных заявок, доступная для вывода.</div>
     <div class="field" style="margin-bottom:8px">
       <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:4px">Метод выплаты</label>
       <select id="withdraw-method" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);color:#fff" ${state.payoutMethods.length ? '' : 'disabled'}>

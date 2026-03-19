@@ -2629,14 +2629,18 @@ app.post('/webhook', async (req, res) => {
           }
         }
         
-        await bot.sendMessage(chatId, 
+        await bot.sendMessage(chatId,
           `🎯 Добро пожаловать в BetCashback!\n\n` +
-          `Получайте кэшбэк 5-10% за проигрыши у букмекеров в крипте.\n\n` +
-          `👇 Открыть приложение:`,
+          `💰 Возвращаем 5–10% от проигранных ставок в USDT и TON.\n\n` +
+          `📌 Как это работает:\n` +
+          `1. Зарегистрируйтесь у букмекера по нашей ссылке\n` +
+          `2. Проиграли ставку — подайте заявку\n` +
+          `3. Получите кэшбэк на крипто-кошелёк\n\n` +
+          `👇 Откройте приложение, чтобы начать:`,
           {
             reply_markup: {
               inline_keyboard: [[{
-                text: '🚀 Открыть BetCashback',
+                text: '💰 Открыть BetCashback',
                 web_app: { url: process.env.FRONTEND_URL }
               }]]
             }

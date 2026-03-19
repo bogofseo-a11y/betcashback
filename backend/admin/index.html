@@ -488,8 +488,9 @@
           <option value="waiting_user">waiting_user</option>
           <option value="closed">closed</option>
         </select>
-        <button class="btn btn-sm" style="background:var(--bg2);border:1px solid var(--border);color:#fff" onclick="updateSupportTicketStatusAdmin()">Сохранить статус</button>
+        <button class="btn btn-sm" id="support-status-save-btn" style="background:var(--bg2);border:1px solid var(--border);color:#fff" onclick="updateSupportTicketStatusAdmin()">Сохранить статус</button>
       </div>
+      <div id="support-status-save-result" style="font-size:12px;color:var(--text2);margin-top:6px"></div>
     </div>
     <div class="support-thread" id="support-modal-thread"></div>
     <div class="field">
@@ -498,7 +499,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-cancel" onclick="closeModal('modal-support-ticket')">Закрыть</button>
-      <button class="btn btn-primary" onclick="sendSupportReplyAdmin()">Отправить ответ</button>
+      <button class="btn btn-primary" id="support-reply-send-btn" onclick="sendSupportReplyAdmin()">Отправить ответ</button>
     </div>
   </div>
 </div>
@@ -1289,7 +1290,7 @@ function renderSupportMessageThread(messages) {
     }).join('');
     return `
       <div class="support-msg ${m.sender_type === 'admin' ? 'admin' : 'user'}">
-        <div class="support-msg-meta">${sender} · ${formatDate(m.created_at)}</div>
+        <div class="support-msg-meta">${sender} · ${formatDateTime(m.created_at)}</div>
         <div class="support-msg-body">${escapeHtml(m.message || '')}</div>
         ${files ? `<div class="support-msg-files">${files}</div>` : ''}
       </div>
@@ -1299,17 +1300,38 @@ function renderSupportMessageThread(messages) {
   el.scrollTop = el.scrollHeight;
 }
 
+function setSupportModalMeta(ticket) {
+  const userLabel = `${ticket.first_name || ''} ${ticket.username ? '@' + ticket.username : ''} (${ticket.user_id})`;
+  setEl('support-modal-meta', `${userLabel} · создан: ${formatDateTime(ticket.created_at)} · обновлён: ${formatDateTime(ticket.updated_at)}`);
+}
+
+function applySupportModalStatusState(status) {
+  const isClosed = status === 'closed';
+  const replyInput = document.getElementById('support-modal-reply');
+  const replyBtn = document.getElementById('support-reply-send-btn');
+  if (replyInput) {
+    replyInput.disabled = isClosed;
+    replyInput.placeholder = isClosed ? 'Тикет закрыт. Ответ недоступен.' : 'Ответ поддержки...';
+  }
+  if (replyBtn) {
+    replyBtn.disabled = isClosed;
+    replyBtn.style.opacity = isClosed ? '0.6' : '';
+    replyBtn.style.cursor = isClosed ? 'not-allowed' : '';
+  }
+}
+
 async function openSupportTicketAdmin(id) {
   try {
     const data = await adminFetch(`/admin/support-tickets/${id}`);
     currentSupportTicket = data?.ticket || null;
     if (!currentSupportTicket) throw new Error('Ticket not found');
 
-    const userLabel = `${currentSupportTicket.first_name || ''} ${currentSupportTicket.username ? '@' + currentSupportTicket.username : ''} (${currentSupportTicket.user_id})`;
     setEl('support-modal-title', `Ticket #${currentSupportTicket.id}`);
-    setEl('support-modal-meta', `${userLabel} · создан: ${formatDate(currentSupportTicket.created_at)} · обновлён: ${formatDate(currentSupportTicket.updated_at)}`);
+    setSupportModalMeta(currentSupportTicket);
     document.getElementById('support-modal-status').value = currentSupportTicket.status || 'open';
     document.getElementById('support-modal-reply').value = '';
+    setEl('support-status-save-result', '');
+    applySupportModalStatusState(currentSupportTicket.status || 'open');
     renderSupportMessageThread(data?.messages || []);
     openModal('modal-support-ticket');
   } catch (e) {
@@ -1319,36 +1341,78 @@ async function openSupportTicketAdmin(id) {
 
 async function sendSupportReplyAdmin() {
   if (!currentSupportTicket?.id) return;
+  if (currentSupportTicket.status === 'closed') {
+    alert('Тикет закрыт. Сначала измените статус.');
+    return;
+  }
+  const btn = document.getElementById('support-reply-send-btn');
   const message = (document.getElementById('support-modal-reply').value || '').trim();
   if (!message) {
     alert('Введите ответ');
     return;
   }
   try {
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Отправляем...';
+    }
     await adminFetch(`/admin/support-tickets/${currentSupportTicket.id}/messages`, {
       method: 'POST',
       body: JSON.stringify({ message }),
     });
     document.getElementById('support-modal-reply').value = '';
+    setEl('support-status-save-result', '');
     await openSupportTicketAdmin(currentSupportTicket.id);
     await loadSupportTicketsAdmin();
   } catch (e) {
     alert('Ошибка: ' + e.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Отправить ответ';
+    }
   }
 }
 
 async function updateSupportTicketStatusAdmin() {
   if (!currentSupportTicket?.id) return;
+  const btn = document.getElementById('support-status-save-btn');
+  const resultEl = document.getElementById('support-status-save-result');
   const status = document.getElementById('support-modal-status').value;
   try {
-    await adminFetch(`/admin/support-tickets/${currentSupportTicket.id}/status`, {
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Сохраняем...';
+    }
+    if (resultEl) {
+      resultEl.style.color = 'var(--text2)';
+      resultEl.textContent = 'Сохраняем статус...';
+    }
+    const updated = await adminFetch(`/admin/support-tickets/${currentSupportTicket.id}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ status }),
     });
-    await openSupportTicketAdmin(currentSupportTicket.id);
+    currentSupportTicket = { ...currentSupportTicket, ...(updated || {}) };
+    document.getElementById('support-modal-status').value = currentSupportTicket.status || status;
+    setSupportModalMeta(currentSupportTicket);
+    applySupportModalStatusState(currentSupportTicket.status || status);
+    if (resultEl) {
+      resultEl.style.color = 'var(--accent)';
+      resultEl.textContent = `✓ Статус сохранён: ${supportStatusLabel(currentSupportTicket.status || status)}`;
+    }
     await loadSupportTicketsAdmin();
   } catch (e) {
-    alert('Ошибка: ' + e.message);
+    if (resultEl) {
+      resultEl.style.color = 'var(--red)';
+      resultEl.textContent = `Ошибка: ${e.message}`;
+    } else {
+      alert('Ошибка: ' + e.message);
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Сохранить статус';
+    }
   }
 }
 

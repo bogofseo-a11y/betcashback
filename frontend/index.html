@@ -1126,6 +1126,9 @@ let supportTicketSyncPromise = null;
 let activeSupportTicket = null;
 const supportNewFiles = [];
 const supportReplyFiles = [];
+let supportOpenTicketPollTimer = null;
+let supportOpenTicketPollInFlight = false;
+const SUPPORT_OPEN_TICKET_POLL_MS = 5000;
 
 function safeCountValue(value) {
   const n = Number(value);
@@ -1463,6 +1466,9 @@ function showScreen(name) {
   }
   if (name === 'support') {
     loadSupportTickets({ silent: false }).catch(() => {});
+  } else {
+    stopSupportOpenTicketPolling();
+    closeModal('modal-support-ticket');
   }
 }
 
@@ -2093,7 +2099,32 @@ function renderSupportTicketMessages(messages = []) {
   container.scrollTop = container.scrollHeight;
 }
 
-async function openSupportTicket(ticketId) {
+function startSupportOpenTicketPolling() {
+  stopSupportOpenTicketPolling();
+  if (!activeSupportTicket?.id) return;
+  supportOpenTicketPollTimer = setInterval(async () => {
+    const isOpen = document.getElementById('modal-support-ticket')?.classList.contains('open');
+    if (!isOpen || !activeSupportTicket?.id) return;
+    if (supportOpenTicketPollInFlight) return;
+    supportOpenTicketPollInFlight = true;
+    try {
+      await openSupportTicket(activeSupportTicket.id, { silent: true, preserveComposer: true, openModalOnLoad: false, startPolling: false });
+    } finally {
+      supportOpenTicketPollInFlight = false;
+    }
+  }, SUPPORT_OPEN_TICKET_POLL_MS);
+}
+
+function stopSupportOpenTicketPolling() {
+  if (supportOpenTicketPollTimer) {
+    clearInterval(supportOpenTicketPollTimer);
+    supportOpenTicketPollTimer = null;
+  }
+  supportOpenTicketPollInFlight = false;
+}
+
+async function openSupportTicket(ticketId, options = {}) {
+  const { silent = false, preserveComposer = false, openModalOnLoad = true, startPolling = true } = options;
   try {
     const data = await apiCall(`/support-tickets/${ticketId}`);
     activeSupportTicket = data?.ticket || null;
@@ -2107,9 +2138,11 @@ async function openSupportTicket(ticketId) {
     const isClosed = activeSupportTicket.status === 'closed';
     document.getElementById('support-reply-block').style.display = isClosed ? 'none' : 'block';
     document.getElementById('support-ticket-closed-note').style.display = isClosed ? 'block' : 'none';
-    document.getElementById('support-reply-message').value = '';
-    supportReplyFiles.length = 0;
-    renderSupportFilePreviews(supportReplyFiles, 'support-reply-file-previews', 'removeSupportReplyFile', 'support-reply-upload-area', 3);
+    if (!preserveComposer) {
+      document.getElementById('support-reply-message').value = '';
+      supportReplyFiles.length = 0;
+      renderSupportFilePreviews(supportReplyFiles, 'support-reply-file-previews', 'removeSupportReplyFile', 'support-reply-upload-area', 3);
+    }
 
     const idx = state.supportTickets.findIndex(t => t.id === activeSupportTicket.id);
     if (idx >= 0) {
@@ -2118,9 +2151,15 @@ async function openSupportTicket(ticketId) {
       updateSupportEntryMeta();
     }
 
-    openModal('modal-support-ticket');
+    if (openModalOnLoad) {
+      openModal('modal-support-ticket');
+    }
+    if (startPolling) {
+      startSupportOpenTicketPolling();
+    }
   } catch (e) {
-    showToast(e.message || 'Не удалось открыть тикет', 'error');
+    if (!silent) showToast(e.message || 'Не удалось открыть тикет', 'error');
+    else console.log('[support-ticket-refresh] failed', e?.message || e);
   }
 }
 
@@ -2156,7 +2195,7 @@ async function sendSupportReply() {
 
     if (result?.ticket) activeSupportTicket = result.ticket;
     await loadSupportTickets({ silent: true });
-    await openSupportTicket(activeSupportTicket.id);
+    await openSupportTicket(activeSupportTicket.id, { silent: true, preserveComposer: true, openModalOnLoad: false, startPolling: false });
     showToast('✓ Ответ отправлен', 'success');
   } catch (e) {
     showToast(e.message || 'Ошибка отправки', 'error');
@@ -2508,14 +2547,24 @@ function showToast(msg, type='success') {
 }
 
 function openModal(id) { document.getElementById(id)?.classList.add('open'); }
-function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
+function closeModal(id) {
+  document.getElementById(id)?.classList.remove('open');
+  if (id === 'modal-support-ticket') {
+    stopSupportOpenTicketPolling();
+    activeSupportTicket = null;
+  }
+}
 
 // Close modal on overlay click
 document.querySelectorAll('.modal-overlay').forEach(o => {
-  o.addEventListener('click', e => { if(e.target === o) o.classList.remove('open'); });
+  o.addEventListener('click', e => { if(e.target === o) closeModal(o.id); });
 });
 
 document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') {
+    stopSupportOpenTicketPolling();
+    return;
+  }
   if (document.visibilityState === 'visible' && shouldSyncClaimForScreen()) {
     syncClaimState({ silent: true }).catch(() => {});
   }
@@ -2524,6 +2573,9 @@ document.addEventListener('visibilitychange', () => {
   }
   if (document.visibilityState === 'visible' && activeScreen === 'support') {
     loadSupportTickets({ silent: true }).catch(() => {});
+    if (activeSupportTicket?.id && document.getElementById('modal-support-ticket')?.classList.contains('open')) {
+      openSupportTicket(activeSupportTicket.id, { silent: true, preserveComposer: true, openModalOnLoad: false, startPolling: true }).catch(() => {});
+    }
   }
 });
 
@@ -2536,6 +2588,9 @@ window.addEventListener('focus', () => {
   }
   if (activeScreen === 'support') {
     loadSupportTickets({ silent: true }).catch(() => {});
+    if (activeSupportTicket?.id && document.getElementById('modal-support-ticket')?.classList.contains('open')) {
+      openSupportTicket(activeSupportTicket.id, { silent: true, preserveComposer: true, openModalOnLoad: false, startPolling: true }).catch(() => {});
+    }
   }
 });
 

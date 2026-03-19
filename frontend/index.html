@@ -251,31 +251,58 @@
     padding: 10px;
     margin-bottom: 10px;
   }
+  #modal-support-ticket {
+    padding-top: max(10px, env(safe-area-inset-top));
+    overscroll-behavior: contain;
+  }
   #modal-support-ticket .modal {
     max-height: calc(100vh - max(10px, env(safe-area-inset-top)));
     max-height: calc(100dvh - max(10px, env(safe-area-inset-top)));
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    padding-top: 14px;
+    overflow: hidden;
+    padding: 0;
   }
-  #modal-support-ticket .modal-handle { margin-bottom: 12px; flex-shrink: 0; }
-  #modal-support-ticket .modal-title { flex-shrink: 0; }
-  #modal-support-ticket .modal-sub { margin-bottom: 10px; flex-shrink: 0; }
+  #modal-support-ticket .support-ticket-modal-head {
+    padding: 14px 20px 10px;
+    flex-shrink: 0;
+  }
+  #modal-support-ticket .modal-handle { margin-bottom: 12px; }
+  #modal-support-ticket .modal-title { margin-bottom: 4px; }
+  #modal-support-ticket .modal-sub { margin-bottom: 0; }
+  #modal-support-ticket .support-ticket-modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 0 20px;
+    display: flex;
+  }
   #modal-support-ticket .support-thread {
     flex: 1 1 auto;
-    min-height: 120px;
-    max-height: none;
-    overflow: auto;
-    margin-bottom: 8px;
-  }
-  #modal-support-ticket #support-reply-block {
-    flex: 0 1 auto;
     min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    margin: 0;
+  }
+  #modal-support-ticket .support-ticket-modal-compose {
+    flex-shrink: 0;
+    border-top: 1px solid var(--border);
+    padding: 12px 20px max(20px, env(safe-area-inset-bottom));
   }
   #modal-support-ticket #support-reply-block .field { margin-bottom: 10px; }
-  #modal-support-ticket #support-ticket-closed-note { flex-shrink: 0; }
+  #modal-support-ticket #support-ticket-closed-note { margin: 2px 0 0; }
+  #modal-support-ticket .support-ticket-modal-actions { margin-top: 8px; }
+  #modal-support-ticket .support-close-btn {
+    width: 100%;
+    padding: 14px;
+    background: none;
+    border: none;
+    color: var(--text2);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
   .support-msg { margin-bottom: 10px; display: flex; flex-direction: column; gap: 4px; }
   .support-msg.admin { align-items: flex-start; }
   .support-msg.user { align-items: flex-end; }
@@ -1070,29 +1097,37 @@
 <!-- MODAL: Support ticket -->
 <div class="modal-overlay" id="modal-support-ticket">
   <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="support-ticket-title">Тикет #—</div>
-    <div class="modal-sub" id="support-ticket-status">Статус: —</div>
-    <div class="support-thread" id="support-ticket-messages"></div>
-    <div id="support-reply-block">
-      <div class="field">
-        <label>Ваш ответ</label>
-        <textarea id="support-reply-message" placeholder="Уточните детали..." maxlength="2000"></textarea>
-      </div>
-      <div class="field">
-        <label>Вложения (необязательно)</label>
-        <div class="upload-area" onclick="document.getElementById('support-reply-file-input').click()" id="support-reply-upload-area">
-          <div class="upload-icon">📎</div>
-          <div class="upload-text"><strong>Нажмите для загрузки</strong></div>
-          <div class="upload-limit">JPG, PNG, WebP · до 8 МБ · максимум 3 файла</div>
-        </div>
-        <input type="file" id="support-reply-file-input" accept="image/jpeg,image/png,image/webp" multiple>
-        <div class="file-previews" id="support-reply-file-previews"></div>
-      </div>
-      <button class="btn-submit" id="support-reply-btn" onclick="sendSupportReply()">Отправить ответ</button>
+    <div class="support-ticket-modal-head">
+      <div class="modal-handle"></div>
+      <div class="modal-title" id="support-ticket-title">Тикет #—</div>
+      <div class="modal-sub" id="support-ticket-status">Статус: —</div>
     </div>
-    <div id="support-ticket-closed-note" style="display:none;font-size:12px;color:var(--text2);margin:6px 0 2px">Тикет закрыт. Для нового вопроса создайте новый тикет.</div>
-    <button style="width:100%;padding:14px;background:none;border:none;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px" onclick="closeModal('modal-support-ticket')">Закрыть</button>
+    <div class="support-ticket-modal-body">
+      <div class="support-thread" id="support-ticket-messages"></div>
+    </div>
+    <div class="support-ticket-modal-compose">
+      <div id="support-reply-block">
+        <div class="field">
+          <label>Ваш ответ</label>
+          <textarea id="support-reply-message" placeholder="Уточните детали..." maxlength="2000"></textarea>
+        </div>
+        <div class="field">
+          <label>Вложения (необязательно)</label>
+          <div class="upload-area" onclick="document.getElementById('support-reply-file-input').click()" id="support-reply-upload-area">
+            <div class="upload-icon">📎</div>
+            <div class="upload-text"><strong>Нажмите для загрузки</strong></div>
+            <div class="upload-limit">JPG, PNG, WebP · до 8 МБ · максимум 3 файла</div>
+          </div>
+          <input type="file" id="support-reply-file-input" accept="image/jpeg,image/png,image/webp" multiple>
+          <div class="file-previews" id="support-reply-file-previews"></div>
+        </div>
+        <button class="btn-submit" id="support-reply-btn" onclick="sendSupportReply()">Отправить ответ</button>
+      </div>
+      <div id="support-ticket-closed-note" style="display:none;font-size:12px;color:var(--text2)">Тикет закрыт. Для нового вопроса создайте новый тикет.</div>
+      <div class="support-ticket-modal-actions">
+        <button class="support-close-btn" onclick="closeModal('modal-support-ticket')">Закрыть</button>
+      </div>
+    </div>
   </div>
 </div>
 

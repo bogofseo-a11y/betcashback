@@ -9,25 +9,51 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0a0f;
-    --bg2: #12121a;
-    --bg3: #1a1a26;
-    --card: #16161f;
-    --border: rgba(255,255,255,0.07);
-    --accent: #00e5a0;
-    --accent2: #00b87a;
-    --accent-glow: rgba(0,229,160,0.15);
+    /* ACCENT = Mint — buttons, balance, nav, tier, links, CTA */
+    --accent: #2DD4BF;
+    --accent-dim: rgba(45,212,191,0.10);
+    --accent-glow: rgba(45,212,191,0.30);
+    --accent-bright: #5EEAD4;
+    /* SUCCESS = Green — approved, cashback amounts, paid, verified */
+    --success: #00E676;
+    --success-dim: rgba(0,230,118,0.10);
+    --success-glow: rgba(0,230,118,0.20);
+    /* WARNING = Yellow — pending, awaiting */
+    --warning: #FFD740;
+    --warning-dim: rgba(255,215,64,0.10);
+    --warning-border: rgba(255,215,64,0.18);
+    /* REFERRAL = Purple */
+    --referral: #A78BFA;
+    --referral-dim: rgba(167,139,250,0.10);
+    --referral-border: rgba(167,139,250,0.25);
+    /* Backgrounds */
+    --bg: #0D0F14;
+    --bg2: #161920;
+    --bg3: #1A1D24;
+    --card: #161920;
+    --border: #252830;
+    --surface: #1A1D24;
+    --surface-light: #22252E;
+    /* Text */
+    --text: #F5F5F5;
+    --text2: #9E9EA8;
+    --text3: #6B6B76;
+    /* Status */
     --red: #ff4d6d;
-    --yellow: #ffd166;
+    --yellow: #FFD740;
     --blue: #5b8dee;
-    --text: #f0f0f8;
-    --text2: #8888aa;
-    --text3: #44445a;
     --radius: 16px;
     --radius-sm: 10px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'Manrope', sans-serif; }
+  body::before {
+    content: '';
+    position: fixed; top: 0; left: 0; right: 0; height: 400px;
+    background: radial-gradient(ellipse at 30% 0%, rgba(167,139,250,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 0%, rgba(45,212,191,0.06) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
   
   /* APP SHELL */
   #app { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
@@ -72,26 +98,41 @@
   .logo { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 2px; color: var(--accent); }
   .logo span { color: var(--text2); }
 
+  /* HEADER TIER BADGE (split) */
+  .header-tier-badge {
+    display: flex; align-items: center; border-radius: 20px; overflow: hidden;
+    border: 1px solid var(--accent-glow); line-height: 1;
+  }
+  .header-tier-badge .tier-label {
+    font-size: 10px; font-weight: 700; color: var(--text2); letter-spacing: 0.5px;
+    padding: 5px 10px; background: rgba(255,255,255,0.04);
+  }
+  .header-tier-badge .tier-pct-badge {
+    font-size: 11px; font-weight: 900; color: var(--accent); letter-spacing: 0.3px;
+    padding: 5px 10px; background: var(--accent-dim);
+  }
+
   /* HERO BALANCE */
   .hero {
     margin: 0 16px 20px;
-    background: linear-gradient(135deg, #0d1f18 0%, #0a1520 100%);
-    border: 1px solid rgba(0,229,160,0.2);
+    background: linear-gradient(135deg, #0d1518 0%, #0a1220 100%);
+    border: 1px solid rgba(45,212,191,0.2);
     border-radius: 20px;
     padding: 24px;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 0 28px -4px var(--accent-glow);
   }
   .hero::before {
     content: '';
     position: absolute; top: -40px; right: -40px;
     width: 160px; height: 160px;
-    background: radial-gradient(circle, rgba(0,229,160,0.12) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(45,212,191,0.12) 0%, transparent 70%);
     border-radius: 50%;
   }
   .hero-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: var(--text2); text-transform: uppercase; }
   .hero-amount { font-family: 'Bebas Neue', sans-serif; font-size: 52px; color: var(--accent); letter-spacing: 2px; line-height: 1; margin: 4px 0; }
-  .hero-amount span { font-size: 28px; color: var(--accent2); }
+  .hero-amount span { font-size: 28px; color: var(--accent-bright); }
   .hero-sub { font-size: 12px; color: var(--text2); }
   .hero-sub strong { color: var(--yellow); }
   .hero-actions { display: flex; gap: 10px; margin-top: 16px; }
@@ -99,8 +140,8 @@
     flex: 1; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 700;
     border: none; cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px;
   }
-  .btn-hero.primary { background: var(--accent); color: #000; }
-  .btn-hero.primary:active { background: var(--accent2); transform: scale(0.97); }
+  .btn-hero.primary { background: var(--accent); color: #000; box-shadow: 0 4px 20px rgba(45,212,191,0.35); }
+  .btn-hero.primary:active { background: var(--accent-bright); transform: scale(0.97); }
   .btn-hero.secondary { background: rgba(255,255,255,0.07); color: var(--text); border: 1px solid var(--border); }
   .btn-hero.secondary:active { background: rgba(255,255,255,0.12); transform: scale(0.97); }
 
@@ -117,7 +158,7 @@
   .tier-name { font-size: 12px; font-weight: 700; color: var(--text2); }
   .tier-pct { font-size: 18px; font-weight: 800; color: var(--accent); }
   .progress-track { background: var(--bg3); border-radius: 4px; height: 6px; overflow: hidden; }
-  .progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent2), var(--accent)); transition: width 0.8s cubic-bezier(.34,1.56,.64,1); }
+  .progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--accent-bright)); transition: width 0.8s cubic-bezier(.34,1.56,.64,1); }
   .tier-hint { font-size: 11px; color: var(--text2); margin-top: 8px; }
   .tier-hint strong { color: var(--yellow); }
 
@@ -134,16 +175,16 @@
   .onboarding-steps li { font-size: 12px; color: var(--text2); line-height: 1.35; }
   .onboarding-next {
     font-size: 12px; line-height: 1.4;
-    color: var(--yellow);
-    border: 1px solid rgba(255,209,102,0.25);
-    background: rgba(255,209,102,0.08);
+    color: var(--warning);
+    border: 1px solid var(--warning-border);
+    background: var(--warning-dim);
     border-radius: 10px;
     padding: 8px 10px;
   }
   .onboarding-next.ready {
     color: var(--accent);
-    border-color: rgba(0,229,160,0.3);
-    background: rgba(0,229,160,0.08);
+    border-color: var(--accent-glow);
+    background: var(--accent-dim);
   }
   .onboarding-next.pending {
     color: var(--blue);
@@ -186,21 +227,21 @@
   }
   .claim-card:active { transform: scale(0.98); border-color: rgba(255,255,255,0.12); }
   .claim-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
-  .claim-card.status-paid::before { background: var(--accent); }
+  .claim-card.status-paid::before { background: var(--success); }
   .claim-card.status-review::before { background: var(--yellow); }
   .claim-card.status-rejected::before { background: var(--red); }
   .claim-card.status-submitted::before { background: var(--blue); }
   .claim-top { display: flex; justify-content: space-between; align-items: flex-start; }
   .claim-bk { font-size: 14px; font-weight: 700; }
   .claim-status { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; padding: 3px 8px; border-radius: 20px; }
-  .claim-status.paid { background: rgba(0,229,160,0.15); color: var(--accent); }
-  .claim-status.review { background: rgba(255,209,102,0.15); color: var(--yellow); }
+  .claim-status.paid { background: var(--success-dim); color: var(--success); }
+  .claim-status.review { background: var(--warning-dim); color: var(--warning); }
   .claim-status.rejected { background: rgba(255,77,109,0.15); color: var(--red); }
   .claim-status.submitted { background: rgba(91,141,238,0.15); color: var(--blue); }
   .claim-meta { font-size: 11px; color: var(--text2); margin-top: 6px; }
   .claim-amounts { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; }
   .claim-loss { font-size: 12px; color: var(--text2); }
-  .claim-cashback { font-size: 16px; font-weight: 800; color: var(--accent); }
+  .claim-cashback { font-size: 16px; font-weight: 800; color: var(--success); }
 
   /* SUPPORT */
   .btn-back {
@@ -239,8 +280,8 @@
     border-radius: 999px; padding: 3px 8px;
   }
   .support-status.open { background: rgba(91,141,238,0.15); color: var(--blue); }
-  .support-status.in_progress { background: rgba(0,229,160,0.15); color: var(--accent); }
-  .support-status.waiting_user { background: rgba(255,209,102,0.15); color: var(--yellow); }
+  .support-status.in_progress { background: var(--accent-dim); color: var(--accent); }
+  .support-status.waiting_user { background: var(--warning-dim); color: var(--warning); }
   .support-status.closed { background: rgba(255,255,255,0.08); color: var(--text2); }
   .support-thread {
     max-height: 320px;
@@ -358,9 +399,9 @@
     border-color: rgba(91,141,238,0.25);
   }
   .support-msg.user .support-msg-bubble {
-    background: rgba(0,229,160,0.12);
+    background: var(--accent-dim);
     color: #e1fff5;
-    border-color: rgba(0,229,160,0.25);
+    border-color: var(--accent-glow);
   }
   .support-msg-meta { font-size: 10px; color: var(--text3); }
   .support-attachments {
@@ -375,8 +416,8 @@
     font-size: 11px;
     color: var(--accent);
     text-decoration: none;
-    border: 1px solid rgba(0,229,160,0.25);
-    background: rgba(0,229,160,0.08);
+    border: 1px solid var(--accent-glow);
+    background: var(--accent-dim);
     border-radius: 999px;
     padding: 4px 8px;
   }
@@ -396,12 +437,12 @@
   .bk-info { flex: 1; min-width: 0; }
   .bk-name { font-size: 15px; font-weight: 700; }
   .bk-details { font-size: 12px; color: var(--text2); margin-top: 3px; line-height: 1.35; }
-  .bk-tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: rgba(0,229,160,0.12); color: var(--accent); margin-top: 4px; display: inline-block; }
+  .bk-tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: var(--accent-dim); color: var(--accent); margin-top: 4px; display: inline-block; }
   .bk-tag.connected { background: rgba(91,141,238,0.12); color: var(--blue); }
   .bk-status-tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; margin-top: 6px; display: inline-block; }
-  .bk-status-tag.status-verified { background: rgba(0,229,160,0.15); color: var(--accent); }
+  .bk-status-tag.status-verified { background: var(--success-dim); color: var(--success); }
   .bk-status-tag.status-pending { background: rgba(91,141,238,0.15); color: var(--blue); }
-  .bk-status-tag.status-none { background: rgba(255,209,102,0.16); color: var(--yellow); }
+  .bk-status-tag.status-none { background: var(--warning-dim); color: var(--warning); }
   .bk-status-tag.status-rejected { background: rgba(255,77,109,0.15); color: var(--red); }
   .bk-action {
     align-self: center; font-size: 11px; font-weight: 700; color: var(--text2);
@@ -447,23 +488,24 @@
   .btn-submit {
     width: 100%; padding: 16px; background: var(--accent); color: #000;
     border: none; border-radius: var(--radius); font-size: 15px; font-weight: 800;
+    box-shadow: 0 4px 20px rgba(45,212,191,0.35);
     cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px; margin-top: 8px;
   }
-  .btn-submit:active { background: var(--accent2); transform: scale(0.98); }
+  .btn-submit:active { background: var(--accent-bright); transform: scale(0.98); }
   .btn-submit:disabled { background: var(--bg3); color: var(--text3); cursor: not-allowed; transform: none; }
 
   /* REFERRAL */
   .ref-hero {
     margin: 0 16px 20px;
     background: linear-gradient(135deg, #0d1520 0%, #151025 100%);
-    border: 1px solid rgba(91,141,238,0.2);
+    border: 1px solid var(--referral-border);
     border-radius: 20px; padding: 24px; text-align: center; position: relative; overflow: hidden;
   }
   .ref-hero::before {
     content: '';
     position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
     width: 200px; height: 200px;
-    background: radial-gradient(circle, rgba(91,141,238,0.1) 0%, transparent 70%);
+    background: radial-gradient(circle, var(--referral-dim) 0%, transparent 70%);
   }
   .ref-emoji { font-size: 40px; margin-bottom: 8px; }
   .ref-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 1px; margin-bottom: 6px; }
@@ -473,7 +515,7 @@
     flex: 1; background: var(--card); border: 1px solid var(--border);
     border-radius: var(--radius-sm); padding: 14px 10px; text-align: center;
   }
-  .ref-level-pct { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--blue); letter-spacing: 1px; }
+  .ref-level-pct { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--referral); letter-spacing: 1px; }
   .ref-level-label { font-size: 10px; color: var(--text2); font-weight: 600; }
   .ref-link-box {
     background: var(--bg3); border: 1px solid var(--border);
@@ -496,7 +538,7 @@
   }
   .stat-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--text2); text-transform: uppercase; margin-bottom: 6px; }
   .stat-value { font-size: 22px; font-weight: 800; }
-  .stat-value.green { color: var(--accent); }
+  .stat-value.green { color: var(--success); }
   .stat-value.blue { color: var(--blue); }
   .stat-value.yellow { color: var(--yellow); }
 
@@ -508,7 +550,7 @@
   }
   .avatar {
     width: 60px; height: 60px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent2), var(--blue));
+    background: linear-gradient(135deg, var(--accent), var(--referral));
     display: flex; align-items: center; justify-content: center;
     font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: #000; flex-shrink: 0;
   }
@@ -517,7 +559,7 @@
   .profile-tier { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; }
   .tier-badge {
     font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px;
-    background: rgba(0,229,160,0.15); color: var(--accent);
+    background: var(--success-dim); color: var(--success);
   }
 
   /* PAYOUT METHODS */
@@ -527,7 +569,7 @@
     display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.15s;
   }
   .payout-card:active { border-color: var(--accent); }
-  .payout-card.selected { border-color: var(--accent); background: rgba(0,229,160,0.05); }
+  .payout-card.selected { border-color: var(--accent); background: var(--accent-dim); }
   .payout-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 20px; }
   .payout-info { flex: 1; }
   .payout-type { font-size: 14px; font-weight: 700; }
@@ -558,7 +600,7 @@
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
   }
   .toast.show { transform: translateX(-50%) translateY(0); }
-  .toast.success { border-color: var(--accent); color: var(--accent); }
+  .toast.success { border-color: var(--success); color: var(--success); }
   .toast.error { border-color: var(--red); color: var(--red); }
 
   /* MODAL */
@@ -576,9 +618,9 @@
   .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
   .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 1px; margin-bottom: 4px; }
   .modal-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
-  .modal-status.status-verified { background: rgba(0,229,160,0.12) !important; border-color: rgba(0,229,160,0.25) !important; color: var(--accent) !important; }
+  .modal-status.status-verified { background: var(--success-dim) !important; border-color: var(--success-glow) !important; color: var(--success) !important; }
   .modal-status.status-pending { background: rgba(91,141,238,0.12) !important; border-color: rgba(91,141,238,0.28) !important; color: var(--blue) !important; }
-  .modal-status.status-none { background: rgba(255,209,102,0.12) !important; border-color: rgba(255,209,102,0.25) !important; color: var(--yellow) !important; }
+  .modal-status.status-none { background: var(--warning-dim) !important; border-color: var(--warning-border) !important; color: var(--warning) !important; }
   .modal-status.status-rejected { background: rgba(255,77,109,0.12) !important; border-color: rgba(255,77,109,0.28) !important; color: var(--red) !important; }
 
   /* ADD PAYOUT FORM */
@@ -587,7 +629,7 @@
     background: var(--card); border: 1px solid var(--border);
     border-radius: 10px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.15s;
   }
-  .asset-btn.selected { border-color: var(--accent); background: rgba(0,229,160,0.08); }
+  .asset-btn.selected { border-color: var(--accent); background: var(--accent-dim); }
   .asset-icon { font-size: 20px; margin-bottom: 4px; }
   .asset-label { font-size: 11px; font-weight: 700; }
 
@@ -606,7 +648,7 @@
   .promo-banner {
     margin: 0 16px 16px; border-radius: var(--radius); overflow: hidden;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-    border: 1px solid rgba(91,141,238,0.2); padding: 16px;
+    border: 1px solid var(--referral-border); padding: 16px;
     display: flex; align-items: center; gap: 12px; cursor: pointer;
   }
   .promo-emoji { font-size: 28px; }
@@ -649,8 +691,8 @@
 
   /* PENDING CASHBACK BAR */
   .pending-bar {
-    background: linear-gradient(135deg, rgba(255,209,102,0.08), rgba(255,209,102,0.03));
-    border: 1px solid rgba(255,209,102,0.15); border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--warning-dim), rgba(255,215,64,0.03));
+    border: 1px solid var(--warning-border); border-radius: var(--radius);
     padding: 14px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
   }
   .pending-icon { font-size: 20px; }
@@ -666,7 +708,7 @@
     font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s;
     background: var(--card); border: 1px solid var(--border); color: var(--text2);
   }
-  .chip.active { background: rgba(0,229,160,0.12); border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
 </style>
 </head>
 <body>
@@ -679,7 +721,7 @@
     <div class="page-header">
       <div class="logo">BET<span>CASHBACK</span></div>
       <div style="display:flex;gap:8px;align-items:center">
-        <div style="font-size:11px;font-weight:700;color:var(--text2);" id="header-tier">TIER 1 · 5%</div>
+        <div class="header-tier-badge" id="header-tier"><span class="tier-label">TIER 1</span><span class="tier-pct-badge">5%</span></div>
       </div>
     </div>
 
@@ -863,15 +905,15 @@
           </div>
         </div>
         <div>
-          <div style="background:rgba(255,209,102,0.12);border-radius:4px;height:6px;overflow:hidden">
-            <div id="pending-bar-fill" style="height:100%;border-radius:4px;background:linear-gradient(90deg,var(--yellow),#ffaa00);transition:width 0.8s cubic-bezier(.34,1.56,.64,1);width:0%"></div>
+          <div style="background:var(--warning-dim);border-radius:4px;height:6px;overflow:hidden">
+            <div id="pending-bar-fill" style="height:100%;border-radius:4px;background:linear-gradient(90deg,var(--warning),#ffaa00);transition:width 0.8s cubic-bezier(.34,1.56,.64,1);width:0%"></div>
           </div>
           <div style="display:flex;justify-content:space-between;margin-top:4px">
             <div style="font-size:10px;color:var(--text3)">0 ₽</div>
             <div style="font-size:10px;color:var(--text3)">мин. вывод: 500 ₽</div>
           </div>
         </div>
-        <button onclick="showScreen('submit')" style="width:100%;padding:10px;background:rgba(255,209,102,0.1);border:1px solid rgba(255,209,102,0.25);border-radius:10px;color:var(--yellow);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s" onmousedown="this.style.background='rgba(255,209,102,0.18)'" onmouseup="this.style.background='rgba(255,209,102,0.1)'">+ Подать ещё заявку</button>
+        <button onclick="showScreen('submit')" style="width:100%;padding:10px;background:var(--warning-dim);border:1px solid var(--warning-border);border-radius:10px;color:var(--warning);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s">+ Подать ещё заявку</button>
       </div>
     </div>
 
@@ -1091,11 +1133,11 @@
       <span>Заявка</span>
     </div>
     <div class="nav-item" onclick="showScreen('referral')" id="nav-referral">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
       <span>Рефералы</span>
     </div>
     <div class="nav-item" onclick="showScreen('profile')" id="nav-profile">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4-4v2"/><circle cx="12" cy="7" r="4"/></svg>
       <span>Профиль</span>
     </div>
   </nav>
@@ -1128,7 +1170,7 @@
     <div class="modal-handle"></div>
     <div class="modal-title" id="modal-bk-name"></div>
     <div class="modal-sub" id="modal-bk-rules"></div>
-    <div class="field-hint" id="modal-bk-offer" style="display:none;margin:8px 0 12px;padding:8px 10px;border-radius:10px;background:rgba(0,229,160,0.12);border:1px solid rgba(0,229,160,0.3);color:var(--accent)"></div>
+    <div class="field-hint" id="modal-bk-offer" style="display:none;margin:8px 0 12px;padding:8px 10px;border-radius:10px;background:var(--accent-dim);border:1px solid var(--accent-glow);color:var(--accent)"></div>
     <div class="modal-status status-none" style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:10px;padding:8px 10px;border-radius:10px;background:var(--bg3);border:1px solid var(--border)" id="modal-bk-status"></div>
     <a id="modal-bk-instruction" href="#" target="_blank" style="display:none;font-size:12px;color:var(--accent);text-decoration:none;margin-bottom:10px">📄 Инструкция букмекера</a>
     <div style="font-size:13px;color:var(--text2);line-height:1.45;margin:8px 0 10px">
@@ -1452,7 +1494,7 @@ async function loadSupportTickets({ silent = true } = {}) {
 // FAQ DATA
 // ============================================================
 const FAQ_ITEMS = [
-  { q: 'Что такое BetCashback?', a: 'BetCashback — сервис возврата части проигрыша у букмекеров. Вы регистрируетесь у букмекера по нашей ссылке, делаете ставки, а если проигрываете — мы возвращаем 5–10% от суммы проигрыша в криптовалюте.' },
+  { q: 'Что такое BetCashback?', a: 'BetCashback — сервис возврата части проигрыша у букмекеров. Вы регистрируетесь у букмекера по нашей ссылке, делаете ставки, а если проигрываете — мы возвращаем до 10% от суммы проигрыша в криптовалюте.' },
   { q: 'Как начать пользоваться?', a: 'Три шага: 1) Выберите букмекера в разделе «Букмекеры» и зарегистрируйтесь по нашей ссылке. 2) Отправьте Player ID из личного кабинета букмекера — мы проверим, что аккаунт привязан к нам. 3) Когда ставка проиграла — подайте заявку с суммой и скриншотом.' },
   { q: 'Что такое Player ID и где его найти?', a: 'Player ID — это ваш уникальный номер в системе букмекера. Обычно его можно найти в личном кабинете букмекера в разделе «Профиль», «Аккаунт» или «Мои данные». Это числовой идентификатор, не логин.' },
   { q: 'Почему нужно регистрироваться по вашей ссылке?', a: 'Только через нашу ссылку мы можем подтвердить, что вы наш пользователь, и отследить ваши ставки. Если вы уже зарегистрированы у букмекера не через нас — к сожалению, начислить кэшбэк не получится.' },
@@ -1620,7 +1662,7 @@ function updateTierUI() {
   const t = state.tierInfo;
   const pct = t.nextTierAt > 0 ? Math.min(100, Math.round((t.progress / t.nextTierAt) * 100)) : 100;
   setEl('tier-pct', t.pct + '%');
-  setEl('header-tier', 'TIER ' + t.tier + ' · ' + t.pct + '%');
+  setEl('header-tier', '<span class="tier-label">TIER ' + t.tier + '</span><span class="tier-pct-badge">' + t.pct + '%</span>');
   setEl('prof-tier', 'TIER ' + t.tier + ' · ' + t.pct + '%');
   const left = Math.max(0, t.nextTierAt - t.progress);
   const nextPct = t.tier === 1 ? 7 : 10;
@@ -2502,7 +2544,7 @@ function renderWithdrawSection() {
   el.innerHTML = `
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px">
       <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px">Доступно к выводу</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;line-height:1;color:var(--accent);margin-top:4px">${Math.round(available).toLocaleString('ru-RU')}<span style="font-size:22px;color:var(--accent2)"> ₽</span></div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;line-height:1;color:var(--accent);margin-top:4px">${Math.round(available).toLocaleString('ru-RU')}<span style="font-size:22px;color:var(--accent-bright)"> ₽</span></div>
     </div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Минимум: ${formatRubThreshold(minAmount)}. Это сумма одобренных заявок, доступная для вывода.</div>
     <div class="field" style="margin-bottom:8px">

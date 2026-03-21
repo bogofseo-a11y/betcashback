@@ -769,24 +769,89 @@
   .stat-value.yellow { color: var(--yellow); }
 
   /* PROFILE */
-  .profile-header {
-    margin: 0 16px 20px;
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 20px; padding: 24px; display: flex; gap: 16px; align-items: center;
-  }
-  .avatar {
-    width: 60px; height: 60px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--referral));
+  /* PROFILE — Variant C */
+  .profile-user-card { margin-bottom: 16px; }
+  .profile-user-header { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+  .profile-avatar {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--bg); border: 2px solid var(--accent);
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: #000; flex-shrink: 0;
+    font-size: 18px; font-weight: 800; color: var(--accent); flex-shrink: 0;
   }
-  .profile-name { font-size: 18px; font-weight: 800; }
-  .profile-id { font-size: 12px; color: var(--text2); margin-top: 2px; }
-  .profile-tier { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; }
-  .tier-badge {
-    font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px;
-    background: var(--success-dim); color: var(--success);
+  .profile-user-info { flex: 1; }
+  .profile-user-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .profile-user-name { font-size: 18px; font-weight: 800; color: var(--text); }
+  .profile-user-handle { font-size: 13px; color: var(--text3); }
+  .profile-tier-display { text-align: right; }
+  .profile-tier-label { font-size: 11px; font-weight: 700; color: var(--text3); }
+  .profile-tier-pct { font-size: 22px; font-weight: 900; color: var(--accent); }
+  .profile-tier-bar { height: 4px; border-radius: 2px; background: var(--surface-light); overflow: hidden; margin-bottom: 6px; }
+  .profile-tier-bar-fill {
+    height: 100%; border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-bright));
+    box-shadow: 0 0 8px var(--accent);
   }
+  .profile-tier-hint { font-size: 12px; color: var(--text2); }
+  .profile-tier-hint strong { font-weight: 800; color: var(--text); }
+
+  .profile-balance-card {
+    margin-bottom: 16px;
+    border: 1px solid var(--accent-glow) !important;
+    box-shadow: 0 0 28px -4px var(--accent-glow) !important;
+  }
+  .profile-balance-row { display: flex; justify-content: space-between; align-items: center; }
+  .profile-balance-label {
+    font-size: 11px; font-weight: 700; color: var(--text3);
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .profile-balance-amount { font-size: 28px; font-weight: 900; color: var(--accent); margin-top: 2px; }
+  .profile-balance-total { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .profile-balance-total strong { font-weight: 700; color: var(--text); }
+  .profile-withdraw-btn {
+    padding: 12px 20px; border-radius: 12px; background: var(--accent);
+    border: none; color: var(--bg); font-size: 14px; font-weight: 700;
+    cursor: pointer; box-shadow: 0 4px 16px rgba(45,212,191,0.35); flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .profile-withdraw-btn:active { transform: scale(0.97); }
+
+  .profile-quick-links { display: flex; gap: 8px; margin-bottom: 16px; }
+  .profile-quick-link {
+    flex: 1; padding: 14px 10px !important; text-align: center;
+    cursor: pointer; position: relative; display: flex; flex-direction: column;
+    align-items: center; gap: 6px; color: var(--text2);
+  }
+  .profile-quick-link span { font-size: 11px; font-weight: 600; }
+  .profile-quick-link-badge {
+    position: absolute; top: 6px; right: 8px;
+    min-width: 18px; height: 18px; border-radius: 9px;
+    background: var(--accent); display: flex; align-items: center;
+    justify-content: center; font-size: 10px; font-weight: 800;
+    color: var(--bg); padding: 0 4px;
+  }
+
+  /* WITHDRAW SCREEN */
+  .withdraw-desc { font-size: 12px; color: var(--text3); margin-bottom: 16px; line-height: 1.5; }
+  .withdraw-balance {
+    margin-bottom: 20px;
+    border: 1px solid var(--accent-glow) !important;
+    box-shadow: 0 0 28px -4px var(--accent-glow) !important;
+  }
+  .withdraw-balance-amount { font-size: 32px; font-weight: 900; color: var(--accent); margin-top: 4px; }
+  .input-field {
+    width: 100%; padding: 14px 16px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border); background: var(--card);
+    color: var(--text); font-size: 16px; font-weight: 600;
+    outline: none; font-family: inherit; -webkit-appearance: none; appearance: none;
+  }
+  .input-field:focus { border-color: var(--accent); }
+  .input-field::placeholder { color: var(--text3); }
+  .btn-secondary {
+    width: 100%; padding: 14px; background: var(--bg3); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-secondary:active { background: var(--surface-light); }
 
   /* PAYOUT METHODS */
   .payout-card {
@@ -960,7 +1025,7 @@
         <div class="hero-sub" style="margin-top:4px;opacity:0.7">Выплаты в крипте: USDT · TON</div>
         <div class="hero-actions">
           <button class="btn-hero primary" onclick="showScreen('submit')">+ Подать заявку</button>
-          <button class="btn-hero secondary" onclick="showScreen('profile')">Вывести</button>
+          <button class="btn-hero secondary" onclick="showScreen('withdraw')">Вывести</button>
         </div>
       </div>
 
@@ -1181,85 +1246,103 @@
       <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;">Мой профиль</div>
     </div>
 
-    <div class="profile-header animate-in">
-      <div class="avatar" id="prof-avatar">U</div>
-      <div>
-        <div class="profile-name" id="prof-name">Загрузка...</div>
-        <div class="profile-id" id="prof-id">@username</div>
-        <div class="profile-tier">
-          <div class="tier-badge" id="prof-tier">TIER 1 · 5%</div>
+    <div style="padding:0 16px">
+      <!-- User card with tier progress -->
+      <div class="card profile-user-card animate-in">
+        <div class="profile-user-header">
+          <div class="profile-avatar" id="prof-avatar">U</div>
+          <div class="profile-user-info">
+            <div class="profile-user-top">
+              <div>
+                <div class="profile-user-name" id="prof-name">Загрузка...</div>
+                <div class="profile-user-handle" id="prof-id">@username</div>
+              </div>
+              <div class="profile-tier-display">
+                <div class="profile-tier-label" id="prof-tier-label">TIER 1</div>
+                <div class="profile-tier-pct" id="prof-tier-pct">5%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="profile-tier-progress">
+          <div class="profile-tier-bar"><div class="profile-tier-bar-fill" id="prof-tier-bar" style="width:0%"></div></div>
+          <div class="profile-tier-hint" id="prof-tier-hint">Загрузка...</div>
+        </div>
+      </div>
+
+      <!-- Balance + withdraw -->
+      <div class="card profile-balance-card animate-in delay-1">
+        <div class="profile-balance-row">
+          <div>
+            <div class="profile-balance-label">ДОСТУПНО К ВЫВОДУ</div>
+            <div class="profile-balance-amount" id="prof-balance">0 ₽</div>
+            <div class="profile-balance-total">Всего: <strong id="prof-total-earned">0 ₽</strong> · <span id="prof-total-claims">0</span> заявок</div>
+          </div>
+          <button class="profile-withdraw-btn" onclick="showScreen('withdraw')">Вывести</button>
+        </div>
+      </div>
+
+      <!-- Quick links -->
+      <div class="profile-quick-links animate-in delay-2">
+        <div class="card profile-quick-link" onclick="showScreen('support')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+          <span>Поддержка</span>
+          <div class="profile-quick-link-badge" id="support-badge" style="display:none">0</div>
+        </div>
+        <div class="card profile-quick-link" onclick="showScreen('faq')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <span>FAQ</span>
+        </div>
+        <div class="card profile-quick-link" onclick="showScreen('terms')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <span>Правила</span>
+        </div>
+      </div>
+
+      <!-- Payout history -->
+      <div class="animate-in delay-3">
+        <div class="section-label">ИСТОРИЯ ВЫПЛАТ</div>
+        <div id="payout-history">
+          <div style="font-size:13px;color:var(--text2);text-align:center;padding:24px">История выплат пока пуста</div>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="section animate-in delay-1">
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Заработано</div>
-          <div class="stat-value green" id="stat-earned">0 ₽</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Заявок</div>
-          <div class="stat-value blue" id="stat-claims">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Рефералов</div>
-          <div class="stat-value yellow" id="stat-refs">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Доход от друзей</div>
-          <div class="stat-value green" id="stat-ref-income">0 ₽</div>
-        </div>
-      </div>
+  <!-- SCREEN: WITHDRAW -->
+  <div class="screen" id="screen-withdraw">
+    <div class="page-header">
+      <button class="btn-back" onclick="showScreen('profile')">← Назад</button>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;">Вывод средств</div>
+      <div style="width:56px"></div>
     </div>
 
-    <div id="pending-section" style="padding:0 16px;margin-bottom:20px;display:none">
-      <div class="pending-bar" style="flex-direction:column;align-items:stretch;gap:12px">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div class="pending-icon">🪙</div>
-          <div style="flex:1">
-            <div class="pending-text"><span class="pending-amount" id="pending-amount">0 ₽</span> накоплено</div>
-            <div class="pending-hint">Ещё <span id="pending-left">0 ₽</span> до минимального вывода</div>
-          </div>
-        </div>
-        <div>
-          <div style="background:var(--warning-dim);border-radius:4px;height:6px;overflow:hidden">
-            <div id="pending-bar-fill" style="height:100%;border-radius:4px;background:linear-gradient(90deg,var(--warning),#ffaa00);transition:width 0.8s cubic-bezier(.34,1.56,.64,1);width:0%"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:4px">
-            <div style="font-size:10px;color:var(--text3)">0 ₽</div>
-            <div style="font-size:10px;color:var(--text3)">мин. вывод: 500 ₽</div>
-          </div>
-        </div>
-        <button onclick="showScreen('submit')" style="width:100%;padding:10px;background:var(--warning-dim);border:1px solid var(--warning-border);border-radius:10px;color:var(--warning);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s">+ Подать ещё заявку</button>
+    <div style="padding:0 16px">
+      <p class="withdraw-desc">Баланс указан в ₽, выплата — в USDT или TON по курсу на момент перевода</p>
+
+      <div class="card withdraw-balance">
+        <div class="section-label" style="margin-bottom:4px">ДОСТУПНО К ВЫВОДУ</div>
+        <div class="withdraw-balance-amount" id="withdraw-balance">0 ₽</div>
       </div>
-    </div>
 
-    <div class="section animate-in delay-2">
-      <div class="section-title">Вывести средства</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.5">Баланс указан в ₽, выплата — в USDT или TON по курсу на момент перевода</div>
-      <div id="withdraw-box" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px"></div>
-
-      <div class="section-title">Куда выводить</div>
+      <div class="section-label">КУДА ВЫВЕСТИ</div>
       <div id="payout-methods-list"></div>
-      <button class="btn-submit" style="margin-top:4px;background:var(--bg3);color:var(--text);border:1px solid var(--border)" onclick="openAddPayout()">+ Добавить крипто-кошелёк</button>
-    </div>
+      <button class="btn-secondary" onclick="openAddPayout()" style="margin-bottom:20px">+ Добавить крипто-кошелёк</button>
 
-    <div class="section animate-in delay-3">
-      <div class="section-title">Поддержка</div>
-      <div class="support-entry">
-        <div class="support-entry-title">Есть вопросы?</div>
-        <div class="support-entry-sub">Напишите нам — ответим в течение 24 часов</div>
-        <div class="support-entry-meta">Открытых обращений: <strong id="support-open-count">0</strong></div>
-        <button class="btn-submit" style="margin-top:0;background:var(--bg3);color:var(--text);border:1px solid var(--border)" onclick="showScreen('support')">Открыть поддержку</button>
-      </div>
-    </div>
+      <div class="section-label">СУММА ВЫВОДА, ₽</div>
+      <input type="number" class="input-field" placeholder="Введите сумму от 500 ₽" id="withdraw-amount" min="1" step="1" inputmode="numeric">
 
-    <div class="section animate-in delay-4">
-      <div class="section-title">История выплат</div>
-      <div id="payout-history">
-        <div style="font-size:13px;color:var(--text2);text-align:center;padding:24px">История выплат пока пуста</div>
-      </div>
+      <button class="btn-primary" onclick="submitWithdrawRequest()" id="withdraw-submit-btn" style="margin-top:16px">Вывести на кошелёк</button>
+      <div id="withdraw-min-hint" style="display:none;margin-top:8px;font-size:12px;color:var(--yellow)"></div>
     </div>
   </div>
 
@@ -1682,7 +1765,7 @@ function applySupportTicketsSnapshot(ticketsRes) {
 }
 
 function shouldSyncPayoutForScreen(screenName = activeScreen) {
-  return screenName === 'home' || screenName === 'profile';
+  return screenName === 'home' || screenName === 'profile' || screenName === 'withdraw';
 }
 
 function shouldSyncClaimForScreen(screenName = activeScreen) {
@@ -1847,26 +1930,26 @@ async function loadUserData() {
 function updateProfile() {
   const name = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
   const initials = name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
-  
+
   setEl('prof-avatar', initials);
   setEl('prof-name', name);
   setEl('prof-id', '@' + (tgUser.username || 'user'));
   const homeAvailable = Number.isFinite(state.withdrawable?.available) ? state.withdrawable.available : (state.balance || 0);
   document.getElementById('home-balance').innerHTML = Math.round(homeAvailable).toLocaleString('ru-RU') + '<span> ₽</span>';
   setEl('home-total', formatRub(state.totalEarned));
-  setEl('stat-earned', formatRub(state.totalEarned));
-  setEl('stat-claims', state.claims.length);
-  setEl('stat-refs', safeCountValue(state.refStats?.count));
-  setEl('stat-ref-income', formatRub(safeAmountValue(state.refStats?.income)));
-  
+
+  // Profile balance card
+  const profBalanceEl = document.getElementById('prof-balance');
+  if (profBalanceEl) profBalanceEl.textContent = formatRub(homeAvailable);
+  setEl('prof-total-earned', formatRub(state.totalEarned));
+  setEl('prof-total-claims', state.claims.length);
+
   updateTierUI();
   renderHomeState();
   renderHomeClaims();
   renderPayoutMethods();
-  renderWithdrawSection();
   renderPayoutHistory();
-  updateSupportEntryMeta();
-  updatePendingUI();
+  updateSupportBadge();
 }
 
 function renderHomeState() {
@@ -1946,6 +2029,16 @@ function updateSupportEntryMeta() {
   const openCount = state.supportTickets.filter(t => t.status !== 'closed').length;
   const el = document.getElementById('support-open-count');
   if (el) el.textContent = String(openCount);
+  updateSupportBadge();
+}
+
+function updateSupportBadge() {
+  const openCount = state.supportTickets.filter(t => t.status !== 'closed').length;
+  const badge = document.getElementById('support-badge');
+  if (badge) {
+    badge.style.display = openCount > 0 ? '' : 'none';
+    badge.textContent = String(openCount);
+  }
 }
 
 function updateTierUI() {
@@ -1953,24 +2046,35 @@ function updateTierUI() {
   const pct = t.nextTierAt > 0 ? Math.min(100, Math.round((t.progress / t.nextTierAt) * 100)) : 100;
   setEl('tier-pct', t.pct + '%');
   setEl('header-tier', '<span class="tier-label">TIER ' + t.tier + '</span><span class="tier-pct-badge">' + t.pct + '%</span>');
-  setEl('prof-tier', 'TIER ' + t.tier + ' · ' + t.pct + '%');
+
+  // Profile tier display
+  setEl('prof-tier-label', 'TIER ' + t.tier);
+  setEl('prof-tier-pct', t.pct + '%');
+  const profBar = document.getElementById('prof-tier-bar');
+  if (profBar) profBar.style.width = pct + '%';
+
   const left = Math.max(0, t.nextTierAt - t.progress);
   const nextPct = t.tier === 1 ? 7 : 10;
+  const hintEl = document.getElementById('prof-tier-hint');
   if (t.tier >= 3) {
-    setEl('tier-name', 'TIER 3 · МАКСИМАЛЬНЫЙ УРОВЕНЬ');
-    setEl('tier-hint-text', 'У вас максимальная ставка кэшбэка — <strong>10%</strong>.');
-    const tp1 = document.getElementById('tier-progress');
-    if (tp1) tp1.style.width = '100%';
-    return;
+    if (hintEl) hintEl.innerHTML = 'Максимальный уровень — <strong>10%</strong> кэшбэка';
+    if (profBar) profBar.style.width = '100%';
+  } else {
+    if (hintEl) hintEl.innerHTML = `Ещё <strong>${left} заявок</strong> до Tier ${t.tier + 1} (${nextPct}%)`;
   }
-  setEl('tier-name', 'ПРОГРЕСС К TIER ' + (t.tier + 1) + ' · ' + nextPct + '%');
-  setEl('tier-hint-text', `Ещё <strong style="color:var(--text);font-weight:800">${left} одобренных заявок</strong> — и ставка вырастет до ${nextPct}%`);
-  const tp2 = document.getElementById('tier-progress');
-  if (tp2) tp2.style.width = pct + '%';
+
+  // Legacy elements (home tier bar)
+  const tp = document.getElementById('tier-progress');
+  if (tp) tp.style.width = pct + '%';
+  setEl('tier-name', t.tier >= 3 ? 'TIER 3 · МАКСИМАЛЬНЫЙ УРОВЕНЬ' : 'ПРОГРЕСС К TIER ' + (t.tier + 1) + ' · ' + nextPct + '%');
+  setEl('tier-hint-text', t.tier >= 3
+    ? 'У вас максимальная ставка кэшбэка — <strong>10%</strong>.'
+    : `Ещё <strong style="color:var(--text);font-weight:800">${left} одобренных заявок</strong> — и ставка вырастет до ${nextPct}%`);
 }
 
 function updatePendingUI() {
   const section = document.getElementById('pending-section');
+  if (!section) return;
   if (state.pending > 0 && state.pending < 500) {
     section.style.display = 'block';
     setEl('pending-amount', formatRub(state.pending));
@@ -1985,7 +2089,7 @@ function updatePendingUI() {
 // ============================================================
 // NAVIGATION
 // ============================================================
-const screens = ['home','bookmakers','bookmaker-detail','submit','referral','profile','support','faq','terms'];
+const screens = ['home','bookmakers','bookmaker-detail','submit','referral','profile','withdraw','support','faq','terms'];
 
 function showScreen(name) {
   activeScreen = name;
@@ -1994,7 +2098,8 @@ function showScreen(name) {
     document.getElementById('nav-' + s)?.classList.remove('active');
   });
   document.getElementById('screen-' + name)?.classList.add('active');
-  document.getElementById('nav-' + name)?.classList.add('active');
+  const navName = name === 'withdraw' ? 'profile' : name;
+  document.getElementById('nav-' + navName)?.classList.add('active');
   document.getElementById('screen-' + name)?.scrollTo(0,0);
   if (shouldSyncClaimForScreen(name)) {
     syncClaimState({ silent: true }).catch(() => {});
@@ -2013,6 +2118,9 @@ function showScreen(name) {
   }
   if (name === 'referral') {
     renderRefTiers();
+  }
+  if (name === 'withdraw') {
+    renderWithdrawScreen();
   }
 }
 
@@ -2943,7 +3051,6 @@ function selectPayout(idx) {
   if (!method) return;
   state.selectedPayoutMethodId = method.id;
   document.querySelectorAll('.payout-card').forEach((c,i) => c.classList.toggle('selected', i===idx));
-  renderWithdrawSection();
 }
 
 function openAddPayout() { openModal('modal-payout'); }
@@ -2976,43 +3083,39 @@ async function savePayoutMethod() {
 }
 
 function renderWithdrawSection() {
-  const el = document.getElementById('withdraw-box');
-  if (!el) return;
+  // Legacy — kept for backward compat, now a no-op (withdraw moved to separate screen)
+}
 
+function renderWithdrawScreen() {
   const available = state.withdrawable?.available || 0;
   const minAmount = state.minPayoutAmountRub || 500;
   const disabled = available < minAmount || !state.payoutMethods.length;
 
-  const methodsOptions = state.payoutMethods.map(m =>
-    `<option value="${m.id}" ${m.id === state.selectedPayoutMethodId ? 'selected' : ''}>${assetLabels[m.asset]||m.asset} · ${truncateAddr(m.address)}</option>`
-  ).join('');
+  // Update balance display
+  const balEl = document.getElementById('withdraw-balance');
+  if (balEl) balEl.textContent = formatRub(available);
 
-  el.innerHTML = `
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px">
-      <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px">Доступно к выводу</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;line-height:1;color:var(--accent);margin-top:4px">${Math.round(available).toLocaleString('ru-RU')}<span style="font-size:22px;color:var(--accent-bright)"> ₽</span></div>
-    </div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Минимум: ${formatRubThreshold(minAmount)}. Это сумма одобренных заявок, доступная для вывода.</div>
-    <div class="field" style="margin-bottom:8px">
-      <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:4px">Куда вывести</label>
-      <select id="withdraw-method" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);color:#fff" ${state.payoutMethods.length ? '' : 'disabled'}>
-        ${state.payoutMethods.length ? methodsOptions : '<option value="">Сначала добавьте кошелёк</option>'}
-      </select>
-    </div>
-    <div class="field" style="margin-bottom:10px">
-      <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:4px">Сумма вывода, ₽</label>
-      <input id="withdraw-amount" type="number" min="1" step="1" placeholder="Введите сумму от 500 ₽" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);color:#fff" ${disabled ? 'disabled' : ''}>
-    </div>
-    <button class="btn-submit" onclick="submitWithdrawRequest()" ${disabled ? 'disabled style="opacity:.6;cursor:not-allowed"' : ''}>Вывести на кошелёк</button>
-    ${available < minAmount ? `<div style="margin-top:8px;font-size:12px;color:var(--yellow)">Недостаточно средств для вывода. Накопите минимум ${formatRubThreshold(minAmount)}.</div>` : ''}
-  `;
-
-  const methodSelect = document.getElementById('withdraw-method');
-  if (methodSelect) {
-    methodSelect.addEventListener('change', (e) => {
-      state.selectedPayoutMethodId = parseInt(e.target.value) || null;
-    });
+  // Update submit button state
+  const btn = document.getElementById('withdraw-submit-btn');
+  if (btn) {
+    btn.disabled = disabled;
+    btn.style.opacity = disabled ? '0.6' : '1';
+    btn.style.cursor = disabled ? 'not-allowed' : 'pointer';
   }
+
+  // Min amount hint
+  const hintEl = document.getElementById('withdraw-min-hint');
+  if (hintEl) {
+    if (available < minAmount) {
+      hintEl.style.display = '';
+      hintEl.textContent = `Недостаточно средств для вывода. Накопите минимум ${formatRubThreshold(minAmount)}.`;
+    } else {
+      hintEl.style.display = 'none';
+    }
+  }
+
+  // Render payout methods
+  renderPayoutMethods();
 }
 
 function openTierInfo() {
@@ -3056,7 +3159,7 @@ function renderPayoutHistory() {
 
 async function submitWithdrawRequest() {
   const amount = parseFloat(document.getElementById('withdraw-amount')?.value || '0');
-  const methodId = parseInt(document.getElementById('withdraw-method')?.value || state.selectedPayoutMethodId || '0');
+  const methodId = parseInt(state.selectedPayoutMethodId || '0');
   const minAmount = Number(state.minPayoutAmountRub || 500);
 
   if (!Number.isInteger(methodId) || methodId <= 0) {

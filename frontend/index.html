@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>BetCashback</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -300,6 +300,7 @@
     display: inline-flex; padding: 3px 10px; border-radius: 20px;
     font-size: 12px; font-weight: 600;
   }
+  .support-ticket-status--new { background: var(--warning-dim); color: var(--warning); }
   .support-ticket-status--open { background: var(--accent-dim); color: var(--accent); }
   .support-ticket-status--in_progress { background: var(--accent-dim); color: var(--accent); }
   .support-ticket-status--waiting_user { background: var(--warning-dim); color: var(--warning); }
@@ -320,7 +321,8 @@
   }
 
   /* CHAT SCREEN */
-  .chat-screen { display: flex; flex-direction: column; height: 100%; }
+  #screen-support .btn-primary { width: 100%; max-width: 100%; box-sizing: border-box; margin: 0 0 20px 0; }
+  .chat-screen { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
   .chat-header {
     padding: 12px 16px; border-bottom: 1px solid var(--border);
     background: var(--surface); flex-shrink: 0;
@@ -331,6 +333,7 @@
   .chat-messages {
     flex: 1; overflow-y: auto; padding: 16px;
     display: flex; flex-direction: column; gap: 12px;
+    -webkit-overflow-scrolling: touch;
   }
   .chat-message { display: flex; flex-direction: column; max-width: 85%; }
   .chat-message--user { align-self: flex-end; align-items: flex-end; }
@@ -363,7 +366,7 @@
   .chat-input {
     width: 100%; padding: 10px 44px 10px 14px; border-radius: 12px;
     border: 1px solid var(--border); background: var(--card);
-    color: var(--text); font-size: 14px; outline: none;
+    color: var(--text); font-size: 16px; outline: none;
     box-sizing: border-box; font-family: inherit;
   }
   .chat-input::placeholder { color: var(--text3); }
@@ -2677,12 +2680,13 @@ function toggleFAQ(i) {
 // ============================================================
 function supportStatusMeta(status) {
   const map = {
-    open: { label: 'Новый', tone: 'open' },
+    new: { label: 'Новый', tone: 'new' },
+    open: { label: 'В работе', tone: 'open' },
     in_progress: { label: 'В работе', tone: 'in_progress' },
-    waiting_user: { label: 'Ждём ваш ответ', tone: 'waiting_user' },
+    waiting_user: { label: 'Ждёт ответа', tone: 'waiting_user' },
     closed: { label: 'Закрыт', tone: 'closed' },
   };
-  return map[status] || { label: status || '—', tone: 'open' };
+  return map[status] || { label: status || '—', tone: 'new' };
 }
 
 function renderSupportTickets() {
@@ -2695,12 +2699,13 @@ function renderSupportTickets() {
 
   container.innerHTML = state.supportTickets.map((t) => {
     const meta = supportStatusMeta(t.status);
-    const statusClass = t.status || 'open';
+    const statusClass = t.status || 'new';
     const senderPrefix = t.last_sender_type === 'admin' ? 'Поддержка: ' : (t.last_sender_type === 'user' ? 'Вы: ' : '');
     const preview = compactText(t.last_message || 'Сообщений пока нет', 80);
     const dt = formatDateTime(t.last_message_at || t.updated_at);
-    const hasUnread = t.status === 'waiting_user' && t.last_sender_type === 'admin';
-    const msgCount = Number(t.message_count || 0);
+    const unreadCount = Number(t.unread_count || 0);
+    const hasUnread = t.status === 'waiting_user' && (unreadCount > 0 || t.last_sender_type === 'admin');
+    const badgeNum = unreadCount > 0 ? unreadCount : Number(t.message_count || 0);
     return `
       <div class="card support-ticket-card" onclick="openSupportTicket(${t.id})">
         <div class="support-ticket-header">
@@ -2708,7 +2713,7 @@ function renderSupportTickets() {
             <span class="support-ticket-title">Обращение #${t.id}</span>
             <span class="support-ticket-status support-ticket-status--${statusClass}">${meta.label}</span>
           </div>
-          ${hasUnread ? `<div class="support-ticket-badge">${msgCount}</div>` : ''}
+          ${hasUnread ? `<div class="support-ticket-badge">${badgeNum}</div>` : ''}
         </div>
         <div class="support-ticket-preview">${escapeHtml(senderPrefix + preview)}</div>
         <div class="support-ticket-meta">
@@ -2730,6 +2735,17 @@ function setupSupportUploads() {
   if (replyInput && !replyInput.dataset.bound) {
     replyInput.addEventListener('change', onSupportReplyFilesChange);
     replyInput.dataset.bound = '1';
+  }
+  const chatInput = document.getElementById('support-reply-message');
+  if (chatInput && !chatInput.dataset.focusBound) {
+    chatInput.addEventListener('focus', () => {
+      setTimeout(() => {
+        const messages = document.getElementById('chat-messages');
+        if (messages) messages.scrollTop = messages.scrollHeight;
+        window.scrollTo(0, 0);
+      }, 300);
+    });
+    chatInput.dataset.focusBound = '1';
   }
 }
 
@@ -2931,7 +2947,7 @@ async function openSupportTicket(ticketId, options = {}) {
     if (!activeSupportTicket) throw new Error('Обращение не найдено');
 
     const meta = supportStatusMeta(activeSupportTicket.status);
-    const statusClass = activeSupportTicket.status || 'open';
+    const statusClass = activeSupportTicket.status || 'new';
     setEl('chat-ticket-title', `Обращение #${activeSupportTicket.id}`);
     setEl('chat-ticket-status', `<span class="support-ticket-status support-ticket-status--${statusClass}">${meta.label}</span>`);
     renderChatMessages(data?.messages || []);

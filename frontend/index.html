@@ -446,32 +446,107 @@
     padding: 4px 8px;
   }
 
-  /* BOOKMAKER LIST */
+  /* BOOKMAKER FILTERS */
+  .bk-filters { display: flex; gap: 8px; margin-bottom: 16px; }
+  .bk-filter {
+    padding: 8px 18px; border-radius: 24px; border: 1px solid var(--border);
+    background: transparent; color: var(--text2); font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; font-family: inherit;
+  }
+  .bk-filter.active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
+
+  /* BOOKMAKER LINK BANNER */
+  .bk-link-banner {
+    display: flex; align-items: flex-start; gap: 12px; padding: 16px; border-radius: 16px;
+    background: rgba(255,215,64,0.04); border: 1px solid var(--warning-border); margin-bottom: 16px;
+  }
+  .bk-link-banner-icon {
+    width: 36px; height: 36px; border-radius: 10px; background: var(--warning-dim);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .bk-link-banner-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .bk-link-banner-text { font-size: 13px; color: var(--text2); line-height: 1.5; }
+
+  /* BOOKMAKER CARD — new design */
   .bk-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 16px; margin-bottom: 10px;
-    cursor: pointer; transition: all 0.15s; display: flex; align-items: flex-start; gap: 14px;
+    background: var(--card); border-radius: 16px; border: 1px solid var(--border);
+    overflow: hidden; margin-bottom: 12px; cursor: pointer; transition: all 0.2s;
   }
   .bk-card:active { transform: scale(0.98); }
-  .bk-logo {
-    width: 48px; height: 48px; border-radius: 12px;
-    background: var(--bg3); display: flex; align-items: center; justify-content: center;
-    font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--accent); flex-shrink: 0;
+  .bk-card-main { padding: 14px 16px; display: flex; align-items: center; gap: 14px; }
+  .bk-card-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 16px; color: #fff; flex-shrink: 0;
+    font-family: 'Bebas Neue', sans-serif; background: var(--bg3);
   }
-  .bk-info { flex: 1; min-width: 0; }
-  .bk-name { font-size: 15px; font-weight: 700; }
-  .bk-details { font-size: 12px; color: var(--text2); margin-top: 3px; line-height: 1.35; }
-  .bk-tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: var(--accent-dim); color: var(--accent); margin-top: 4px; display: inline-block; }
-  .bk-tag.connected { background: rgba(91,141,238,0.12); color: var(--blue); }
-  .bk-status-tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; margin-top: 6px; display: inline-block; }
-  .bk-status-tag.status-verified { background: var(--success-dim); color: var(--success); }
-  .bk-status-tag.status-pending { background: rgba(91,141,238,0.15); color: var(--blue); }
-  .bk-status-tag.status-none { background: var(--warning-dim); color: var(--warning); }
-  .bk-status-tag.status-rejected { background: rgba(255,77,109,0.15); color: var(--red); }
-  .bk-action {
-    align-self: center; font-size: 11px; font-weight: 700; color: var(--text2);
-    border: 1px solid var(--border); border-radius: 999px; padding: 5px 9px; white-space: nowrap;
+  .bk-card-info { flex: 1; }
+  .bk-card-top { display: flex; justify-content: space-between; align-items: center; }
+  .bk-card-name { font-size: 17px; font-weight: 800; color: var(--text); }
+  .bk-card-status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; }
+  .bk-card-status-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .bk-card-status--active { color: var(--success); }
+  .bk-card-status--active .bk-card-status-dot { background: var(--success); box-shadow: 0 0 6px var(--success); }
+  .bk-card-status--pending { color: var(--warning); }
+  .bk-card-status--pending .bk-card-status-dot { background: var(--warning); box-shadow: 0 0 6px var(--warning); }
+  .bk-card-status--rejected { color: var(--red); }
+  .bk-card-status--rejected .bk-card-status-dot { background: var(--red); box-shadow: 0 0 6px var(--red); }
+  .bk-card-status--none { color: var(--text3); }
+  .bk-card-status--none .bk-card-status-dot { background: var(--text3); }
+  .bk-card-desc { font-size: 13px; color: var(--text2); margin-top: 2px; }
+  .bk-card-bonus {
+    padding: 10px 16px; background: var(--warning-dim); border-top: 1px solid var(--warning-border);
+    display: flex; align-items: center; gap: 8px;
   }
+  .bk-card-bonus-text { flex: 1; font-size: 14px; font-weight: 700; color: var(--warning); }
+  .bk-card-chevron { margin-left: auto; }
+
+  /* BOOKMAKER DETAIL PAGE */
+  .bk-detail-bonus {
+    padding: 16px; border-radius: 16px; background: var(--warning-dim);
+    border: 1px solid var(--warning-border); box-shadow: 0 0 28px -4px var(--warning-border); margin-bottom: 16px;
+  }
+  .bk-detail-bonus-label { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; }
+  .bk-detail-bonus-value { font-size: 20px; font-weight: 900; color: var(--warning); margin-top: 4px; }
+  .bk-detail-status { padding: 16px; border-radius: 16px; margin-bottom: 16px; }
+  .bk-detail-status--active {
+    background: rgba(0,230,118,0.04); border: 1px solid var(--success-glow); box-shadow: 0 0 28px -4px var(--success-glow);
+  }
+  .bk-detail-status--pending {
+    background: rgba(255,215,64,0.04); border: 1px solid var(--warning-border); box-shadow: 0 0 28px -4px var(--warning-border);
+  }
+  .bk-detail-status--none {
+    background: var(--card); border: 1px solid var(--border);
+  }
+  .bk-detail-status--rejected {
+    background: rgba(255,77,109,0.04); border: 1px solid rgba(255,77,109,0.2);
+  }
+  .bk-detail-why {
+    padding: 16px; border-radius: 16px; background: rgba(255,215,64,0.04);
+    border: 1px solid var(--warning-border); margin-bottom: 18px;
+  }
+  .bk-detail-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .bk-detail-stat {
+    text-align: center; padding: 14px 10px; background: var(--card);
+    border-radius: 16px; border: 1px solid var(--border);
+  }
+  .bk-detail-stat-value { font-size: 22px; font-weight: 900; }
+  .bk-detail-stat-value.accent { color: var(--accent); }
+  .bk-detail-stat-label { font-size: 11px; color: var(--text3); margin-top: 4px; font-weight: 600; }
+  .bk-detail-step { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
+  .bk-detail-step-num {
+    width: 30px; height: 30px; border-radius: 50%; background: var(--accent-dim);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800; color: var(--accent); flex-shrink: 0;
+  }
+  .bk-detail-step-text { font-size: 14px; font-weight: 600; color: var(--text); }
+  .bk-detail-step-desc { font-size: 12px; color: var(--text2); margin-top: 2px; line-height: 1.4; }
+  .bk-detail-req {
+    padding: 16px; border-radius: 16px; background: var(--card);
+    border: 1px solid var(--border); margin-bottom: 16px;
+  }
+  .bk-detail-req-title { font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .bk-detail-req-item { font-size: 13px; color: var(--text2); line-height: 1.8; }
 
   /* FORM */
   .form-screen { padding: 0 16px; }
@@ -835,13 +910,31 @@
     </div>
 
     <div style="padding:0 16px 12px;">
-      <div class="chips" id="bk-filter">
-        <div class="chip active">Все букмекеры</div>
+      <div class="bk-filters" id="bk-filter-tabs">
+        <button class="bk-filter active" data-filter="all" onclick="filterBookmakers('all')">Все</button>
+        <button class="bk-filter" data-filter="active" onclick="filterBookmakers('active')">Активные</button>
+        <button class="bk-filter" data-filter="new" onclick="filterBookmakers('new')">Новые</button>
       </div>
-      <div class="list-hint">Зарегистрируйтесь у букмекера по нашей ссылке — так мы сможем начислить вам кэшбэк</div>
+      <div class="bk-link-banner">
+        <div class="bk-link-banner-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+        </div>
+        <div>
+          <div class="bk-link-banner-title">Важно: регистрация по нашей ссылке</div>
+          <div class="bk-link-banner-text">Кэшбэк начисляется только если вы зарегистрировались у букмекера через BetCashback.</div>
+        </div>
+      </div>
     </div>
 
     <div class="section" id="bk-list"></div>
+  </div>
+
+  <!-- SCREEN: BOOKMAKER DETAIL -->
+  <div class="screen" id="screen-bookmaker-detail">
+    <div class="page-header">
+      <button class="btn-back" onclick="showScreen('bookmakers')">← Назад</button>
+    </div>
+    <div style="padding:0 16px" id="bk-detail-content"></div>
   </div>
 
   <!-- SCREEN: SUBMIT CLAIM -->
@@ -1223,37 +1316,7 @@
   </div>
 </div>
 
-<!-- MODAL: Bookmaker detail -->
-<div class="modal-overlay" id="modal-bk">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="modal-bk-name"></div>
-    <div class="modal-sub" id="modal-bk-rules"></div>
-    <div class="field-hint" id="modal-bk-offer" style="display:none;margin:8px 0 12px;padding:8px 10px;border-radius:10px;background:var(--accent-dim);border:1px solid var(--accent-glow);color:var(--accent)"></div>
-    <div class="modal-status status-none" style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:10px;padding:8px 10px;border-radius:10px;background:var(--bg3);border:1px solid var(--border)" id="modal-bk-status"></div>
-    <a id="modal-bk-instruction" href="#" target="_blank" style="display:none;font-size:12px;color:var(--accent);text-decoration:none;margin-bottom:10px">📄 Инструкция букмекера</a>
-    <div style="font-size:13px;color:var(--text2);line-height:1.45;margin:8px 0 10px">
-      <strong style="color:#fff">1. Нажмите «Зарегистрироваться» — откроется сайт букмекера</strong>
-    </div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.45;margin:0 0 10px">
-      <strong style="color:#fff">2. Создайте аккаунт и найдите свой Player ID в профиле</strong>
-    </div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.45;margin:0 0 10px">
-      <strong style="color:#fff">3. Вернитесь сюда и отправьте Player ID на проверку</strong>
-    </div>
-    <div style="font-size:12px;color:var(--yellow);line-height:1.45;margin:0 0 12px">
-      Обязательно: регистрируйтесь именно по этой ссылке, иначе мы не сможем подтвердить аккаунт
-    </div>
-    <button class="btn-submit" id="modal-bk-btn" onclick="registerBookmaker()">Зарегистрироваться</button>
-    <div class="field" style="margin-top:10px">
-      <label>Player ID букмекера</label>
-      <input type="text" id="modal-bk-player-id" placeholder="Введите player ID" autocomplete="off">
-      <div class="field-hint">Откройте личный кабинет букмекера → раздел «Профиль» или «Мои данные» → скопируйте числовой ID</div>
-    </div>
-    <button class="btn-submit" id="modal-bk-save-btn" onclick="submitBookmakerPlayerId()">Отправить player ID</button>
-    <button style="width:100%;padding:14px;background:none;border:none;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px" onclick="closeModal('modal-bk')">Закрыть</button>
-  </div>
-</div>
+<!-- (bookmaker modal removed — replaced by screen-bookmaker-detail) -->
 
 <!-- MODAL: Tier info -->
 <div class="modal-overlay" id="modal-tier-info">
@@ -1771,7 +1834,7 @@ function updatePendingUI() {
 // ============================================================
 // NAVIGATION
 // ============================================================
-const screens = ['home','bookmakers','submit','referral','profile','support','faq','terms'];
+const screens = ['home','bookmakers','bookmaker-detail','submit','referral','profile','support','faq','terms'];
 
 function showScreen(name) {
   activeScreen = name;
@@ -1801,89 +1864,228 @@ function showScreen(name) {
 // ============================================================
 function bookmakerStatusMeta(status) {
   const map = {
-    pending: { label: '⏳ Player ID на проверке. Обычно до 24 часов.', short: 'На проверке', tone: 'pending' },
-    verified: { label: '✅ Статус: подключён. Можно подавать заявки.', short: 'Подключён', tone: 'verified' },
-    rejected: { label: '❌ Player ID отклонён. Проверьте ID и отправьте заново.', short: 'Отклонён', tone: 'rejected' },
-    none: { label: '🟨 Статус: не подключён. Сначала зарегистрируйтесь и отправьте player ID.', short: 'Не подключён', tone: 'none' },
+    pending: { label: '⏳ Player ID на проверке. Обычно до 24 часов.', short: 'Ожидает', tone: 'pending', cls: 'pending' },
+    verified: { label: '✅ Подтверждено', short: 'Активен', tone: 'verified', cls: 'active' },
+    rejected: { label: '❌ Player ID отклонён. Проверьте ID и отправьте заново.', short: 'Отклонён', tone: 'rejected', cls: 'rejected' },
+    none: { label: 'Не начато', short: 'Не начато', tone: 'none', cls: 'none' },
   };
   return map[status] || map.none;
-}
-
-function applyBookmakerModalStatus(status) {
-  const meta = bookmakerStatusMeta(status);
-  const statusEl = document.getElementById('modal-bk-status');
-  if (!statusEl) return;
-  statusEl.textContent = meta.label;
-  statusEl.className = `modal-status status-${meta.tone}`;
 }
 
 function getBookmakerAccount(bookmakerId) {
   return state.bookmakerAccounts[bookmakerId] || null;
 }
 
+let activeBKFilter = 'all';
+function filterBookmakers(filter) {
+  activeBKFilter = filter;
+  document.querySelectorAll('#bk-filter-tabs .bk-filter').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.filter === filter);
+  });
+  renderBookmakers();
+}
+
+const bkIconColors = { '1X': '#1a5276', 'FB': '#e74c3c', 'BC': '#2ecc71', 'MB': '#8e44ad', 'BB': '#e67e22' };
+
 function renderBookmakers() {
-  const list = [...state.bookmakers];
+  let list = [...state.bookmakers];
+
+  if (activeBKFilter === 'active') {
+    list = list.filter(bk => {
+      const acc = getBookmakerAccount(bk.id);
+      return acc?.status === 'verified' || acc?.status === 'approved';
+    });
+  } else if (activeBKFilter === 'new') {
+    list = list.filter(bk => {
+      const acc = getBookmakerAccount(bk.id);
+      return !acc || (acc.status !== 'verified' && acc.status !== 'approved' && acc.status !== 'pending');
+    });
+  }
 
   const html = list.map(bk => {
-    const logo = (bk.short_name || bk.name || '?').toString().substring(0,3).toUpperCase();
+    const code = (bk.short_name || bk.name || '?').toString().substring(0,3).toUpperCase();
     const acc = getBookmakerAccount(bk.id);
     const status = bookmakerStatusMeta(acc?.status || 'none');
-    return `<div class="bk-card" onclick="openBKModal(${bk.id})">
-      <div class="bk-logo">${logo}</div>
-      <div class="bk-info">
-        <div class="bk-name">${bk.name}</div>
-        <div class="bk-details">${bk.offer_text || bk.rules || 'Условия доступны после регистрации'}</div>
-        ${bk.cashback_label ? `<div class="bk-tag">${bk.cashback_label}</div>` : ''}
-        <div class="bk-status-tag status-${status.tone}">${status.short}</div>
+    const bgColor = bkIconColors[bk.short_name] || 'var(--bg3)';
+    const bonusText = bk.offer_text || bk.cashback_label || '';
+    const cashbackDesc = bk.rules ? bk.rules.split('.')[0] : 'Кэшбэк до 10% от проигрышей';
+    return `<div class="bk-card" onclick="openBookmakerDetail(${bk.id})">
+      <div class="bk-card-main">
+        <div class="bk-card-icon" style="background:${bgColor}"><span>${code}</span></div>
+        <div class="bk-card-info">
+          <div class="bk-card-top">
+            <span class="bk-card-name">${bk.name}</span>
+            <span class="bk-card-status bk-card-status--${status.cls}">
+              <span class="bk-card-status-dot"></span>
+              ${status.short}
+            </span>
+          </div>
+          <div class="bk-card-desc">${cashbackDesc}</div>
+        </div>
       </div>
-      <div class="bk-action">Подробнее</div>
+      ${bonusText ? `<div class="bk-card-bonus">
+        <svg class="bk-card-star" width="14" height="14" viewBox="0 0 24 24" fill="#FFD740" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+        <span class="bk-card-bonus-text">${bonusText}</span>
+        <svg class="bk-card-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>` : ''}
     </div>`;
   }).join('');
 
-  setEl('bk-list', html || '<div style="font-size:13px;color:var(--text2);text-align:center;padding:32px">Нет доступных букмекеров</div>');
+  setEl('bk-list', html || '<div style="font-size:13px;color:var(--text2);text-align:center;padding:32px">Нет букмекеров по фильтру</div>');
 }
 
 let activeBKId = null;
-function openBKModal(id) {
+function openBookmakerDetail(id) {
   activeBKId = id;
   const bk = state.bookmakers.find(b => b.id === id);
   if (!bk) return;
   const acc = getBookmakerAccount(id);
-  const offerEl = document.getElementById('modal-bk-offer');
-  const promoText = String(bk.offer_text || bk.cashback_label || '').trim();
-  setEl('modal-bk-name', bk.name);
-  setEl('modal-bk-rules', bk.rules || 'Условия регистрации будут показаны после перехода.');
-  if (offerEl) {
-    if (promoText) {
-      offerEl.style.display = 'block';
-      offerEl.textContent = `🎁 ${promoText}`;
-    } else {
-      offerEl.style.display = 'none';
-      offerEl.textContent = '';
+  const status = bookmakerStatusMeta(acc?.status || 'none');
+  const isActive = acc?.status === 'verified' || acc?.status === 'approved';
+  const isPending = acc?.status === 'pending';
+  const isRejected = acc?.status === 'rejected';
+  const code = (bk.short_name || bk.name || '?').toString().substring(0,3).toUpperCase();
+  const bgColor = bkIconColors[bk.short_name] || 'var(--bg3)';
+  const bonusText = bk.offer_text || bk.cashback_label || '';
+  const cashbackDesc = bk.rules ? bk.rules.split('.')[0] : 'Кэшбэк до 10% от проигрышей';
+
+  // Header
+  let html = `
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">
+      <div class="bk-card-icon" style="background:${bgColor};width:52px;height:52px;border-radius:14px;font-size:18px"><span>${code}</span></div>
+      <div>
+        <div style="font-size:20px;font-weight:800">${bk.name}</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:2px">${cashbackDesc}</div>
+      </div>
+    </div>`;
+
+  // Bonus card
+  if (bonusText) {
+    html += `
+    <div class="bk-detail-bonus">
+      <div class="bk-detail-bonus-label">Бонус за регистрацию</div>
+      <div class="bk-detail-bonus-value">${bonusText}</div>
+    </div>`;
+  }
+
+  if (isActive) {
+    // Status card — active
+    html += `
+    <div class="bk-detail-status bk-detail-status--active">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <span style="color:var(--success);font-weight:800;font-size:15px">✅ Подтверждено</span>
+      </div>
+      <div style="font-size:13px;color:var(--text2)">Player ID: ${acc?.affiliate_player_id || '—'} — привязан</div>
+    </div>`;
+
+    // Stats
+    const bkClaims = (state.claims || []).filter(c => c.bookmaker_id === id || c.bkName === bk.name);
+    const approvedClaims = bkClaims.filter(c => c.status === 'approved' || c.status === 'paid');
+    const totalCashback = approvedClaims.reduce((s, c) => s + (c.cashback || 0), 0);
+    html += `
+    <div class="bk-detail-stats">
+      <div class="bk-detail-stat"><div class="bk-detail-stat-value accent">${bkClaims.length}</div><div class="bk-detail-stat-label">Заявок</div></div>
+      <div class="bk-detail-stat"><div class="bk-detail-stat-value accent">${formatRub(totalCashback)}</div><div class="bk-detail-stat-label">Получено</div></div>
+      <div class="bk-detail-stat"><div class="bk-detail-stat-value accent">${state.tierInfo.pct}%</div><div class="bk-detail-stat-label">Текущий %</div></div>
+    </div>`;
+
+    // CTA
+    html += `<button class="btn-submit" onclick="showScreen('submit')" style="margin-bottom:20px">Подать заявку на кэшбэк</button>`;
+
+    // Recent claims
+    if (bkClaims.length > 0) {
+      const statusMap = { submitted:'submitted', in_review:'review', review:'review', approved:'review', paid:'paid', rejected:'rejected' };
+      const labelMap = { submitted:'На проверке', in_review:'Проверяется', review:'На проверке', approved:'Одобрено', paid:'Выплачено', rejected:'Отклонено' };
+      html += `<div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:12px">Последние заявки</div>`;
+      html += bkClaims.slice(0, 3).map(c => `
+        <div class="claim-card status-${statusMap[c.status]||'submitted'}">
+          <div class="claim-left">
+            <div class="claim-header">
+              <div class="claim-bk">${c.bkName || bk.name}</div>
+              <div class="claim-status ${statusMap[c.status]||'submitted'}">${labelMap[c.status]||'Отправлено'}</div>
+            </div>
+            <div class="claim-meta">${formatDate(c.date)} · #${c.betId} · Проигрыш: ${formatRub(c.amount)}</div>
+          </div>
+          <div class="claim-cashback">+${formatRub(c.cashback)}</div>
+        </div>`).join('');
     }
-  }
-  applyBookmakerModalStatus(acc?.status || 'none');
-  document.getElementById('modal-bk-player-id').value = acc?.affiliate_player_id || '';
-  const instr = document.getElementById('modal-bk-instruction');
-  if (bk.instruction_asset_url) {
-    instr.style.display = 'inline-block';
-    instr.href = bk.instruction_asset_url;
+
+    // Requirements
+    html += `
+    <div class="bk-detail-req" style="margin-top:16px">
+      <div class="bk-detail-req-title">Для заявки понадобятся</div>
+      <div class="bk-detail-req-item">• Скриншот купона ставки</div>
+      <div class="bk-detail-req-item">• Скриншот истории из личного кабинета</div>
+      <div class="bk-detail-req-item">• Номер ставки (ID купона)</div>
+    </div>`;
+
   } else {
-    instr.style.display = 'none';
+    // Status card — not active
+    const statusCls = isPending ? 'pending' : (isRejected ? 'rejected' : 'none');
+    const statusIcon = isPending ? '⏳' : (isRejected ? '❌' : '○');
+    const statusText = status.label;
+    const statusDesc = isPending ? 'Проверка обычно занимает до 24 часов.'
+      : (isRejected ? 'Проверьте Player ID и отправьте заново.'
+      : 'Зарегистрируйтесь и отправьте Player ID');
+    html += `
+    <div class="bk-detail-status bk-detail-status--${statusCls}">
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px">${statusIcon} ${statusText}</div>
+      <div style="font-size:13px;color:var(--text2)">${statusDesc}</div>
+    </div>`;
+
+    // "Why register through our link?" block
+    if (!isPending) {
+      html += `
+      <div class="bk-detail-why">
+        <div style="font-size:14px;font-weight:700;margin-bottom:8px">💡 Почему по нашей ссылке?</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:12px">Мы получаем данные о ваших ставках только если аккаунт создан через BetCashback.</div>
+        <div style="padding:10px 12px;border-radius:10px;background:var(--success-dim);font-size:13px;color:var(--success)">✓ Регистрация бесплатная и занимает 2 минуты</div>
+      </div>`;
+
+      // Steps
+      html += `
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:14px">Как подключить</div>
+      <div class="bk-detail-step">
+        <div class="bk-detail-step-num">1</div>
+        <div><div class="bk-detail-step-text">Зарегистрируйтесь</div><div class="bk-detail-step-desc">Нажмите кнопку ниже — откроется сайт букмекера</div></div>
+      </div>
+      <div class="bk-detail-step">
+        <div class="bk-detail-step-num">2</div>
+        <div><div class="bk-detail-step-text">Найдите свой Player ID</div><div class="bk-detail-step-desc">В личном кабинете → раздел «Профиль» или «Мои данные»</div></div>
+      </div>
+      <div class="bk-detail-step">
+        <div class="bk-detail-step-num">3</div>
+        <div><div class="bk-detail-step-text">Отправьте ID ниже</div><div class="bk-detail-step-desc">Мы проверим аккаунт и подключим кэшбэк</div></div>
+      </div>`;
+
+      // Register CTA
+      html += `<button class="btn-submit" id="bk-detail-register-btn" onclick="registerBookmaker()" style="margin-bottom:16px">Зарегистрироваться</button>`;
+    }
+
+    // Player ID input
+    html += `
+    <div class="field" style="margin-top:${isPending ? '0' : '8'}px">
+      <label>Player ID букмекера</label>
+      <input type="text" id="bk-detail-player-id" placeholder="Введите player ID" autocomplete="off" value="${acc?.affiliate_player_id || ''}">
+      <div class="field-hint">Откройте личный кабинет букмекера → раздел «Профиль» → скопируйте числовой ID</div>
+    </div>
+    <button class="btn-submit" id="bk-detail-save-btn" onclick="submitBookmakerPlayerId()">Отправить player ID</button>`;
   }
-  openModal('modal-bk');
+
+  setEl('bk-detail-content', html);
+  showScreen('bookmaker-detail');
 }
 
 async function registerBookmaker() {
   if (!activeBKId) return;
-  const btn = document.getElementById('modal-bk-btn');
+  const btn = document.getElementById('bk-detail-register-btn');
+  if (!btn) return;
   const old = btn.textContent;
   btn.disabled = true;
   btn.textContent = 'Готовим ссылку...';
   try {
     const data = await apiCall(`/bookmakers/${activeBKId}/generate-link`, 'POST', {});
     if (!data?.final_url) throw new Error('Ссылка не получена');
-    console.log('[bookmaker-register] opening tracked link', { bookmakerId: activeBKId });
     openTrackedBookmakerLink(data.final_url);
     showToast('✓ Ссылка готова, открываем...', 'success');
   } catch (e) {
@@ -1896,9 +2098,10 @@ async function registerBookmaker() {
 
 async function submitBookmakerPlayerId() {
   if (!activeBKId) return;
-  const playerId = document.getElementById('modal-bk-player-id').value.trim();
+  const input = document.getElementById('bk-detail-player-id');
+  const playerId = input ? input.value.trim() : '';
   if (!playerId) { showToast('Введите player ID', 'error'); return; }
-  const btn = document.getElementById('modal-bk-save-btn');
+  const btn = document.getElementById('bk-detail-save-btn');
   const old = btn.textContent;
   btn.disabled = true;
   btn.textContent = 'Отправляем...';
@@ -1909,10 +2112,10 @@ async function submitBookmakerPlayerId() {
     });
     state.connectedBKs[activeBKId] = account.affiliate_player_id || playerId;
     state.bookmakerAccounts[activeBKId] = account;
-    applyBookmakerModalStatus(account.status || 'pending');
     renderBookmakers();
     populateClaimAccounts();
     showToast('✓ Player ID отправлен. Статус: на проверке', 'success');
+    openBookmakerDetail(activeBKId); // re-render detail
   } catch (e) {
     showToast('Ошибка: ' + (e.message || 'не удалось отправить ID'), 'error');
   } finally {

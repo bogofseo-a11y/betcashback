@@ -583,6 +583,87 @@
   .file-preview img { width: 100%; height: 100%; object-fit: cover; }
   .file-remove { position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; background: rgba(0,0,0,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; color: white; }
 
+  /* SHARED: CARD & SECTION-LABEL */
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px;
+  }
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+    color: var(--text3); text-transform: uppercase; margin-bottom: 10px;
+  }
+
+  /* CLAIM DISABLED (new user) */
+  .claim-disabled {
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; padding: 40px 16px 16px;
+  }
+  .claim-disabled-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--surface-light); display: flex;
+    align-items: center; justify-content: center; margin-bottom: 16px;
+  }
+  .claim-disabled-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .claim-disabled-text { font-size: 14px; color: var(--text2); line-height: 1.6; max-width: 280px; margin-bottom: 20px; }
+  .claim-disabled-steps {
+    background: var(--card); border-radius: 14px; border: 1px solid var(--border);
+    padding: 14px 18px; width: 100%; max-width: 300px; margin-bottom: 20px;
+  }
+  .claim-disabled-step {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--text3);
+  }
+  .claim-disabled-step:last-child { margin-bottom: 0; }
+  .claim-disabled-step.active span { font-weight: 700; color: var(--text); }
+  .claim-disabled-step.done span { color: var(--text3); }
+  .btn-primary {
+    width: 100%; max-width: 300px; padding: 14px; background: var(--accent); color: #000;
+    border: none; border-radius: var(--radius); font-size: 15px; font-weight: 800;
+    cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px;
+    box-shadow: 0 4px 20px rgba(45,212,191,0.35);
+  }
+  .btn-primary:active { background: var(--accent-bright); transform: scale(0.98); }
+
+  /* CLAIM FORM (experienced user) */
+  .claim-bookie-select {
+    padding: 12px 14px; margin-bottom: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .claim-fields-group { padding: 0; overflow: hidden; margin-bottom: 16px; }
+  .claim-field { padding: 12px 16px; }
+  .claim-field-label {
+    font-size: 11px; font-weight: 700; color: var(--text3);
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .claim-field-row { display: flex; align-items: center; }
+  .claim-field-input {
+    flex: 1; padding: 0; border: none; background: transparent;
+    color: var(--text); font-size: 16px; font-weight: 600;
+    outline: none; font-family: inherit; -webkit-appearance: none; appearance: none;
+  }
+  .claim-field-input::placeholder { color: var(--text3); }
+  .claim-field-suffix { font-size: 14px; color: var(--text3); font-weight: 600; }
+  .claim-field-divider { height: 1px; background: var(--border); margin: 0 16px; }
+  .claim-upload {
+    padding: 24px 16px; text-align: center;
+    border: 1px dashed var(--border) !important; background: var(--surface) !important;
+    margin-bottom: 6px; cursor: pointer;
+  }
+  .claim-upload:active { border-color: var(--accent) !important; background: var(--accent-glow) !important; }
+  .claim-upload-title { font-size: 14px; font-weight: 600; color: var(--text); margin-top: 8px; }
+  .claim-upload-hint { font-size: 12px; color: var(--text3); margin-top: 4px; }
+  .claim-upload-note { font-size: 12px; color: var(--text3); margin-bottom: 16px; line-height: 1.5; }
+  .claim-comment {
+    width: 100%; padding: 14px 16px; border-radius: 16px; border: none;
+    background: transparent; color: var(--text); font-size: 14px;
+    outline: none; resize: none; height: 70px; box-sizing: border-box; font-family: inherit;
+  }
+  .claim-comment::placeholder { color: var(--text3); }
+  .claim-checkbox {
+    width: 20px; height: 20px; border-radius: 6px;
+    border: 2px solid var(--border); accent-color: var(--accent);
+  }
+
   /* SUBMIT BUTTON */
   .btn-submit {
     width: 100%; padding: 16px; background: var(--accent); color: #000;
@@ -595,39 +676,85 @@
 
   /* REFERRAL */
   .ref-hero {
-    margin: 0 16px 20px;
-    background: linear-gradient(135deg, #0d1520 0%, #151025 100%);
+    padding: 18px 16px; border-radius: 16px;
+    background: linear-gradient(135deg, var(--card) 0%, #1a1530 100%);
     border: 1px solid var(--referral-border);
-    border-radius: 20px; padding: 24px; text-align: center; position: relative; overflow: hidden;
+    box-shadow: 0 0 28px -4px var(--referral-border);
+    margin-bottom: 14px; position: relative; overflow: hidden;
   }
-  .ref-hero::before {
-    content: '';
-    position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
-    width: 200px; height: 200px;
-    background: radial-gradient(circle, var(--referral-dim) 0%, transparent 70%);
+  .ref-hero-glow {
+    position: absolute; top: -30px; right: -30px;
+    width: 100px; height: 100px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(167,139,250,0.15) 0%, transparent 70%);
   }
-  .ref-emoji { font-size: 40px; margin-bottom: 8px; }
-  .ref-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 1px; margin-bottom: 6px; }
-  .ref-desc { font-size: 13px; color: var(--text2); line-height: 1.5; margin-bottom: 20px; }
-  .ref-levels { display: flex; gap: 10px; margin-bottom: 20px; }
-  .ref-level {
-    flex: 1; background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 14px 10px; text-align: center;
+  .ref-hero-text { font-size: 14px; color: var(--text2); line-height: 1.6; position: relative; }
+  .ref-hero-accent { color: var(--referral); font-weight: 800; }
+
+  .ref-link-card { padding: 12px 14px; margin-bottom: 14px; }
+  .ref-link-row { display: flex; align-items: center; gap: 8px; }
+  .ref-link-url {
+    flex: 1; padding: 10px 12px; border-radius: 10px; background: var(--surface);
+    font-size: 12px; color: var(--text2); overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap; font-family: monospace;
   }
-  .ref-level-pct { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--referral); letter-spacing: 1px; }
-  .ref-level-label { font-size: 10px; color: var(--text2); font-weight: 600; }
-  .ref-link-box {
-    background: var(--bg3); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 14px 16px;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .ref-link-text { flex: 1; font-size: 12px; color: var(--text2); word-break: break-all; }
-  .btn-copy {
-    background: var(--accent); color: #000; border: none; border-radius: 8px;
-    padding: 8px 14px; font-size: 12px; font-weight: 800; cursor: pointer; flex-shrink: 0;
+  .ref-link-copy {
+    padding: 10px 18px; border-radius: 10px; background: var(--accent);
+    border: none; color: var(--bg); font-size: 13px; font-weight: 700;
+    cursor: pointer; flex-shrink: 0; box-shadow: 0 2px 10px rgba(45,212,191,0.25);
     transition: all 0.2s;
   }
-  .btn-copy:active { transform: scale(0.95); }
+  .ref-link-copy:active { transform: scale(0.95); }
+
+  .ref-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .ref-stat { text-align: center; padding: 12px 8px; }
+  .ref-stat-value { font-size: 20px; font-weight: 900; color: var(--text); }
+  .ref-stat-value.accent { color: var(--accent); }
+  .ref-stat-label {
+    font-size: 10px; font-weight: 700; color: var(--text3);
+    margin-top: 3px; letter-spacing: 0.04em; text-transform: uppercase;
+  }
+
+  .ref-tier-card { padding: 16px; margin-bottom: 14px; }
+  .ref-tier-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .ref-tier-current { font-size: 24px; font-weight: 900; color: var(--referral); }
+  .ref-tier-bar { height: 6px; border-radius: 3px; background: var(--surface-light); margin-top: 10px; }
+  .ref-tier-bar-fill {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--referral), #C4B5FD);
+    box-shadow: 0 0 8px var(--referral); min-width: 5%;
+  }
+  .ref-tier-dots {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-top: 12px; padding: 0 2px;
+  }
+  .ref-tier-dot { display: flex; flex-direction: column; align-items: center; width: 36px; }
+  .ref-tier-dot-circle {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 800;
+  }
+  .ref-tier-dot-circle.active {
+    background: var(--referral); color: #fff; width: 32px; height: 32px;
+    font-size: 11px; box-shadow: 0 0 10px var(--referral);
+  }
+  .ref-tier-dot-circle.achieved { background: var(--referral); color: #fff; }
+  .ref-tier-dot-circle.locked {
+    background: var(--surface-light); color: var(--text3); border: 2px solid var(--border);
+  }
+  .ref-tier-dot-label { font-size: 11px; color: var(--text3); margin-top: 6px; font-weight: 600; white-space: nowrap; }
+  .ref-tier-dot.current .ref-tier-dot-label { color: var(--text2); }
+  .ref-tier-hint { font-size: 12px; color: var(--text2); line-height: 1.5; margin-top: 14px; }
+
+  .ref-how { margin-bottom: 14px; }
+  .ref-how-step { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; }
+  .ref-how-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--accent-dim); display: flex; align-items: center;
+    justify-content: center; font-size: 11px; font-weight: 800;
+    color: var(--accent); flex-shrink: 0; margin-top: 1px;
+  }
+  .ref-how-step span { font-size: 13px; color: var(--text2); line-height: 1.5; }
+  .ref-how-divider { height: 1px; background: var(--border); }
 
   /* STATS GRID */
   .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -943,69 +1070,108 @@
       <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;">Новая заявка</div>
     </div>
 
-    <div class="form-screen">
-      <div class="field">
-        <label>Выберите букмекера</label>
-        <select id="claim-bk">
-          <option value="">Выберите букмекера...</option>
-        </select>
-        <div class="field-hint" id="claim-eligibility-hint">Заявки доступны после проверки вашего аккаунта у букмекера</div>
+    <!-- New user: disabled state -->
+    <div id="claim-disabled" style="display:none">
+      <div class="claim-disabled">
+        <div class="claim-disabled-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>
+          </svg>
+        </div>
+        <div class="claim-disabled-title">Заявки пока недоступны</div>
+        <div class="claim-disabled-text">Чтобы подать заявку на кэшбэк, сначала подключите хотя бы одного букмекера</div>
+        <div class="claim-disabled-steps">
+          <div class="claim-disabled-step done">
+            <div class="step-circle step-circle--done">✓</div>
+            <span>Регистрация в BetCashback</span>
+          </div>
+          <div class="claim-disabled-step active">
+            <div class="step-circle step-circle--active">2</div>
+            <span>Подключить букмекера</span>
+          </div>
+          <div class="claim-disabled-step">
+            <div class="step-circle">3</div>
+            <span>Подать заявку</span>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="showScreen('bookmakers')">Перейти к букмекерам</button>
       </div>
+    </div>
 
-      <div class="field" id="field-account" style="display:none">
-        <label>Ваш аккаунт</label>
-        <select id="claim-account">
-          <option value="new">+ Добавить новый ID</option>
-        </select>
-      </div>
+    <!-- Experienced user: redesigned form -->
+    <div id="claim-form" style="display:none">
+      <div class="form-screen">
+        <div class="section-label">ВЫБЕРИТЕ БУКМЕКЕРА</div>
+        <div class="card claim-bookie-select" id="claim-bookie-card">
+          <div style="display:flex;align-items:center;gap:12px;flex:1">
+            <select id="claim-bk" style="flex:1;background:transparent;border:none;color:var(--text);font-size:15px;font-weight:700;outline:none;font-family:inherit;-webkit-appearance:none;appearance:none;padding:0;cursor:pointer">
+              <option value="">Выберите букмекера...</option>
+            </select>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="field-hint" id="claim-eligibility-hint" style="margin:-10px 0 16px;padding:0 4px">Заявки доступны после проверки вашего аккаунта у букмекера</div>
 
-      <div class="field" id="field-new-id" style="display:none">
-        <label>Ваш Player ID у букмекера</label>
-        <input type="text" id="claim-pid" placeholder="Например: 12345678" autocomplete="off">
-        <div class="field-hint">Найдите его в личном кабинете букмекера в разделе «Профиль»</div>
-      </div>
+        <div class="field" id="field-account" style="display:none">
+          <label>Ваш аккаунт</label>
+          <select id="claim-account">
+            <option value="new">+ Добавить новый ID</option>
+          </select>
+        </div>
 
-      <div class="field">
-        <label>Сумма проигрыша, ₽</label>
-        <input type="number" id="claim-amount" placeholder="0" min="0" inputmode="numeric">
-        <div class="field-hint" id="cashback-preview" style="color:var(--accent);font-weight:700;"></div>
-      </div>
+        <div class="field" id="field-new-id" style="display:none">
+          <label>Ваш Player ID у букмекера</label>
+          <input type="text" id="claim-pid" placeholder="Например: 12345678" autocomplete="off">
+          <div class="field-hint">Найдите его в личном кабинете букмекера в разделе «Профиль»</div>
+        </div>
 
-      <div class="field">
-        <label>Дата ставки</label>
-        <input type="date" id="claim-date">
-      </div>
+        <div class="card claim-fields-group">
+          <div class="claim-field">
+            <div class="claim-field-label">СУММА ПРОИГРЫША</div>
+            <div class="claim-field-row">
+              <input type="number" id="claim-amount" placeholder="0" min="0" inputmode="numeric" class="claim-field-input">
+              <span class="claim-field-suffix">₽</span>
+            </div>
+            <div class="field-hint" id="cashback-preview" style="color:var(--accent);font-weight:700;margin-top:4px"></div>
+          </div>
+          <div class="claim-field-divider"></div>
+          <div class="claim-field">
+            <div class="claim-field-label">ДАТА СТАВКИ</div>
+            <input type="date" id="claim-date" class="claim-field-input">
+          </div>
+          <div class="claim-field-divider"></div>
+          <div class="claim-field">
+            <div class="claim-field-label">НОМЕР СТАВКИ (ID КУПОНА)</div>
+            <input type="text" id="claim-betid" placeholder="Например: 1234567890" autocomplete="off" class="claim-field-input">
+          </div>
+        </div>
 
-      <div class="field">
-        <label>Номер ставки (ID купона)</label>
-        <input type="text" id="claim-betid" placeholder="Например: 1234567890" autocomplete="off">
-      </div>
-
-      <div class="field">
-        <label>Скриншоты ставки</label>
-        <div class="upload-area" onclick="document.getElementById('file-input').click()" id="upload-area">
-          <div class="upload-icon">📎</div>
-          <div class="upload-text"><strong>Нажмите для загрузки</strong></div>
-          <div class="upload-limit">JPG, PNG, WebP · до 8 МБ · максимум 5 файлов</div>
+        <div class="section-label">СКРИНШОТЫ СТАВКИ</div>
+        <div class="card claim-upload" onclick="document.getElementById('file-input').click()" id="upload-area">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" style="margin:0 auto;display:block">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <div class="claim-upload-title">Нажмите для загрузки</div>
+          <div class="claim-upload-hint">JPG, PNG, WebP · до 8 МБ · макс. 5</div>
         </div>
         <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" multiple>
         <div class="file-previews" id="file-previews"></div>
-        <div class="field-hint">Прикрепите скриншот проигранной ставки. Если есть — добавьте скрин истории из личного кабинета.</div>
-      </div>
+        <div class="claim-upload-note">Скриншот проигранной ставки + скрин истории из ЛК</div>
 
-      <div class="field">
-        <label>Комментарий (необязательно)</label>
-        <textarea id="claim-comment" placeholder="Например: ставка на матч Реал — Барса, экспресс из 3 событий"></textarea>
-      </div>
+        <div class="section-label">КОММЕНТАРИЙ <span style="font-weight:500;text-transform:none;letter-spacing:0">(необязательно)</span></div>
+        <div class="card" style="padding:0;margin-bottom:16px">
+          <textarea id="claim-comment" placeholder="Например: ставка на матч Реал — Барса" class="claim-comment"></textarea>
+        </div>
 
-      <div style="padding-bottom:8px">
-        <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer">
-          <input type="checkbox" id="claim-agree" style="width:18px;height:18px;margin-top:2px;accent-color:var(--accent)">
-          <span style="font-size:13px;color:var(--text2);line-height:1.4">Подтверждаю, что зарегистрировался по ссылке BetCashback и принимаю <span style="color:var(--accent);cursor:pointer" onclick="showScreen('terms')">правила сервиса</span>.</span>
-        </label>
-      </div>
+        <div style="padding-bottom:8px">
+          <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer">
+            <input type="checkbox" id="claim-agree" class="claim-checkbox" style="margin-top:2px">
+            <span style="font-size:13px;color:var(--text2);line-height:1.4">Подтверждаю, что зарегистрировался по ссылке BetCashback и принимаю <span style="color:var(--accent);cursor:pointer" onclick="showScreen('terms')">правила сервиса</span>.</span>
+          </label>
+        </div>
 
-      <button class="btn-submit" id="btn-submit" onclick="submitClaim()">Подать заявку на кэшбэк</button>
+        <button class="btn-submit" id="btn-submit" onclick="submitClaim()">Подать заявку на кэшбэк</button>
+      </div>
     </div>
   </div>
 
@@ -1134,61 +1300,46 @@
       <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;">Пригласи друзей</div>
     </div>
 
-    <div class="ref-hero animate-in">
-      <div class="ref-emoji">💰</div>
-      <div class="ref-title">Зарабатывайте вместе</div>
-      <div class="ref-desc">Ваш друг получает кэшбэк — а вы получаете 20% бонус с каждой его выплаты</div>
-      <div class="ref-levels" style="justify-content:center">
-        <div class="ref-level" style="max-width:160px">
-          <div class="ref-level-pct">20%</div>
-          <div class="ref-level-label">бонус от кэшбэка<br>каждого друга</div>
-        </div>
+    <div style="padding:0 16px">
+      <div class="ref-hero animate-in">
+        <div class="ref-hero-glow"></div>
+        <p class="ref-hero-text">Друг получает кэшбэк — вы получаете бонус <span class="ref-hero-accent">до 20%</span> с каждой его выплаты</p>
       </div>
-      <div class="ref-link-box">
-        <div class="ref-link-text" id="ref-link">t.me/betcashback_bot?start=ref_...</div>
-        <button class="btn-copy" onclick="copyRefLink()">Копировать</button>
-      </div>
-    </div>
 
-    <div class="section animate-in delay-1">
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Приглашено</div>
-          <div class="stat-value blue" id="ref-count">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Активных</div>
-          <div class="stat-value green" id="ref-active">0</div>
-        </div>
-        <div class="stat-card" style="grid-column:1/-1">
-          <div class="stat-label">Доход от друзей</div>
-          <div class="stat-value green" id="ref-income">0 ₽</div>
+      <div class="card ref-link-card animate-in delay-1">
+        <div class="section-label" style="margin-bottom:8px">ВАША ССЫЛКА</div>
+        <div class="ref-link-row">
+          <div class="ref-link-url" id="ref-link">t.me/betcashback_bot?start=ref_...</div>
+          <button class="ref-link-copy" onclick="copyRefLink()">Копировать</button>
         </div>
       </div>
-    </div>
 
-    <div class="section animate-in delay-2">
-      <div class="section-title">Как это работает</div>
-      <div class="wallet-step">
-        <div class="step-num">1</div>
-        <div>
-          <div class="step-title">Отправьте ссылку другу</div>
-          <div class="step-desc">Друг регистрируется у букмекера по вашей ссылке</div>
-        </div>
+      <div class="ref-stats animate-in delay-1">
+        <div class="card ref-stat"><div class="ref-stat-value" id="ref-count">0</div><div class="ref-stat-label">ПРИГЛАШЕНО</div></div>
+        <div class="card ref-stat"><div class="ref-stat-value" id="ref-active">0</div><div class="ref-stat-label">АКТИВНЫХ</div></div>
+        <div class="card ref-stat"><div class="ref-stat-value accent" id="ref-income">0 ₽</div><div class="ref-stat-label">ДОХОД</div></div>
       </div>
-      <div class="wallet-step">
-        <div class="step-num">2</div>
-        <div>
-          <div class="step-title">Вы получаете бонус</div>
-          <div class="step-desc">Каждый раз, когда другу начисляют кэшбэк — вам автоматически капает 20% бонус</div>
-        </div>
-      </div>
-    </div>
 
-    <div class="section animate-in delay-3">
-      <div class="section-title">Мои друзья</div>
-      <div id="ref-list">
-        <div style="font-size:13px;color:var(--text2);text-align:center;padding:24px">Пока никого нет.<br>Отправьте ссылку другу — и получайте бонус с его кэшбэка</div>
+      <div class="card ref-tier-card animate-in delay-2" id="ref-tier-card"></div>
+
+      <div class="card ref-how animate-in delay-3">
+        <div class="section-label">КАК ЭТО РАБОТАЕТ</div>
+        <div class="ref-how-steps">
+          <div class="ref-how-step">
+            <div class="ref-how-num">1</div>
+            <span>Отправьте другу вашу реферальную ссылку</span>
+          </div>
+          <div class="ref-how-divider"></div>
+          <div class="ref-how-step">
+            <div class="ref-how-num">2</div>
+            <span>Друг заходит в BetCashback и зарабатывает кэшбэк</span>
+          </div>
+          <div class="ref-how-divider"></div>
+          <div class="ref-how-step">
+            <div class="ref-how-num">3</div>
+            <span>Вы получаете бонус с каждого его кэшбэка</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1857,6 +2008,21 @@ function showScreen(name) {
     stopSupportOpenTicketPolling();
     closeModal('modal-support-ticket');
   }
+  if (name === 'submit') {
+    renderClaimScreen();
+  }
+  if (name === 'referral') {
+    renderRefTiers();
+  }
+}
+
+function renderClaimScreen() {
+  const accounts = Object.values(state.bookmakerAccounts || {});
+  const hasVerified = accounts.some(acc => acc?.status === 'verified');
+  const disabledEl = document.getElementById('claim-disabled');
+  const formEl = document.getElementById('claim-form');
+  if (disabledEl) disabledEl.style.display = hasVerified ? 'none' : '';
+  if (formEl) formEl.style.display = hasVerified ? '' : 'none';
 }
 
 // ============================================================
@@ -2932,12 +3098,75 @@ async function submitWithdrawRequest() {
 // ============================================================
 // REFERRAL
 // ============================================================
+const REF_TIERS = [
+  { level: 1, pct: 5,  from: 0,      to: 5000 },
+  { level: 2, pct: 10, from: 5000,   to: 25000 },
+  { level: 3, pct: 15, from: 25000,  to: 100000 },
+  { level: 4, pct: 20, from: 100000, to: null },
+];
+
 function updateRefLink() {
   const link = `t.me/${BOT_USERNAME}?start=ref_${tgUser.id}`;
   setEl('ref-link', link);
   setEl('ref-count', safeCountValue(state.refStats?.count));
   setEl('ref-active', safeCountValue(state.refStats?.active));
   setEl('ref-income', formatRub(safeAmountValue(state.refStats?.income)));
+  renderRefTiers();
+}
+
+function renderRefTiers() {
+  const container = document.getElementById('ref-tier-card');
+  if (!container) return;
+  const earnings = safeAmountValue(state.refStats?.income);
+  const currentTier = REF_TIERS.find(t => earnings < (t.to || Infinity)) || REF_TIERS[3];
+  const nextTier = REF_TIERS.find(t => t.level === currentTier.level + 1);
+
+  // Progress bar calculation
+  let progressPct = 5;
+  if (currentTier.level >= 4) {
+    progressPct = 100;
+  } else {
+    const rangeStart = currentTier.from;
+    const rangeEnd = currentTier.to;
+    const tierWidth = 100 / REF_TIERS.length;
+    const withinTier = (earnings - rangeStart) / (rangeEnd - rangeStart);
+    progressPct = (currentTier.level - 1) * tierWidth + withinTier * tierWidth;
+    progressPct = Math.max(5, Math.min(progressPct, 100));
+  }
+
+  // Dots
+  const dotsHtml = REF_TIERS.map(t => {
+    let dotClass = 'locked';
+    let isCurrent = t.level === currentTier.level;
+    if (t.level < currentTier.level) dotClass = 'achieved';
+    else if (t.level === currentTier.level) dotClass = 'active';
+    const label = t.to ? formatRub(t.from) : formatRub(t.from);
+    return `<div class="ref-tier-dot${isCurrent ? ' current' : ''}">
+      <div class="ref-tier-dot-circle ${dotClass}">${t.pct}%</div>
+      <div class="ref-tier-dot-label">${t.from > 0 ? formatRub(t.from) : '0 ₽'}</div>
+    </div>`;
+  }).join('');
+
+  // Hint
+  let hintHtml = '';
+  if (nextTier) {
+    const remaining = nextTier.from - earnings;
+    hintHtml = `<div class="ref-tier-hint">Ещё <strong>${formatRub(remaining)}</strong> дохода от друзей — и бонус вырастет до <span style="color:var(--referral);font-weight:700">${nextTier.pct}%</span></div>`;
+  } else {
+    hintHtml = `<div class="ref-tier-hint" style="color:var(--referral)">Максимальный уровень достигнут!</div>`;
+  }
+
+  container.innerHTML = `
+    <div class="ref-tier-header">
+      <div class="section-label" style="margin:0">ВАШ БОНУС</div>
+      <span class="ref-tier-current">${currentTier.pct}%</span>
+    </div>
+    <div class="ref-tier-bar">
+      <div class="ref-tier-bar-fill" style="width:${progressPct}%"></div>
+    </div>
+    <div class="ref-tier-dots">${dotsHtml}</div>
+    ${hintHtml}
+  `;
 }
 
 function copyRefLink() {

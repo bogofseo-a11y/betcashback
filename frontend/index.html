@@ -162,48 +162,72 @@
   .tier-hint { font-size: 11px; color: var(--text2); margin-top: 8px; }
   .tier-hint strong { color: var(--yellow); }
 
-  /* ONBOARDING */
+  /* ONBOARDING CHECKLIST (new user) */
   .onboarding-card {
     margin: 0 16px 20px;
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 14px;
+    padding: 0; overflow: hidden;
   }
-  .onboarding-title { font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 8px; }
-  .onboarding-steps { margin: 0 0 10px 18px; display: grid; gap: 6px; }
-  .onboarding-steps li { font-size: 12px; color: var(--text2); line-height: 1.35; }
-  .onboarding-next {
-    font-size: 12px; line-height: 1.4;
-    color: var(--warning);
-    border: 1px solid var(--warning-border);
-    background: var(--warning-dim);
-    border-radius: 10px;
-    padding: 8px 10px;
+  .onboarding-header { padding: 14px 16px 10px; display: flex; justify-content: space-between; align-items: center; }
+  .onboarding-title { font-size: 14px; font-weight: 800; color: var(--text); }
+  .onboarding-step-label { font-size: 12px; font-weight: 700; color: var(--accent); }
+  .onboarding-progress-bar { margin: 0 16px 12px; height: 4px; border-radius: 2px; background: var(--surface-light); }
+  .onboarding-progress-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--accent-bright)); }
+  .onboarding-item { padding: 10px 16px; border-top: 1px solid var(--border); display: flex; align-items: flex-start; gap: 12px; }
+  .onboarding-item--active { padding: 12px 16px 14px; background: rgba(45,212,191,0.04); cursor: pointer; }
+  .onboarding-item-text { font-size: 14px; font-weight: 600; color: var(--text2); }
+  .onboarding-item--active .onboarding-item-text { font-weight: 700; color: var(--text); }
+  .onboarding-item--done .onboarding-item-text { color: var(--text3); }
+  .onboarding-item-desc { font-size: 12px; color: var(--text2); margin-top: 4px; line-height: 1.5; }
+  .onboarding-item-action { font-size: 13px; font-weight: 700; color: var(--accent); margin-top: 6px; }
+  .step-circle {
+    width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; color: var(--text3); flex-shrink: 0; margin-top: 1px;
   }
-  .onboarding-next.ready {
-    color: var(--accent);
-    border-color: var(--accent-glow);
-    background: var(--accent-dim);
-  }
-  .onboarding-next.pending {
-    color: var(--blue);
-    border-color: rgba(91,141,238,0.3);
-    background: rgba(91,141,238,0.08);
-  }
-  .onboarding-cta {
-    margin-top: 10px;
-    width: 100%;
+  .step-circle--active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
+  .step-circle--done { border: none; background: var(--accent); color: var(--bg); font-size: 12px; }
+  /* WELCOME CARD (new user) */
+  .welcome-card {
+    margin: 0 16px 20px;
+    background: var(--card);
     border: 1px solid var(--border);
-    background: var(--bg3);
-    color: var(--text);
-    font-size: 12px;
-    font-weight: 700;
-    border-radius: 10px;
-    padding: 10px 12px;
-    cursor: pointer;
+    border-radius: var(--radius);
+    padding: 24px 20px;
   }
-  .onboarding-cta:active { transform: scale(0.98); }
+  .welcome-card h2 { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 1px; line-height: 1.1; margin-bottom: 4px; }
+  .welcome-card h2 .accent { color: var(--accent); }
+  .welcome-card > p { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+  .welcome-steps { display: grid; gap: 14px; }
+  .welcome-step { display: flex; gap: 12px; align-items: flex-start; }
+  .welcome-step-icon {
+    width: 32px; height: 32px; border-radius: 10px; background: var(--accent-dim);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .welcome-step-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .welcome-step-desc { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+  /* REFERRAL TEASER */
+  .referral-teaser {
+    padding: 12px 16px; border-radius: 14px;
+    background: linear-gradient(135deg, rgba(167,139,250,0.06) 0%, rgba(167,139,250,0.02) 100%);
+    border: 1px solid var(--referral-border);
+    margin-top: 8px; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .referral-teaser-text { font-size: 13px; color: var(--text2); }
+  .referral-teaser-accent { color: var(--referral); font-weight: 700; }
+
+  /* NEW USER SUPPORT LINK */
+  .new-user-support { text-align: center; padding-top: 4px; font-size: 13px; color: var(--text3); }
+  .new-user-support span { color: var(--accent); font-weight: 600; cursor: pointer; }
+
+  /* TIER BADGE GREY (new user) */
+  .header-tier-badge.tier-badge--new { border-color: var(--border); }
+  .header-tier-badge.tier-badge--new .tier-label { color: var(--text3); }
+  .header-tier-badge.tier-badge--new .tier-pct-badge { color: var(--text3); background: rgba(255,255,255,0.03); }
   .list-hint {
     margin-top: 8px;
     font-size: 12px;
@@ -222,8 +246,9 @@
   /* CLAIM CARD */
   .claim-card {
     background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 16px; margin-bottom: 10px;
+    border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px;
     cursor: pointer; transition: all 0.15s; position: relative; overflow: hidden;
+    display: flex; justify-content: space-between; align-items: center;
   }
   .claim-card:active { transform: scale(0.98); border-color: rgba(255,255,255,0.12); }
   .claim-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
@@ -231,17 +256,16 @@
   .claim-card.status-review::before { background: var(--yellow); }
   .claim-card.status-rejected::before { background: var(--red); }
   .claim-card.status-submitted::before { background: var(--blue); }
-  .claim-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .claim-left { flex: 1; min-width: 0; }
+  .claim-header { display: flex; align-items: center; gap: 8px; }
   .claim-bk { font-size: 14px; font-weight: 700; }
-  .claim-status { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; padding: 3px 8px; border-radius: 20px; }
+  .claim-status { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
   .claim-status.paid { background: var(--success-dim); color: var(--success); }
   .claim-status.review { background: var(--warning-dim); color: var(--warning); }
   .claim-status.rejected { background: rgba(255,77,109,0.15); color: var(--red); }
   .claim-status.submitted { background: rgba(91,141,238,0.15); color: var(--blue); }
-  .claim-meta { font-size: 11px; color: var(--text2); margin-top: 6px; }
-  .claim-amounts { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; }
-  .claim-loss { font-size: 12px; color: var(--text2); }
-  .claim-cashback { font-size: 16px; font-weight: 800; color: var(--success); }
+  .claim-meta { font-size: 12px; color: var(--text3); margin-top: 3px; }
+  .claim-cashback { font-size: 18px; font-weight: 800; color: var(--success); flex-shrink: 0; margin-left: 12px; }
 
   /* SUPPORT */
   .btn-back {
@@ -725,45 +749,80 @@
       </div>
     </div>
 
-    <div class="hero animate-in">
-      <div class="hero-label">Баланс кэшбэка</div>
-      <div class="hero-amount" id="home-balance">0<span> ₽</span></div>
-      <div class="hero-sub">Всего заработано: <strong id="home-total">0 ₽</strong></div>
-      <div class="hero-sub" style="margin-top:4px;opacity:0.7">Выплаты в крипте: USDT · TON</div>
-      <div class="hero-actions">
-        <button class="btn-hero primary" onclick="showScreen('submit')">+ Подать заявку</button>
-        <button class="btn-hero secondary" onclick="showScreen('profile')">Вывести</button>
+    <!-- EXPERIENCED USER: balance + claims -->
+    <div id="home-experienced" style="display:none">
+      <div class="hero animate-in">
+        <div class="hero-label">Баланс кэшбэка</div>
+        <div class="hero-amount" id="home-balance">0<span> ₽</span></div>
+        <div class="hero-sub">Всего заработано: <strong id="home-total">0 ₽</strong></div>
+        <div class="hero-sub" style="margin-top:4px;opacity:0.7">Выплаты в крипте: USDT · TON</div>
+        <div class="hero-actions">
+          <button class="btn-hero primary" onclick="showScreen('submit')">+ Подать заявку</button>
+          <button class="btn-hero secondary" onclick="showScreen('profile')">Вывести</button>
+        </div>
+      </div>
+
+      <div class="section animate-in delay-1">
+        <div class="section-title">Последние заявки</div>
+        <div id="home-claims">
+          <div class="empty">
+            <div class="empty-icon">🎯</div>
+            <div class="empty-text">Заявок пока нет.<br>Подайте первую — получите кэшбэк за проигрыш.</div>
+            <div class="empty-btn" onclick="showScreen('submit')">Подать заявку</div>
+          </div>
+        </div>
+        <div class="referral-teaser" onclick="showScreen('referral')">
+          <span class="referral-teaser-text">Пригласи друга — получай до <span class="referral-teaser-accent">20%</span> бонус</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--referral)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
       </div>
     </div>
 
-    <div class="tier-bar animate-in delay-1" onclick="openTierInfo()">
-      <div class="tier-top">
-        <div class="tier-name" id="tier-name">ПРОГРЕСС К TIER 2 · 7%</div>
-        <div class="tier-pct" id="tier-pct">5%</div>
+    <!-- NEW USER: welcome + onboarding -->
+    <div id="home-new-user" style="display:none">
+      <div class="welcome-card animate-in">
+        <h2>Получайте кэшбэк до <span class="accent">10%</span></h2>
+        <p>с каждой проигранной ставки. Выплаты в USDT и TON.</p>
+        <div class="welcome-steps">
+          <div class="welcome-step">
+            <div class="welcome-step-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+            </div>
+            <div>
+              <div class="welcome-step-title">Зарегистрируйтесь по нашей ссылке</div>
+              <div class="welcome-step-desc">У любого букмекера из списка</div>
+            </div>
+          </div>
+          <div class="welcome-step">
+            <div class="welcome-step-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 8v4l3 3"/></svg>
+            </div>
+            <div>
+              <div class="welcome-step-title">Делайте ставки как обычно</div>
+              <div class="welcome-step-desc">Проиграли — подайте заявку</div>
+            </div>
+          </div>
+          <div class="welcome-step">
+            <div class="welcome-step-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            </div>
+            <div>
+              <div class="welcome-step-title">Получите возврат в крипте</div>
+              <div class="welcome-step-desc">До 10% от суммы проигрыша</div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="progress-track"><div class="progress-fill" id="tier-progress" style="width:0%"></div></div>
-      <div class="tier-hint" id="tier-hint-text">Ещё <strong>5 заявок</strong> — и ставка вырастет до 7%</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:6px">Нажмите, чтобы узнать подробнее</div>
-    </div>
 
-    <div class="onboarding-card animate-in delay-2">
-      <div class="onboarding-title">Начните получать кэшбэк за 3 шага</div>
-      <ol class="onboarding-steps">
-        <li>Зарегистрируйтесь у букмекера по нашей ссылке</li>
-        <li>Отправьте свой Player ID на проверку</li>
-        <li>Подайте заявку на кэшбэк по проигранной ставке</li>
-      </ol>
-      <div class="onboarding-next" id="home-onboarding-next">Сначала выберите букмекера и зарегистрируйтесь — это займёт пару минут</div>
-      <button class="onboarding-cta" onclick="showScreen('bookmakers')">Выбрать букмекера</button>
-    </div>
+      <div class="onboarding-card animate-in delay-1" id="home-onboarding-checklist"></div>
 
-    <div class="section animate-in delay-3">
-      <div class="section-title">Последние заявки</div>
-      <div id="home-claims">
-        <div class="empty">
-          <div class="empty-icon">🎯</div>
-          <div class="empty-text">Заявок пока нет.<br>Подайте первую — получите кэшбэк за проигрыш.</div>
-          <div class="empty-btn" onclick="showScreen('submit')">Подать заявку</div>
+      <div class="section animate-in delay-2" style="padding:0 16px">
+        <div class="referral-teaser" onclick="showScreen('referral')">
+          <span class="referral-teaser-text">Пригласи друга — получай до <span class="referral-teaser-accent">20%</span> бонус</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--referral)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <div class="new-user-support" style="margin-top:16px">
+          Есть вопросы? <span onclick="showScreen('support')">Напишите в поддержку</span>
         </div>
       </div>
     </div>
@@ -1587,7 +1646,7 @@ function updateProfile() {
   setEl('stat-ref-income', formatRub(safeAmountValue(state.refStats?.income)));
   
   updateTierUI();
-  updateHomeOnboardingHint();
+  renderHomeState();
   renderHomeClaims();
   renderPayoutMethods();
   renderWithdrawSection();
@@ -1596,60 +1655,77 @@ function updateProfile() {
   updatePendingUI();
 }
 
-function updateHomeOnboardingHint() {
-  const card = document.querySelector('.onboarding-card');
-  const titleEl = card?.querySelector('.onboarding-title');
-  const stepsEl = card?.querySelector('.onboarding-steps');
-  const hintEl = document.getElementById('home-onboarding-next');
-  const ctaEl = card?.querySelector('.onboarding-cta');
-  if (!card || !hintEl) return;
+function renderHomeState() {
+  const accounts = Object.values(state.bookmakerAccounts || {});
+  const hasVerified = accounts.some(acc => acc?.status === 'verified');
+  const isNewUser = !hasVerified;
+  const tierBadge = document.getElementById('header-tier');
 
+  document.getElementById('home-experienced').style.display = isNewUser ? 'none' : '';
+  document.getElementById('home-new-user').style.display = isNewUser ? '' : 'none';
+
+  if (isNewUser) {
+    if (tierBadge) tierBadge.classList.add('tier-badge--new');
+    renderOnboardingChecklist();
+  } else {
+    if (tierBadge) tierBadge.classList.remove('tier-badge--new');
+  }
+}
+
+function renderOnboardingChecklist() {
+  const el = document.getElementById('home-onboarding-checklist');
+  if (!el) return;
   const accounts = Object.values(state.bookmakerAccounts || {});
   const hasVerified = accounts.some(acc => acc?.status === 'verified');
   const hasPending = accounts.some(acc => acc?.status === 'pending');
   const hasClaims = state.claims && state.claims.length > 0;
 
-  if (hasVerified) {
-    if (hasClaims) {
-      card.style.display = 'none';
-      return;
-    }
-    card.style.display = '';
-    if (titleEl) titleEl.textContent = 'Всё готово! Подайте первую заявку';
-    if (stepsEl) stepsEl.style.display = 'none';
-    hintEl.className = 'onboarding-next ready';
-    hintEl.textContent = 'Букмекер подтверждён — теперь отправляйте заявки на кэшбэк по проигранным ставкам';
-    if (ctaEl) {
-      ctaEl.textContent = 'Подать заявку';
-      ctaEl.onclick = function() { showScreen('submit'); };
-      ctaEl.style.display = '';
-    }
-    return;
-  }
-  if (hasPending) {
-    card.style.display = '';
-    if (titleEl) titleEl.textContent = 'Почти готово!';
-    if (stepsEl) stepsEl.style.display = 'none';
-    hintEl.className = 'onboarding-next pending';
-    hintEl.textContent = 'Ваш Player ID на проверке — обычно это занимает до 24 часов. После подтверждения вы сможете подавать заявки.';
-    if (ctaEl) {
-      ctaEl.textContent = 'Проверить статус';
-      ctaEl.onclick = function() { showScreen('bookmakers'); };
-      ctaEl.style.display = '';
-    }
-    return;
-  }
-  // STATE_NEW
-  card.style.display = '';
-  if (titleEl) titleEl.textContent = 'Начните получать кэшбэк за 3 шага';
-  if (stepsEl) stepsEl.style.display = '';
-  hintEl.className = 'onboarding-next';
-  hintEl.textContent = 'Сначала выберите букмекера и зарегистрируйтесь — это займёт пару минут';
-  if (ctaEl) {
-    ctaEl.textContent = 'Выбрать букмекера';
-    ctaEl.onclick = function() { showScreen('bookmakers'); };
-    ctaEl.style.display = '';
-  }
+  // Determine completed steps
+  const step1Done = true; // always done — user is in the app
+  const step2Done = hasVerified || hasPending;
+  const step3Done = hasVerified;
+  const step4Done = hasClaims;
+
+  let doneCount = [step1Done, step2Done, step3Done, step4Done].filter(Boolean).length;
+  let activeStep = 2;
+  if (step2Done && !step3Done) activeStep = 3;
+  else if (step3Done && !step4Done) activeStep = 4;
+  else if (step4Done) activeStep = 5; // all done
+
+  const progressPct = Math.round((doneCount / 4) * 100);
+
+  const steps = [
+    { num: 1, text: 'Зарегистрироваться в BetCashback', done: step1Done },
+    { num: 2, text: 'Выбрать букмекера и зарегистрироваться', done: step2Done,
+      desc: 'Важно: регистрация именно по нашей ссылке. Только так мы отследим ваши ставки и начислим кэшбэк.',
+      action: 'Выбрать букмекера →', onclick: "showScreen('bookmakers')" },
+    { num: 3, text: 'Отправить Player ID на проверку', done: step3Done,
+      desc: 'Откройте букмекера из списка и введите свой Player ID.',
+      action: 'Отправить Player ID →', onclick: "showScreen('bookmakers')" },
+    { num: 4, text: 'Подать первую заявку на кэшбэк', done: step4Done,
+      desc: 'Проиграли ставку? Подайте заявку — получите возврат в крипте.',
+      action: 'Подать заявку →', onclick: "showScreen('submit')" },
+  ];
+
+  el.innerHTML = `
+    <div class="onboarding-header">
+      <span class="onboarding-title">Ваш прогресс</span>
+      <span class="onboarding-step-label">${activeStep <= 4 ? 'Шаг ' + activeStep + ' из 4' : 'Готово!'}</span>
+    </div>
+    <div class="onboarding-progress-bar"><div class="onboarding-progress-fill" style="width:${progressPct}%"></div></div>
+    ${steps.map(s => {
+      const isActive = s.num === activeStep && !s.done;
+      const isDone = s.done;
+      const cls = isDone ? 'onboarding-item onboarding-item--done' : (isActive ? 'onboarding-item onboarding-item--active' : 'onboarding-item');
+      const circleClass = isDone ? 'step-circle step-circle--done' : (isActive ? 'step-circle step-circle--active' : 'step-circle');
+      const circleContent = isDone ? '✓' : s.num;
+      const extra = isActive && s.desc ? `<div class="onboarding-item-desc">${s.desc}</div><div class="onboarding-item-action" onclick="${s.onclick}">${s.action}</div>` : '';
+      const textWrap = isActive && s.desc ? 'div' : 'span';
+      return `<div class="${cls}"${isActive && s.onclick ? ` onclick="${s.onclick}"` : ''}>
+        <div class="${circleClass}">${circleContent}</div>
+        <${textWrap}><div class="onboarding-item-text">${s.text}</div>${extra}</${textWrap}>
+      </div>`;
+    }).join('')}`;
 }
 
 function updateSupportEntryMeta() {
@@ -1669,12 +1745,14 @@ function updateTierUI() {
   if (t.tier >= 3) {
     setEl('tier-name', 'TIER 3 · МАКСИМАЛЬНЫЙ УРОВЕНЬ');
     setEl('tier-hint-text', 'У вас максимальная ставка кэшбэка — <strong>10%</strong>.');
-    document.getElementById('tier-progress').style.width = '100%';
+    const tp1 = document.getElementById('tier-progress');
+    if (tp1) tp1.style.width = '100%';
     return;
   }
   setEl('tier-name', 'ПРОГРЕСС К TIER ' + (t.tier + 1) + ' · ' + nextPct + '%');
-  setEl('tier-hint-text', `Ещё <strong>${left} одобренных заявок</strong> — и ставка вырастет до ${nextPct}%`);
-  document.getElementById('tier-progress').style.width = pct + '%';
+  setEl('tier-hint-text', `Ещё <strong style="color:var(--text);font-weight:800">${left} одобренных заявок</strong> — и ставка вырастет до ${nextPct}%`);
+  const tp2 = document.getElementById('tier-progress');
+  if (tp2) tp2.style.width = pct + '%';
 }
 
 function updatePendingUI() {
@@ -2102,15 +2180,14 @@ function renderHomeClaims() {
   const hasMore = state.claims.length > HOME_CLAIMS_PREVIEW_LIMIT;
   container.innerHTML = visibleClaims.map(c => `
     <div class="claim-card status-${statusMap[c.status]||'submitted'}">
-      <div class="claim-top">
-        <div class="claim-bk">${c.bkName}</div>
-        <div class="claim-status ${statusMap[c.status]||'submitted'}">${labelMap[c.status]||'Отправлено'}</div>
+      <div class="claim-left">
+        <div class="claim-header">
+          <div class="claim-bk">${c.bkName}</div>
+          <div class="claim-status ${statusMap[c.status]||'submitted'}">${labelMap[c.status]||'Отправлено'}</div>
+        </div>
+        <div class="claim-meta">${formatDate(c.date)} · #${c.betId} · Проигрыш: ${formatRub(c.amount)}</div>
       </div>
-      <div class="claim-meta">${formatDate(c.date)} · #${c.betId}</div>
-      <div class="claim-amounts">
-        <div class="claim-loss">Проигрыш: ${formatRub(c.amount)}</div>
-        <div class="claim-cashback">+${formatRub(c.cashback)}</div>
-      </div>
+      <div class="claim-cashback">+${formatRub(c.cashback)}</div>
     </div>`).join('') + (hasMore ? `
     <div style="margin-top:8px;font-size:12px;color:var(--accent);font-weight:700;cursor:pointer" onclick="toggleHomeClaimsView()">${actionLabel}</div>
   ` : '');
@@ -2595,15 +2672,14 @@ function renderPayoutHistory() {
     const meta = payoutStatusMeta(r.status);
     return `
     <div class="claim-card ${meta.tone}">
-      <div class="claim-top">
-        <div class="claim-bk">Вывод #${r.id} · ${assetLabels[r.asset] || r.asset || 'PAYOUT'}</div>
-        <div class="claim-status ${meta.tone}">${meta.label}</div>
+      <div class="claim-left">
+        <div class="claim-header">
+          <div class="claim-bk">Вывод #${r.id} · ${assetLabels[r.asset] || r.asset || 'PAYOUT'}</div>
+          <div class="claim-status ${meta.tone}">${meta.label}</div>
+        </div>
+        <div class="claim-meta">${formatDate(r.created_at)} · ${truncateAddr(r.address_snapshot || '')}${r.tx_hash ? ' · TX: ' + r.tx_hash : ''}</div>
       </div>
-      <div class="claim-meta">${formatDate(r.created_at)} · ${truncateAddr(r.address_snapshot || '')}</div>
-      <div class="claim-amounts">
-        <div class="claim-loss">Сумма: ${formatRub(parseFloat(r.amount_rub || 0))}</div>
-        <div class="claim-cashback">${r.tx_hash ? ('TX: ' + r.tx_hash) : ''}</div>
-      </div>
+      <div class="claim-cashback">${formatRub(parseFloat(r.amount_rub || 0))}</div>
     </div>
   `;
   }).join('');

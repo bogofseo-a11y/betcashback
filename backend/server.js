@@ -196,6 +196,70 @@ const CASHBACK_TIERS = [
   { tier: 6, bonus: 5, from: 100000, to: null    },
 ];
 
+// Пороги кэшбэк-тиров по валютам
+const TIER_THRESHOLDS = {
+  RUB: [
+    { tier: 1, bonus: 0, min: 0 },
+    { tier: 2, bonus: 1, min: 2000 },
+    { tier: 3, bonus: 2, min: 5000 },
+    { tier: 4, bonus: 3, min: 20000 },
+    { tier: 5, bonus: 4, min: 50000 },
+    { tier: 6, bonus: 5, min: 100000 },
+  ],
+  KZT: [
+    { tier: 1, bonus: 0, min: 0 },
+    { tier: 2, bonus: 1, min: 10000 },
+    { tier: 3, bonus: 2, min: 25000 },
+    { tier: 4, bonus: 3, min: 100000 },
+    { tier: 5, bonus: 4, min: 250000 },
+    { tier: 6, bonus: 5, min: 500000 },
+  ],
+  BYN: [
+    { tier: 1, bonus: 0, min: 0 },
+    { tier: 2, bonus: 1, min: 65 },
+    { tier: 3, bonus: 2, min: 160 },
+    { tier: 4, bonus: 3, min: 650 },
+    { tier: 5, bonus: 4, min: 1600 },
+    { tier: 6, bonus: 5, min: 3200 },
+  ],
+  USD: [
+    { tier: 1, bonus: 0, min: 0 },
+    { tier: 2, bonus: 1, min: 20 },
+    { tier: 3, bonus: 2, min: 50 },
+    { tier: 4, bonus: 3, min: 200 },
+    { tier: 5, bonus: 4, min: 500 },
+    { tier: 6, bonus: 5, min: 1000 },
+  ],
+};
+
+// Реферальные тиры по валютам
+const REFERRAL_TIER_THRESHOLDS = {
+  RUB: [
+    { tier: 1, pct: 5, min: 0 },
+    { tier: 2, pct: 10, min: 5000 },
+    { tier: 3, pct: 15, min: 20000 },
+    { tier: 4, pct: 20, min: 50000 },
+  ],
+  KZT: [
+    { tier: 1, pct: 5, min: 0 },
+    { tier: 2, pct: 10, min: 25000 },
+    { tier: 3, pct: 15, min: 100000 },
+    { tier: 4, pct: 20, min: 250000 },
+  ],
+  BYN: [
+    { tier: 1, pct: 5, min: 0 },
+    { tier: 2, pct: 10, min: 160 },
+    { tier: 3, pct: 15, min: 650 },
+    { tier: 4, pct: 20, min: 1600 },
+  ],
+  USD: [
+    { tier: 1, pct: 5, min: 0 },
+    { tier: 2, pct: 10, min: 50 },
+    { tier: 3, pct: 15, min: 200 },
+    { tier: 4, pct: 20, min: 500 },
+  ],
+};
+
 async function getUserTier(userId) {
   const result = await pool.query(`
     SELECT COALESCE(SUM(cashback_amount_rub), 0) as lifetime_cashback
@@ -452,7 +516,57 @@ async function getUserWithdrawableSummary(userId, client = pool) {
 // ============================================================
 
 // Health check
-app.get('/health', (req, res) => res.json({ ok: true, ts: new Date().toISOString(), version: '2.3.0' }));
+app.get('/health', (req, res) => res.json({ ok: true, ts: new Date().toISOString(), version: '2.4.0' }));
+
+// ---- COUNTRIES ----
+app.get('/api/countries', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT code, name, flag, currency, currency_symbol, language_code
+       FROM countries
+       WHERE is_active = TRUE
+       ORDER BY sort_order`
+    );
+    res.json(result.rows);
+  } catch (e) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.post('/api/user/country', authMiddleware, async (req, res) => {
+  try {
+    const { country_code } = req.body;
+    if (!country_code) {
+      return res.status(400).json({ error: 'country_code is required' });
+    }
+
+    // Проверяем что страна существует и активна
+    const countryRes = await pool.query(
+      `SELECT code, name, flag, currency, currency_symbol
+       FROM countries
+       WHERE code = $1 AND is_active = TRUE`,
+      [country_code]
+    );
+    if (countryRes.rows.length === 0) {
+      return res.status(400).json({ error: 'Invalid country code' });
+    }
+
+    // Сохраняем
+    await pool.query(
+      `UPDATE users SET country_code = $1, updated_at = NOW() WHERE id = $2`,
+      [country_code, req.tgUser.id]
+    );
+
+    const country = countryRes.rows[0];
+    res.json({
+      success: true,
+      country: country,
+    });
+  } catch (e) {
+    console.error('Set country error:', e);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 // ---- USER ----
 app.post('/api/auth/start', authMiddleware, async (req, res) => {
@@ -496,11 +610,22 @@ app.post('/api/auth/start', authMiddleware, async (req, res) => {
     const refTier = [...REF_TIERS].reverse().find(t => totalRefCashback >= t.from) || REF_TIERS[0];
     const nextRefTier = REF_TIERS.find(t => t.tier === refTier.tier + 1);
 
+    // Получаем страну юзера
+    let countryInfo = null;
+    if (user.country_code) {
+      const cRes = await pool.query(
+        `SELECT code, name, flag, currency, currency_symbol FROM countries WHERE code = $1`,
+        [user.country_code]
+      );
+      if (cRes.rows.length > 0) countryInfo = cRes.rows[0];
+    }
+
     res.json({
       user,
       tierInfo,
       balance: parseFloat(balRes.rows[0].pending),
       totalEarned: parseFloat(balRes.rows[0].earned),
+      country: countryInfo,
       refStats: {
         count: parseInt(refRes.rows[0].count),
         income: parseFloat(refRes.rows[0].income),

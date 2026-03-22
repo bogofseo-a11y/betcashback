@@ -1,6 +1,19 @@
 -- BetCashback Database Schema
 -- Run this in your PostgreSQL database
 
+-- COUNTRIES
+CREATE TABLE IF NOT EXISTS countries (
+  code VARCHAR(2) PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  flag VARCHAR(10) NOT NULL,
+  currency VARCHAR(3) NOT NULL,
+  currency_symbol VARCHAR(5) NOT NULL,
+  language_code VARCHAR(5) NOT NULL,
+  sort_order INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- USERS
 CREATE TABLE IF NOT EXISTS users (
   id BIGINT PRIMARY KEY, -- telegram_id
@@ -8,6 +21,7 @@ CREATE TABLE IF NOT EXISTS users (
   last_name VARCHAR(100),
   username VARCHAR(100),
   referrer_id BIGINT REFERENCES users(id),
+  country_code VARCHAR(2) REFERENCES countries(code),
   is_banned BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -33,6 +47,13 @@ CREATE TABLE IF NOT EXISTS bookmakers (
   instruction_asset_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- BOOKMAKER COUNTRIES (many-to-many)
+CREATE TABLE IF NOT EXISTS bookmaker_countries (
+  bookmaker_id INTEGER REFERENCES bookmakers(id) ON DELETE CASCADE,
+  country_code VARCHAR(2) REFERENCES countries(code) ON DELETE CASCADE,
+  PRIMARY KEY (bookmaker_id, country_code)
 );
 
 -- BOOKMAKER ACCOUNTS (user's accounts at bookmakers)
@@ -282,6 +303,20 @@ CREATE TABLE IF NOT EXISTS audit_log (
   payload_json JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- SEED COUNTRIES
+INSERT INTO countries (code, name, flag, currency, currency_symbol, language_code, sort_order)
+VALUES
+  ('RU', 'Россия',       '🇷🇺', 'RUB', '₽',  'ru', 1),
+  ('KZ', 'Казахстан',    '🇰🇿', 'KZT', '₸',  'kk', 2),
+  ('BY', 'Беларусь',     '🇧🇾', 'BYN', 'Br', 'be', 3),
+  ('UZ', 'Узбекистан',   '🇺🇿', 'USD', '$',  'uz', 4),
+  ('KG', 'Кыргызстан',   '🇰🇬', 'USD', '$',  'ky', 5),
+  ('TJ', 'Таджикистан',  '🇹🇯', 'USD', '$',  'tg', 6),
+  ('AM', 'Армения',      '🇦🇲', 'USD', '$',  'hy', 7),
+  ('GE', 'Грузия',       '🇬🇪', 'USD', '$',  'ka', 8),
+  ('AZ', 'Азербайджан',  '🇦🇿', 'USD', '$',  'az', 9)
+ON CONFLICT (code) DO NOTHING;
 
 -- DEFAULT SETTINGS
 INSERT INTO app_settings (key, value, value_type, description)

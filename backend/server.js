@@ -182,29 +182,37 @@ function authMiddleware(req, res, next) {
 }
 
 // ============================================================
-// TIER SYSTEM (по кол-ву подтверждённых заявок — лояльность, не сумма проигрышей)
-// Tier 1: 0-4 заявок  → 5%
-// Tier 2: 5-14 заявок → 7%
-// Tier 3: 15+ заявок  → 10%
+// CASHBACK TIER SYSTEM
+// Уровень считается по lifetime approved cashback (сумма кэшбэка по approved/paid claims).
+// Бонус прибавляется к base_cashback_pct букмекера.
+// Финальный кэшбэк = base_cashback_pct + tier bonus.
 // ============================================================
-const TIERS = [
-  { tier: 1, pct: 5,  minClaims: 0 },
-  { tier: 2, pct: 7,  minClaims: 5 },
-  { tier: 3, pct: 10, minClaims: 15 },
+const CASHBACK_TIERS = [
+  { tier: 1, bonus: 0, from: 0,      to: 2000   },
+  { tier: 2, bonus: 1, from: 2000,   to: 5000   },
+  { tier: 3, bonus: 2, from: 5000,   to: 20000  },
+  { tier: 4, bonus: 3, from: 20000,  to: 50000  },
+  { tier: 5, bonus: 4, from: 50000,  to: 100000 },
+  { tier: 6, bonus: 5, from: 100000, to: null    },
 ];
 
 async function getUserTier(userId) {
   const result = await pool.query(`
-    SELECT COUNT(*) as total
+    SELECT COALESCE(SUM(cashback_amount_rub), 0) as lifetime_cashback
     FROM claims
     WHERE user_id = $1 AND status IN ('approved', 'paid')
   `, [userId]);
-  const total = parseInt(result.rows[0].total);
-  const tier = [...TIERS].reverse().find(t => total >= t.minClaims) || TIERS[0];
-  const nextTier = TIERS.find(t => t.tier === tier.tier + 1);
+  const lifetimeCashback = parseFloat(result.rows[0].lifetime_cashback);
+  const tier = [...CASHBACK_TIERS].reverse().find(t => lifetimeCashback >= t.from) || CASHBACK_TIERS[0];
+  const nextTier = CASHBACK_TIERS.find(t => t.tier === tier.tier + 1);
   return {
-    tier: tier.tier, pct: tier.pct, progress: total,
-    nextTierAt: nextTier ? nextTier.minClaims : tier.minClaims,
+    tier: tier.tier,
+    bonus: tier.bonus,
+    pct: tier.bonus, // for backward compatibility, will be removed later
+    lifetimeCashback,
+    progress: lifetimeCashback,
+    nextTierAt: nextTier ? nextTier.to : 0,
+    nextTierFrom: nextTier ? nextTier.from : tier.from,
   };
 }
 
@@ -444,7 +452,7 @@ async function getUserWithdrawableSummary(userId, client = pool) {
 // ============================================================
 
 // Health check
-app.get('/health', (req, res) => res.json({ ok: true, ts: new Date().toISOString(), version: '2.1.0' }));
+app.get('/health', (req, res) => res.json({ ok: true, ts: new Date().toISOString(), version: '2.3.0' }));
 
 // ---- USER ----
 app.post('/api/auth/start', authMiddleware, async (req, res) => {
@@ -469,6 +477,25 @@ app.post('/api/auth/start', authMiddleware, async (req, res) => {
       FROM referral_ledger WHERE referrer_user_id = $1
     `, [user.id]);
     
+    // Referral tier
+    const refCashbackRes = await pool.query(`
+      SELECT COALESCE(SUM(c.cashback_amount_rub), 0) as total
+      FROM claims c
+      JOIN users u ON u.id = c.user_id
+      WHERE u.referrer_id = $1
+        AND c.status IN ('approved', 'paid')
+    `, [user.id]);
+    const totalRefCashback = parseFloat(refCashbackRes.rows[0].total);
+
+    const REF_TIERS = [
+      { tier: 1, pct: 5,  from: 0,     to: 5000  },
+      { tier: 2, pct: 10, from: 5000,  to: 20000 },
+      { tier: 3, pct: 15, from: 20000, to: 50000 },
+      { tier: 4, pct: 20, from: 50000, to: null   },
+    ];
+    const refTier = [...REF_TIERS].reverse().find(t => totalRefCashback >= t.from) || REF_TIERS[0];
+    const nextRefTier = REF_TIERS.find(t => t.tier === refTier.tier + 1);
+
     res.json({
       user,
       tierInfo,
@@ -477,6 +504,11 @@ app.post('/api/auth/start', authMiddleware, async (req, res) => {
       refStats: {
         count: parseInt(refRes.rows[0].count),
         income: parseFloat(refRes.rows[0].income),
+        tier: refTier.tier,
+        pct: refTier.pct,
+        totalReferralCashback: totalRefCashback,
+        nextTierFrom: nextRefTier ? nextRefTier.from : refTier.from,
+        nextTierPct: nextRefTier ? nextRefTier.pct : refTier.pct,
       }
     });
   } catch(e) {
@@ -554,9 +586,12 @@ app.post('/api/claims', authMiddleware, claimLimiter, upload.array('files', 5), 
         return res.status(400).json({ error: 'Player ID не совпадает с подтверждённым аккаунтом букмекера.' });
       }
 
-      // Get tier
+      // Get tier and bookmaker base cashback
       const tier = await getUserTier(req.tgUser.id);
-      const cashback = parseFloat(loss_amount) * (tier.pct / 100);
+      const bkRes = await client.query('SELECT base_cashback_pct FROM bookmakers WHERE id = $1', [bookmakerId]);
+      const basePct = parseFloat(bkRes.rows[0]?.base_cashback_pct || 5);
+      const finalPct = basePct + tier.bonus;
+      const cashback = parseFloat(loss_amount) * (finalPct / 100);
 
       // Risk score
       const riskScore = await calculateRiskScore(req.tgUser.id, bet_id, parseFloat(loss_amount));
@@ -566,7 +601,7 @@ app.post('/api/claims', authMiddleware, claimLimiter, upload.array('files', 5), 
         INSERT INTO claims (user_id, bookmaker_id, bookmaker_account_id, affiliate_player_id, loss_amount_rub, bet_id, bet_date, comment, status, cashback_percent, cashback_amount_rub, risk_score)
         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'submitted',$9,$10,$11)
         RETURNING *
-      `, [req.tgUser.id, bookmakerId, account.id, account.affiliate_player_id || null, loss_amount, bet_id, bet_date, normalizedComment || null, tier.pct, cashback, riskScore]);
+      `, [req.tgUser.id, bookmakerId, account.id, account.affiliate_player_id || null, loss_amount, bet_id, bet_date, normalizedComment || null, finalPct, cashback, riskScore]);
       
       const claim = claimRes.rows[0];
       
@@ -604,7 +639,7 @@ app.post('/api/claims', authMiddleware, claimLimiter, upload.array('files', 5), 
             `👤 @${req.tgUser.username || req.tgUser.id}\n` +
             `🏦 BK ID: ${bookmakerId}\n` +
             `💸 Проигрыш: ${parseFloat(loss_amount).toLocaleString('ru-RU')}₽\n` +
-            `💰 Кэшбэк: ${cashback.toLocaleString('ru-RU')}₽ (${tier.pct}%)\n` +
+            `💰 Кэшбэк: ${cashback.toLocaleString('ru-RU')}₽ (${finalPct}%)\n` +
             `⚠️ Риск: ${riskScore}/100`
           ).catch(() => {});
         }
@@ -1051,7 +1086,7 @@ app.get('/api/bookmakers', authMiddleware, async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT id, name, short_name, logo_url, rules, required_proofs, min_loss_rub,
-             sort_order, cashback_label, offer_text, instruction_asset_url
+             sort_order, cashback_label, offer_text, instruction_asset_url, base_cashback_pct
       FROM bookmakers
       WHERE is_active = true
       ORDER BY sort_order, id
@@ -1340,7 +1375,8 @@ app.get('/api/support-tickets', authMiddleware, async (req, res) => {
     const result = await pool.query(`
       SELECT st.id, st.user_id, st.status, st.created_at, st.updated_at, st.closed_at,
              lm.message AS last_message, lm.sender_type AS last_sender_type, lm.created_at AS last_message_at,
-             COALESCE(mc.message_count, 0) AS message_count
+             COALESCE(mc.message_count, 0) AS message_count,
+             COALESCE(uc.unread_count, 0) AS unread_count
       FROM support_tickets st
       LEFT JOIN LATERAL (
         SELECT m.message, m.sender_type, m.created_at
@@ -1354,6 +1390,13 @@ app.get('/api/support-tickets', authMiddleware, async (req, res) => {
         FROM support_ticket_messages m
         WHERE m.ticket_id = st.id
       ) mc ON TRUE
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::int AS unread_count
+        FROM support_ticket_messages m
+        WHERE m.ticket_id = st.id
+          AND m.sender_type = 'admin'
+          AND (st.user_last_read_at IS NULL OR m.created_at > st.user_last_read_at)
+      ) uc ON TRUE
       WHERE st.user_id = $1
       ORDER BY st.updated_at DESC, st.id DESC
       LIMIT 100
@@ -1384,6 +1427,12 @@ app.get('/api/support-tickets/:id', authMiddleware, async (req, res) => {
       ORDER BY created_at ASC, id ASC
       LIMIT 500
     `, [id]);
+
+    // Mark as read by user
+    await pool.query(
+      `UPDATE support_tickets SET user_last_read_at = NOW() WHERE id = $1 AND user_id = $2`,
+      [id, req.tgUser.id]
+    );
 
     res.json({
       ticket: ticketRes.rows[0],
@@ -2011,7 +2060,8 @@ app.post('/admin/support-tickets/:id/messages', adminAuth, async (req, res) => {
 
     const updRes = await client.query(`
       UPDATE support_tickets
-      SET updated_at = NOW()
+      SET status = CASE WHEN status != 'closed' THEN 'waiting_user' ELSE status END,
+          updated_at = NOW()
       WHERE id = $1
       RETURNING *
     `, [id]);
@@ -2595,7 +2645,24 @@ async function processReferralCommission(claim) {
     if (!l1.rows[0]?.referrer_id) return;
     
     const l1Id = l1.rows[0].referrer_id;
-    const l1Amount = claim.cashback_amount_rub * 0.20;
+
+    // Calculate referral tier based on total approved cashback of all referrals
+    const refCashbackRes = await pool.query(
+      `SELECT COALESCE(SUM(c.cashback_amount_rub), 0) as total
+       FROM claims c
+       JOIN users u ON u.id = c.user_id
+       WHERE u.referrer_id = $1
+         AND c.status IN ('approved', 'paid')`,
+      [l1Id]
+    );
+    const totalReferralCashback = parseFloat(refCashbackRes.rows[0].total);
+
+    let refPercent = 0.05; // Tier 1: 0 – 4 999 ₽
+    if (totalReferralCashback >= 50000) refPercent = 0.20;      // Tier 4: 50 000+ ₽
+    else if (totalReferralCashback >= 20000) refPercent = 0.15;  // Tier 3: 20 000 – 49 999 ₽
+    else if (totalReferralCashback >= 5000) refPercent = 0.10;   // Tier 2: 5 000 – 19 999 ₽
+
+    const l1Amount = claim.cashback_amount_rub * refPercent;
     
     await pool.query(`
       INSERT INTO referral_ledger (referrer_user_id, referred_user_id, claim_id, level, amount_rub, status)

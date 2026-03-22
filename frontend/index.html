@@ -98,18 +98,12 @@
   .logo { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 2px; color: var(--accent); }
   .logo span { color: var(--text2); }
 
-  /* HEADER TIER BADGE (split) */
+  /* HEADER TIER BADGE */
   .header-tier-badge {
-    display: flex; align-items: center; border-radius: 20px; overflow: hidden;
+    display: flex; align-items: center; gap: 4px; border-radius: 20px;
     border: 1px solid var(--accent-glow); line-height: 1;
-  }
-  .header-tier-badge .tier-label {
-    font-size: 10px; font-weight: 700; color: var(--text2); letter-spacing: 0.5px;
-    padding: 5px 10px; background: rgba(255,255,255,0.04);
-  }
-  .header-tier-badge .tier-pct-badge {
-    font-size: 11px; font-weight: 900; color: var(--accent); letter-spacing: 0.3px;
-    padding: 5px 10px; background: var(--accent-dim);
+    padding: 5px 10px; background: var(--accent-dim); font-size: 11px; font-weight: 800;
+    color: var(--accent);
   }
 
   /* HERO BALANCE */
@@ -225,9 +219,71 @@
   .new-user-support span { color: var(--accent); font-weight: 600; cursor: pointer; }
 
   /* TIER BADGE GREY (new user) */
-  .header-tier-badge.tier-badge--new { border-color: var(--border); }
-  .header-tier-badge.tier-badge--new .tier-label { color: var(--text3); }
-  .header-tier-badge.tier-badge--new .tier-pct-badge { color: var(--text3); background: rgba(255,255,255,0.03); }
+  .header-tier-badge.tier-badge--new { border-color: var(--border); background: transparent; color: var(--text3); }
+
+  /* TIER MODAL */
+  .modal-overlay#tier-modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    z-index: 200; display: flex; align-items: flex-end; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .tier-modal-sheet {
+    background: var(--card); border-radius: 20px 20px 0 0;
+    width: 100%; max-width: 420px;
+    padding: 20px 16px max(20px, env(safe-area-inset-bottom));
+    border: 1px solid var(--border); border-bottom: none;
+  }
+  .tier-modal-handle-row {
+    display: flex; justify-content: center; align-items: center;
+    position: relative; margin-bottom: 16px;
+  }
+  .tier-modal-handle {
+    width: 36px; height: 4px; border-radius: 2px; background: var(--border);
+  }
+  .tier-modal-close {
+    position: absolute; right: 0; top: -4px;
+    width: 28px; height: 28px; border-radius: 14px;
+    background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .tier-modal-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+  }
+  .tier-modal-level-badge {
+    padding: 6px 12px; border-radius: 12px;
+    font-size: 14px; font-weight: 800;
+  }
+  .tier-modal-bar {
+    height: 8px; border-radius: 4px; background: rgba(255,255,255,0.06); margin-bottom: 12px;
+  }
+  .tier-modal-bar-fill {
+    height: 100%; border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--success));
+    transition: width 0.5s;
+    box-shadow: 0 0 12px var(--accent-glow);
+  }
+  .tier-modal-dots {
+    display: flex; justify-content: space-between; margin-bottom: 16px;
+  }
+  .tier-modal-dot {
+    text-align: center; flex: 1;
+  }
+  .tier-modal-dot-circle {
+    width: 24px; height: 24px; border-radius: 50%;
+    margin: 0 auto 4px; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800;
+  }
+  .tier-modal-dot-circle.done { background: var(--accent); color: var(--bg); border: none; }
+  .tier-modal-dot-circle.active { background: var(--accent-dim); color: var(--accent); border: 2px solid var(--accent); }
+  .tier-modal-dot-circle.locked { background: rgba(255,255,255,0.04); color: var(--text3); border: 1px solid var(--border); }
+  .tier-modal-dot-label { font-size: 10px; color: var(--text3); }
+  .tier-modal-dot.active .tier-modal-dot-label { color: var(--accent); font-weight: 700; }
+  .tier-modal-hint {
+    padding: 12px 14px; border-radius: 12px;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    font-size: 13px; color: var(--text2); text-align: center; line-height: 1.5;
+  }
+
   .list-hint {
     margin-top: 8px;
     font-size: 12px;
@@ -973,7 +1029,10 @@
     <div class="page-header">
       <div class="logo">BET<span>CASHBACK</span></div>
       <div style="display:flex;gap:8px;align-items:center">
-        <div class="header-tier-badge" id="header-tier"><span class="tier-label">TIER 1</span><span class="tier-pct-badge">5%</span></div>
+        <div class="header-tier-badge" id="header-tier" onclick="openTierModal()" style="cursor:pointer">
+          <span id="header-tier-text">Бонус +0%</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
       </div>
     </div>
 
@@ -1165,6 +1224,7 @@
               <input type="number" id="claim-amount" placeholder="0" min="0" inputmode="numeric" class="claim-field-input">
               <span class="claim-field-suffix">₽</span>
             </div>
+            <div class="field-hint" style="color:var(--text3);font-size:12px;margin-top:4px" id="claim-min-hint">Минимальная сумма: 500 ₽</div>
             <div class="field-hint" id="cashback-preview" style="color:var(--accent);font-weight:700;margin-top:4px"></div>
           </div>
           <div class="claim-field-divider"></div>
@@ -1226,8 +1286,8 @@
                 <div class="profile-user-handle" id="prof-id">@username</div>
               </div>
               <div class="profile-tier-display">
-                <div class="profile-tier-label" id="prof-tier-label">TIER 1</div>
-                <div class="profile-tier-pct" id="prof-tier-pct">5%</div>
+                <div class="profile-tier-label" id="prof-tier-label">Уровень 1</div>
+                <div class="profile-tier-pct" id="prof-tier-pct">+0%</div>
               </div>
             </div>
           </div>
@@ -1391,7 +1451,7 @@
       <div class="card ref-link-card animate-in delay-1">
         <div class="section-label" style="margin-bottom:8px">ВАША ССЫЛКА</div>
         <div class="ref-link-row">
-          <div class="ref-link-url" id="ref-link">t.me/betcashback_bot?start=ref_...</div>
+          <div class="ref-link-url" id="ref-link">Загрузка ссылки...</div>
           <button class="ref-link-copy" onclick="copyRefLink()">Копировать</button>
         </div>
       </div>
@@ -1556,15 +1616,24 @@
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">Как работают уровни кэшбэка</div>
-    <div class="modal-sub">Чем больше одобренных заявок, тем выше процент возврата.</div>
+    <div class="modal-sub">Чем больше одобренного кэшбэка, тем выше бонус ко всем букмекерам.</div>
     <div style="font-size:13px;color:var(--text2);line-height:1.45;margin-bottom:10px">
-      <strong style="color:#fff">Tier 1 — 5%</strong> · 0–4 одобренных заявок
+      <strong style="color:#fff">Уровень 1 — +0%</strong> · 0 – 2 000 ₽ кэшбэка
     </div>
     <div style="font-size:13px;color:var(--text2);line-height:1.45;margin-bottom:10px">
-      <strong style="color:#fff">Tier 2 — 7%</strong> · 5–14 одобренных заявок
+      <strong style="color:#fff">Уровень 2 — +1%</strong> · 2 000 – 5 000 ₽
+    </div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.45;margin-bottom:10px">
+      <strong style="color:#fff">Уровень 3 — +2%</strong> · 5 000 – 20 000 ₽
+    </div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.45;margin-bottom:10px">
+      <strong style="color:#fff">Уровень 4 — +3%</strong> · 20 000 – 50 000 ₽
+    </div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.45;margin-bottom:10px">
+      <strong style="color:#fff">Уровень 5 — +4%</strong> · 50 000 – 100 000 ₽
     </div>
     <div style="font-size:13px;color:var(--text2);line-height:1.45;margin-bottom:12px">
-      <strong style="color:#fff">Tier 3 — 10%</strong> · 15+ одобренных заявок
+      <strong style="color:#fff">Уровень 6 — +5%</strong> · 100 000+ ₽
     </div>
     <div id="tier-info-current" style="font-size:13px;color:var(--accent);font-weight:700;margin-bottom:6px"></div>
     <div id="tier-info-next" style="font-size:12px;color:var(--text2);margin-bottom:8px"></div>
@@ -1722,6 +1791,7 @@ function applySupportTicketsSnapshot(ticketsRes) {
     updated_at: t.updated_at,
     closed_at: t.closed_at || null,
     message_count: Number(t.message_count || 0),
+    unread_count: Number(t.unread_count || 0),
     last_message: t.last_message || '',
     last_sender_type: t.last_sender_type || null,
     last_message_at: t.last_message_at || null,
@@ -1998,43 +2068,126 @@ function updateSupportEntryMeta() {
 }
 
 function updateSupportBadge() {
-  const openCount = state.supportTickets.filter(t => t.status !== 'closed').length;
+  const count = (state.supportTickets || []).reduce((sum, t) => sum + Number(t.unread_count || 0), 0);
   const badge = document.getElementById('support-badge');
   if (badge) {
-    badge.style.display = openCount > 0 ? '' : 'none';
-    badge.textContent = String(openCount);
+    badge.style.display = count > 0 ? '' : 'none';
+    badge.textContent = String(count);
   }
 }
 
 function updateTierUI() {
   const t = state.tierInfo;
-  const pct = t.nextTierAt > 0 ? Math.min(100, Math.round((t.progress / t.nextTierAt) * 100)) : 100;
-  setEl('tier-pct', t.pct + '%');
-  setEl('header-tier', '<span class="tier-label">TIER ' + t.tier + '</span><span class="tier-pct-badge">' + t.pct + '%</span>');
+  const bonus = t.bonus !== undefined ? t.bonus : t.pct;
+  const tier = t.tier || 1;
+
+  // Header badge
+  const headerTierText = document.getElementById('header-tier-text');
+  if (headerTierText) headerTierText.textContent = `Бонус +${bonus}%`;
+  const headerTier = document.getElementById('header-tier');
+  if (headerTier) {
+    headerTier.style.borderColor = bonus > 0 ? 'rgba(45,212,191,0.25)' : 'var(--border)';
+    headerTier.style.background = bonus > 0 ? 'var(--accent-dim)' : 'transparent';
+  }
 
   // Profile tier display
-  setEl('prof-tier-label', 'TIER ' + t.tier);
-  setEl('prof-tier-pct', t.pct + '%');
+  setEl('prof-tier-label', `Уровень ${tier}`);
+  setEl('prof-tier-pct', `+${bonus}%`);
   const profBar = document.getElementById('prof-tier-bar');
+  const lifetime = t.lifetimeCashback || t.progress || 0;
+  const currentTier = CASHBACK_TIERS.find(ct => ct.tier === tier) || CASHBACK_TIERS[0];
+  const nextTier = CASHBACK_TIERS.find(ct => ct.tier === tier + 1);
+
+  let pct = 100;
+  if (nextTier && currentTier.to > currentTier.from) {
+    pct = Math.max(5, Math.min(100, ((lifetime - currentTier.from) / (currentTier.to - currentTier.from)) * 100));
+  }
   if (profBar) profBar.style.width = pct + '%';
 
-  const left = Math.max(0, t.nextTierAt - t.progress);
-  const nextPct = t.tier === 1 ? 7 : 10;
   const hintEl = document.getElementById('prof-tier-hint');
-  if (t.tier >= 3) {
-    if (hintEl) hintEl.innerHTML = 'Максимальный уровень — <strong>10%</strong> кэшбэка';
-    if (profBar) profBar.style.width = '100%';
+  if (nextTier) {
+    const remaining = Math.max(0, currentTier.to - lifetime);
+    if (hintEl) hintEl.innerHTML = `Ещё <strong>${formatRub(remaining)}</strong> кэшбэка до уровня +${nextTier.bonus}%`;
   } else {
-    if (hintEl) hintEl.innerHTML = `Ещё <strong>${left} заявок</strong> до Tier ${t.tier + 1} (${nextPct}%)`;
+    if (hintEl) hintEl.innerHTML = 'Максимальный уровень — <strong>+5%</strong> ко всем букмекерам';
+    if (profBar) profBar.style.width = '100%';
   }
 
   // Legacy elements (home tier bar)
   const tp = document.getElementById('tier-progress');
   if (tp) tp.style.width = pct + '%';
-  setEl('tier-name', t.tier >= 3 ? 'TIER 3 · МАКСИМАЛЬНЫЙ УРОВЕНЬ' : 'ПРОГРЕСС К TIER ' + (t.tier + 1) + ' · ' + nextPct + '%');
-  setEl('tier-hint-text', t.tier >= 3
-    ? 'У вас максимальная ставка кэшбэка — <strong>10%</strong>.'
-    : `Ещё <strong style="color:var(--text);font-weight:800">${left} одобренных заявок</strong> — и ставка вырастет до ${nextPct}%`);
+  setEl('tier-name', !nextTier ? 'УРОВЕНЬ 6 · МАКСИМАЛЬНЫЙ' : `ПРОГРЕСС К УРОВНЮ ${tier + 1} · +${nextTier.bonus}%`);
+  setEl('tier-hint-text', !nextTier
+    ? 'У вас максимальный бонус — <strong>+5%</strong> ко всем букмекерам.'
+    : `Ещё <strong style="color:var(--text);font-weight:800">${formatRub(Math.max(0, currentTier.to - lifetime))}</strong> кэшбэка — и бонус вырастет до +${nextTier.bonus}%`);
+}
+
+function openTierModal() {
+  renderTierModal();
+  document.getElementById('tier-modal').style.display = 'flex';
+}
+
+function closeTierModal() {
+  document.getElementById('tier-modal').style.display = 'none';
+}
+
+function renderTierModal() {
+  const t = state.tierInfo;
+  const bonus = t.bonus || 0;
+  const tier = t.tier || 1;
+  const lifetime = t.lifetimeCashback || t.progress || 0;
+  const currentTier = CASHBACK_TIERS.find(ct => ct.tier === tier) || CASHBACK_TIERS[0];
+  const nextTier = CASHBACK_TIERS.find(ct => ct.tier === tier + 1);
+
+  // Header
+  const bonusEl = document.getElementById('tier-modal-bonus');
+  if (bonusEl) bonusEl.textContent = `+${bonus}% бонус`;
+  if (bonusEl) bonusEl.style.color = bonus > 0 ? 'var(--accent)' : 'var(--text3)';
+
+  const levelEl = document.getElementById('tier-modal-level');
+  if (levelEl) {
+    levelEl.textContent = `Уровень ${tier}`;
+    levelEl.style.background = bonus > 0 ? 'var(--accent-dim)' : 'rgba(255,255,255,0.04)';
+    levelEl.style.border = `1px solid ${bonus > 0 ? 'rgba(45,212,191,0.25)' : 'var(--border)'}`;
+    levelEl.style.color = bonus > 0 ? 'var(--accent)' : 'var(--text3)';
+  }
+
+  // Progress bar
+  let progressPct = 5;
+  if (!nextTier) {
+    progressPct = 100;
+  } else if (currentTier.to > currentTier.from) {
+    progressPct = Math.max(5, Math.min(100, ((lifetime - currentTier.from) / (currentTier.to - currentTier.from)) * 100));
+  }
+  const barFill = document.getElementById('tier-modal-bar-fill');
+  if (barFill) barFill.style.width = progressPct + '%';
+
+  // Dots
+  const dotsEl = document.getElementById('tier-modal-dots');
+  if (dotsEl) {
+    dotsEl.innerHTML = CASHBACK_TIERS.map(ct => {
+      const isDone = ct.tier < tier;
+      const isActive = ct.tier === tier;
+      const cls = isDone ? 'done' : isActive ? 'active' : 'locked';
+      const content = isDone ? '✓' : `+${ct.bonus}`;
+      const label = ct.to ? Math.round(ct.from).toLocaleString('ru-RU') : Math.round(ct.from).toLocaleString('ru-RU') + '+';
+      return `<div class="tier-modal-dot ${isActive ? 'active' : ''}">
+        <div class="tier-modal-dot-circle ${cls}">${content}</div>
+        <div class="tier-modal-dot-label">${label}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Hint
+  const hintEl = document.getElementById('tier-modal-hint');
+  if (hintEl) {
+    if (nextTier) {
+      const remaining = currentTier.to - lifetime;
+      hintEl.innerHTML = `Ещё <strong style="color:var(--text)">${formatRub(Math.max(0, remaining))}</strong> одобренного кэшбэка до уровня <span style="color:var(--accent);font-weight:700">+${nextTier.bonus}%</span> у всех букмекеров`;
+    } else {
+      hintEl.innerHTML = '<span style="color:var(--accent);font-weight:600">Максимальный уровень достигнут! +5% ко всем букмекерам</span>';
+    }
+  }
 }
 
 function updatePendingUI() {
@@ -2127,8 +2280,17 @@ function filterBookmakers(filter) {
   renderBookmakers();
 }
 
+const CASHBACK_TIERS = [
+  { tier:1, bonus:0, from:0, to:2000 },
+  { tier:2, bonus:1, from:2000, to:5000 },
+  { tier:3, bonus:2, from:5000, to:20000 },
+  { tier:4, bonus:3, from:20000, to:50000 },
+  { tier:5, bonus:4, from:50000, to:100000 },
+  { tier:6, bonus:5, from:100000, to:null },
+];
+
 const bkIconColors = { '1X': '#1a5276', 'FB': '#e74c3c', 'BC': '#2ecc71', 'MB': '#8e44ad', 'BB': '#e67e22' };
-const bkBonuses = { '1X': 'Фрибет до 10 000 ₽', 'FB': 'Фрибет до 15 000 ₽', 'BC': 'Бонус 100% на депозит', 'MB': 'Фрибет до 10 000 ₽', 'BB': 'Фрибет 2 000 ₽' };
+
 function fixCashbackText(text) { return (text || '').replace(/5[-–]10%/g, 'до 10%').replace(/5[-–]8%/g, 'до 8%'); }
 
 function renderBookmakers() {
@@ -2151,20 +2313,26 @@ function renderBookmakers() {
     const acc = getBookmakerAccount(bk.id);
     const status = bookmakerStatusMeta(acc?.status || 'none');
     const bgColor = bkIconColors[bk.short_name] || 'var(--bg3)';
-    const bonusText = bk.offer_text || bk.cashback_label || bkBonuses[bk.short_name] || 'Бонус за регистрацию';
-    const cashbackDesc = fixCashbackText(bk.rules ? bk.rules.split('.')[0] : 'Кэшбэк до 10% от проигрышей');
+    const bonusText = bk.offer_text || bk.cashback_label || 'Бонус за регистрацию';
+    const basePct = parseFloat(bk.base_cashback_pct || 5);
+    const bonus = state.tierInfo?.bonus || 0;
+    const finalPct = basePct + bonus;
+    const pctHtml = bonus > 0
+      ? `<span style="color:var(--text3);text-decoration:line-through">${basePct}%</span> <span style="color:var(--text3)">→</span> <span style="color:var(--accent);font-weight:800">${finalPct}%</span>`
+      : `<span style="font-weight:800;color:var(--text2)">${basePct}%</span>`;
     return `<div class="bk-card" onclick="openBookmakerDetail(${bk.id})">
       <div class="bk-card-main">
         <div class="bk-card-icon" style="background:${bgColor}"><span>${code}</span></div>
         <div class="bk-card-info">
           <div class="bk-card-top">
             <span class="bk-card-name">${bk.name}</span>
+            <span style="font-size:12px;margin-left:auto">${pctHtml}</span>
             <span class="bk-card-status bk-card-status--${status.cls}">
               <span class="bk-card-status-dot"></span>
               ${status.short}
             </span>
           </div>
-          <div class="bk-card-desc">${cashbackDesc}</div>
+          <div class="bk-card-desc">Кэшбэк ${finalPct}% от проигрышей</div>
         </div>
       </div>
       <div class="bk-card-bonus">
@@ -2190,8 +2358,10 @@ function openBookmakerDetail(id) {
   const isRejected = acc?.status === 'rejected';
   const code = (bk.short_name || bk.name || '?').toString().substring(0,3).toUpperCase();
   const bgColor = bkIconColors[bk.short_name] || 'var(--bg3)';
-  const bonusText = bk.offer_text || bk.cashback_label || bkBonuses[bk.short_name] || 'Бонус за регистрацию';
-  const cashbackDesc = fixCashbackText(bk.rules ? bk.rules.split('.')[0] : 'Кэшбэк до 10% от проигрышей');
+  const bonusText = bk.offer_text || bk.cashback_label || 'Бонус за регистрацию';
+  const basePct = parseFloat(bk.base_cashback_pct || 5);
+  const bonus = state.tierInfo?.bonus || 0;
+  const finalPct = basePct + bonus;
 
   // Header
   let html = `
@@ -2199,7 +2369,7 @@ function openBookmakerDetail(id) {
       <div class="bk-card-icon" style="background:${bgColor};width:52px;height:52px;border-radius:14px;font-size:18px"><span>${code}</span></div>
       <div>
         <div style="font-size:20px;font-weight:800">${bk.name}</div>
-        <div style="font-size:13px;color:var(--text2);margin-top:2px">${cashbackDesc}</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:2px">Кэшбэк ${finalPct}% от проигрышей</div>
       </div>
     </div>`;
 
@@ -2208,6 +2378,26 @@ function openBookmakerDetail(id) {
     <div class="bk-detail-bonus">
       <div class="bk-detail-bonus-label">Бонус за регистрацию</div>
       <div class="bk-detail-bonus-value">${bonusText}</div>
+    </div>`;
+
+  // Your cashback card
+  html += `
+    <div class="card" style="padding:14px 16px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="section-label" style="margin:0">ВАШ КЭШБЭК</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${bonus > 0
+            ? `<span style="font-size:15px;color:var(--text3);text-decoration:line-through">${basePct}%</span>
+               <span style="font-size:11px;color:var(--text3)">→</span>
+               <span style="font-size:20px;font-weight:900;color:var(--accent)">${finalPct}%</span>`
+            : `<span style="font-size:20px;font-weight:900;color:var(--text2)">${basePct}%</span>`
+          }
+        </div>
+      </div>
+      ${bonus === 0
+        ? `<div style="font-size:12px;color:var(--text2);margin-top:8px;padding:6px 10px;background:var(--accent-dim);border-radius:8px;border:1px solid rgba(45,212,191,0.12)">Повысьте уровень — до +5% к кэшбэку</div>`
+        : ''
+      }
     </div>`;
 
   if (isActive) {
@@ -2225,10 +2415,15 @@ function openBookmakerDetail(id) {
     const approvedClaims = bkClaims.filter(c => c.status === 'approved' || c.status === 'paid');
     const totalCashback = approvedClaims.reduce((s, c) => s + (c.cashback || 0), 0);
     html += `
-    <div class="bk-detail-stats">
-      <div class="bk-detail-stat"><div class="bk-detail-stat-value accent">${bkClaims.length}</div><div class="bk-detail-stat-label">Заявок</div></div>
-      <div class="bk-detail-stat"><div class="bk-detail-stat-value accent">${formatRub(totalCashback)}</div><div class="bk-detail-stat-label">Получено</div></div>
-      <div class="bk-detail-stat"><div class="bk-detail-stat-value accent">${state.tierInfo.pct}%</div><div class="bk-detail-stat-label">Текущий %</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+      <div class="card" style="padding:14px 12px;text-align:center">
+        <div style="font-size:20px;font-weight:800;color:var(--accent)">${bkClaims.length}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">Заявок</div>
+      </div>
+      <div class="card" style="padding:14px 12px;text-align:center">
+        <div style="font-size:20px;font-weight:800;color:var(--success)">${formatRub(totalCashback)}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">Получено</div>
+      </div>
     </div>`;
 
     // CTA
@@ -2480,13 +2675,27 @@ function onAccountChange(e) {
 
 function onAmountChange(e) {
   const amount = parseFloat(e.target.value) || 0;
-  const pct = state.tierInfo.pct / 100;
-  const cashback = amount * pct;
+  const bkId = parseInt(document.getElementById('claim-bk').value);
+  const bk = bkId ? state.bookmakers.find(b => b.id === bkId) : null;
+  const basePct = parseFloat(bk?.base_cashback_pct || 5);
+  const bonus = state.tierInfo?.bonus || state.tierInfo?.pct || 0;
+  const finalPct = basePct + bonus;
+  const cashback = amount * finalPct / 100;
+  const minHint = document.getElementById('claim-min-hint');
+  if (minHint) {
+    if (amount > 0 && amount < 500) {
+      minHint.style.color = 'var(--red)';
+      minHint.textContent = 'Минимальная сумма: 500 ₽';
+    } else {
+      minHint.style.color = 'var(--text3)';
+      minHint.textContent = 'Минимальная сумма: 500 ₽';
+    }
+  }
   const preview = document.getElementById('cashback-preview');
   if (amount > 0) {
     const msg = amount < 500
       ? `⚠️ Минимальный проигрыш 500₽. Ваш кэшбэк: ${formatRub(cashback)} — пойдёт в копилку`
-      : `✓ Кэшбэк: +${formatRub(cashback)} (${state.tierInfo.pct}%)`;
+      : `✓ Кэшбэк: +${formatRub(cashback)} (${finalPct}%)`;
     preview.textContent = msg;
     preview.style.color = amount < 500 ? 'var(--yellow)' : 'var(--accent)';
   } else {
@@ -2553,11 +2762,25 @@ async function submitClaim() {
     return;
   }
   if (!amount || amount <= 0) { showToast('Укажите сумму проигрыша', 'error'); return; }
+  if (amount < 500) { showToast('Минимальная сумма проигрыша — 500 ₽', 'error'); return; }
   if (!date) { showToast('Укажите дату', 'error'); return; }
   if (!betId) { showToast('Укажите номер купона', 'error'); return; }
   if (uploadedFiles.length === 0) { showToast('Добавьте хотя бы 1 скрин', 'error'); return; }
   if (!agree) { showToast('Подтвердите условия', 'error'); return; }
   
+  const confirmBk = state.bookmakers.find(b => b.id == bkId);
+  const bkName = confirmBk?.name || 'Букмекер';
+  const confirmBasePct = parseFloat(confirmBk?.base_cashback_pct || 5);
+  const confirmBonus = state.tierInfo?.bonus || state.tierInfo?.pct || 0;
+  const confirmFinalPct = confirmBasePct + confirmBonus;
+  const confirmText = `Подтвердите отправку заявки:\n\n` +
+    `Букмекер: ${bkName}\n` +
+    `Сумма проигрыша: ${amount.toLocaleString('ru-RU')} ₽\n` +
+    `Номер ставки: ${betId}\n` +
+    `Кэшбэк: ~${Math.round(amount * confirmFinalPct / 100).toLocaleString('ru-RU')} ₽ (${confirmFinalPct}%)`;
+
+  if (!confirm(confirmText)) return;
+
   const btn = document.getElementById('btn-submit');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Отправляем...';
@@ -2588,7 +2811,9 @@ async function submitClaim() {
     
     const bk = state.bookmakers.find(b => b.id == bkId) || { name: 'Букмекер' };
     const parsedCashback = parseFloat(result.cashback);
-    const cashback = Number.isFinite(parsedCashback) ? parsedCashback : (amount * state.tierInfo.pct / 100);
+    const fallbackBasePct = parseFloat(bk.base_cashback_pct || 5);
+    const fallbackBonus = state.tierInfo?.bonus || state.tierInfo?.pct || 0;
+    const cashback = Number.isFinite(parsedCashback) ? parsedCashback : (amount * (fallbackBasePct + fallbackBonus) / 100);
     state.claims.unshift({
       id: result.claim_id || ('tmp_' + Date.now()), bkName: bk.name, amount, cashback, date,
       status: 'submitted', betId,
@@ -2631,7 +2856,12 @@ async function submitClaim() {
 function renderHomeClaims() {
   const container = document.getElementById('home-claims');
   if (!state.claims.length) {
-    container.innerHTML = `<div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">Заявок пока нет.<br>Подайте первую — получите кэшбэк за проигрыш.</div><div class="empty-btn" onclick="showScreen('submit')">Подать заявку</div></div>`;
+    container.innerHTML = `
+      <div style="text-align:center;padding:24px 16px">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Заявок пока нет</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:16px">Проиграли ставку? Подайте заявку — получите кэшбэк в крипте</div>
+        <button class="btn-primary" onclick="showScreen('submit')" style="font-size:14px;padding:10px 24px">Подать заявку</button>
+      </div>`;
     return;
   }
   const statusMap = { submitted:'submitted', in_review:'review', review:'review', approved:'review', paid:'paid', rejected:'rejected' };
@@ -2704,8 +2934,8 @@ function renderSupportTickets() {
     const preview = compactText(t.last_message || 'Сообщений пока нет', 80);
     const dt = formatDateTime(t.last_message_at || t.updated_at);
     const unreadCount = Number(t.unread_count || 0);
-    const hasUnread = t.status === 'waiting_user' && (unreadCount > 0 || t.last_sender_type === 'admin');
-    const badgeNum = unreadCount > 0 ? unreadCount : Number(t.message_count || 0);
+    const hasUnread = unreadCount > 0;
+    const msgCount = Number(t.message_count || 0);
     return `
       <div class="card support-ticket-card" onclick="openSupportTicket(${t.id})">
         <div class="support-ticket-header">
@@ -2713,7 +2943,7 @@ function renderSupportTickets() {
             <span class="support-ticket-title">Обращение #${t.id}</span>
             <span class="support-ticket-status support-ticket-status--${statusClass}">${meta.label}</span>
           </div>
-          ${hasUnread ? `<div class="support-ticket-badge">${badgeNum}</div>` : ''}
+          ${hasUnread ? `<div class="support-ticket-badge">${unreadCount}</div>` : ''}
         </div>
         <div class="support-ticket-preview">${escapeHtml(senderPrefix + preview)}</div>
         <div class="support-ticket-meta">
@@ -3225,9 +3455,9 @@ async function submitWithdrawRequest() {
 // ============================================================
 const REF_TIERS = [
   { level: 1, pct: 5,  from: 0,      to: 5000 },
-  { level: 2, pct: 10, from: 5000,   to: 25000 },
-  { level: 3, pct: 15, from: 25000,  to: 100000 },
-  { level: 4, pct: 20, from: 100000, to: null },
+  { level: 2, pct: 10, from: 5000,   to: 20000 },
+  { level: 3, pct: 15, from: 20000,  to: 50000 },
+  { level: 4, pct: 20, from: 50000, to: null },
 ];
 
 function updateRefLink() {
@@ -3242,7 +3472,7 @@ function updateRefLink() {
 function renderRefTiers() {
   const container = document.getElementById('ref-tier-card');
   if (!container) return;
-  const earnings = safeAmountValue(state.refStats?.income);
+  const earnings = safeAmountValue(state.refStats?.totalReferralCashback ?? state.refStats?.income);
   const currentTier = REF_TIERS.find(t => earnings < (t.to || Infinity)) || REF_TIERS[3];
   const nextTier = REF_TIERS.find(t => t.level === currentTier.level + 1);
 
@@ -3276,7 +3506,7 @@ function renderRefTiers() {
   let hintHtml = '';
   if (nextTier) {
     const remaining = nextTier.from - earnings;
-    hintHtml = `<div class="ref-tier-hint">Ещё <strong>${formatRub(remaining)}</strong> дохода от друзей — и бонус вырастет до <span style="color:var(--referral);font-weight:700">${nextTier.pct}%</span></div>`;
+    hintHtml = `<div class="ref-tier-hint">Ещё <strong>${formatRub(remaining)}</strong> кэшбэка друзей — и бонус вырастет до <span style="color:var(--referral);font-weight:700">${nextTier.pct}%</span></div>`;
   } else {
     hintHtml = `<div class="ref-tier-hint" style="color:var(--referral)">Максимальный уровень достигнут!</div>`;
   }
@@ -3474,5 +3704,30 @@ window.addEventListener('focus', () => {
 // ============================================================
 init();
 </script>
+
+<div class="modal-overlay" id="tier-modal" style="display:none" onclick="closeTierModal()">
+  <div class="tier-modal-sheet" onclick="event.stopPropagation()">
+    <div class="tier-modal-handle-row">
+      <div class="tier-modal-handle"></div>
+      <div class="tier-modal-close" onclick="closeTierModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+    </div>
+    <div class="tier-modal-header">
+      <div>
+        <div class="section-label" style="margin:0">ВАШ УРОВЕНЬ КЭШБЭКА</div>
+        <div id="tier-modal-bonus" style="font-size:22px;font-weight:900;color:var(--accent);margin-top:2px">+0% бонус</div>
+      </div>
+      <div id="tier-modal-level" class="tier-modal-level-badge">Уровень 1</div>
+    </div>
+    <div class="tier-modal-bar"><div class="tier-modal-bar-fill" id="tier-modal-bar-fill"></div></div>
+    <div class="tier-modal-dots" id="tier-modal-dots"></div>
+    <div class="tier-modal-hint" id="tier-modal-hint"></div>
+    <div style="font-size:12px;color:var(--text3);text-align:center;margin-top:12px;line-height:1.5">
+      Чем больше одобренного кэшбэка вы накопили, тем выше ваш бонус ко всем букмекерам
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

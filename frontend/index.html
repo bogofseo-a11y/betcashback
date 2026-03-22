@@ -1024,6 +1024,95 @@
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
 
+  <!-- COUNTRY SELECT OVERLAY (показывается если у юзера нет страны) -->
+  <div id="country-select-overlay" style="display:none; position:fixed; inset:0; z-index:9999; background:var(--bg); overflow-y:auto; -webkit-overflow-scrolling:touch;">
+
+    <!-- ШАГ 1: Выбор страны -->
+    <div id="country-step-1">
+      <div style="padding:24px 16px 8px; text-align:center;">
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:2px; color:var(--text);">BETCASHBACK</div>
+        <div style="font-size:14px; color:var(--text2); margin-top:8px; line-height:1.5;">
+          Выберите страну, чтобы мы показали<br>доступных букмекеров
+        </div>
+      </div>
+
+      <!-- Список стран -->
+      <div id="country-list" style="padding:12px 16px; display:grid; gap:8px;"></div>
+
+      <!-- Подсказка -->
+      <div style="margin:8px 16px 12px; padding:12px 14px; border-radius:12px; background:rgba(255,215,64,0.08); border:1px solid rgba(255,215,64,0.18);">
+        <div style="font-size:12px; color:#FFD740; line-height:1.5;">
+          <strong>Важно:</strong> от выбора страны зависит список букмекеров и валюта. Можно изменить позже в настройках.
+        </div>
+      </div>
+
+      <!-- Кнопка Продолжить -->
+      <div style="padding:0 16px 32px;">
+        <button id="country-continue-btn" onclick="countrySelectContinue()" disabled
+          style="width:100%; padding:16px 0; border-radius:14px; border:none;
+                 background:var(--border); color:var(--text3);
+                 font-size:16px; font-weight:800; font-family:inherit;
+                 cursor:not-allowed; opacity:0.5; transition:all 0.2s;">
+          Продолжить
+        </button>
+      </div>
+    </div>
+
+    <!-- ШАГ 2: Подтверждение -->
+    <div id="country-step-2" style="display:none;">
+      <div style="padding:48px 16px 16px; text-align:center;">
+        <!-- Флаг в glow-кольце -->
+        <div id="country-confirm-flag" style="
+          width:80px; height:80px; border-radius:50%; margin:0 auto 20px;
+          display:flex; align-items:center; justify-content:center;
+          font-size:40px; background:rgba(45,212,191,0.08);
+          box-shadow:0 0 30px rgba(45,212,191,0.15);
+          border:2px solid rgba(45,212,191,0.25);
+        "></div>
+
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:1px; color:var(--text);">
+          ДОБРО ПОЖАЛОВАТЬ!
+        </div>
+      </div>
+
+      <!-- Карточка с данными -->
+      <div style="margin:16px; padding:20px; background:var(--card); border:1px solid var(--border); border-radius:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border);">
+          <span style="font-size:13px; color:var(--text2);">Страна</span>
+          <span id="country-confirm-name" style="font-size:14px; font-weight:700; color:var(--text);"></span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border);">
+          <span style="font-size:13px; color:var(--text2);">Валюта</span>
+          <span id="country-confirm-currency" style="font-size:14px; font-weight:700; color:var(--accent);"></span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0;">
+          <span style="font-size:13px; color:var(--text2);">Язык</span>
+          <span style="font-size:14px; font-weight:700; color:var(--text);">Русский</span>
+        </div>
+      </div>
+
+      <div style="text-align:center; font-size:12px; color:var(--text3); margin:8px 16px 20px;">
+        Вы сможете изменить страну позже в настройках
+      </div>
+
+      <!-- Кнопки -->
+      <div style="padding:0 16px 12px;">
+        <button id="country-start-btn" onclick="countrySelectFinish()"
+          style="width:100%; padding:16px 0; border-radius:14px; border:none;
+                 background:var(--accent); color:var(--bg);
+                 font-size:16px; font-weight:800; font-family:inherit;
+                 cursor:pointer; box-shadow:0 4px 20px rgba(45,212,191,0.35);">
+          Начать
+        </button>
+      </div>
+      <div style="padding:0 16px 32px; text-align:center;">
+        <span onclick="countrySelectBack()" style="font-size:14px; color:var(--accent); cursor:pointer; font-weight:600;">
+          ← Изменить страну
+        </span>
+      </div>
+    </div>
+  </div>
+
   <!-- SCREEN: HOME -->
   <div class="screen active" id="screen-home">
     <div class="page-header">
@@ -1714,6 +1803,7 @@ let state = {
   withdrawable: { approvedTotal: 0, reservedTotal: 0, available: 0 },
   payoutRequests: [],
   supportTickets: [],
+  country: null,
 };
 let showAllHomeClaims = false;
 let activeScreen = 'home';
@@ -1756,6 +1846,9 @@ function applyUserSnapshot(userRes) {
   state.totalEarned = userRes.totalEarned || 0;
   state.tierInfo = userRes.tierInfo || state.tierInfo;
   state.refStats = normalizeRefStats(userRes.refStats || state.refStats);
+  if (userRes.country !== undefined) {
+    state.country = userRes.country || null;
+  }
 }
 
 function applyClaimsSnapshot(claimsRes) {
@@ -1962,6 +2055,11 @@ async function loadUserData() {
   populateBookmakerSelect();
   updateProfile();
   loadSupportTickets({ silent: true }).catch(() => {});
+
+  // Проверяем нужен ли выбор страны
+  if (!state.country) {
+    await loadAndShowCountrySelect();
+  }
 }
 
 function updateProfile() {
@@ -2203,6 +2301,166 @@ function updatePendingUI() {
     if (fill) fill.style.width = Math.min(100, Math.round((state.pending / 500) * 100)) + '%';
   } else {
     section.style.display = 'none';
+  }
+}
+
+// ============================================================
+// COUNTRY SELECT
+// ============================================================
+let countrySelectList = [];
+let selectedCountryCode = null;
+
+async function loadAndShowCountrySelect() {
+  const overlay = document.getElementById('country-select-overlay');
+  if (!overlay) return;
+
+  try {
+    countrySelectList = await apiCall('/countries');
+  } catch (e) {
+    console.error('Failed to load countries:', e);
+    return;
+  }
+
+  if (!countrySelectList.length) return;
+
+  const langCode = tg?.initDataUnsafe?.user?.language_code || 'ru';
+  const autoDetected = countrySelectList.find(c => c.language_code === langCode);
+
+  if (autoDetected) {
+    countrySelectList.sort((a, b) => {
+      if (a.code === autoDetected.code) return -1;
+      if (b.code === autoDetected.code) return 1;
+      return 0;
+    });
+    selectedCountryCode = autoDetected.code;
+  }
+
+  renderCountryList();
+  updateCountryContinueBtn();
+  overlay.style.display = '';
+
+  const nav = document.querySelector('.bottom-nav');
+  if (nav) nav.style.display = 'none';
+}
+
+function renderCountryList() {
+  const container = document.getElementById('country-list');
+  if (!container) return;
+
+  const currencyNames = {
+    RUB: 'Российский рубль',
+    KZT: 'Казахстанский тенге',
+    BYN: 'Белорусский рубль',
+    USD: 'Доллар США',
+  };
+
+  container.innerHTML = countrySelectList.map(c => {
+    const isSelected = selectedCountryCode === c.code;
+    const currLabel = c.currency_symbol + ' \u00b7 ' + (currencyNames[c.currency] || c.currency);
+
+    return `
+      <div onclick="selectCountry('${c.code}')" id="country-card-${c.code}"
+        style="
+          display:flex; align-items:center; gap:14px; padding:14px 16px;
+          background:${isSelected ? 'rgba(45,212,191,0.06)' : 'var(--card)'};
+          border:1px solid ${isSelected ? 'rgba(45,212,191,0.3)' : 'var(--border)'};
+          border-radius:14px; cursor:pointer; transition:all 0.15s;
+          ${isSelected ? 'box-shadow:0 0 15px rgba(45,212,191,0.08);' : ''}
+        ">
+        <div style="font-size:28px; width:36px; text-align:center; flex-shrink:0;">${c.flag}</div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:15px; font-weight:700; color:var(--text);">${c.name}</div>
+          <div style="font-size:12px; color:var(--text3); margin-top:2px;">${currLabel}</div>
+        </div>
+        <div style="
+          width:22px; height:22px; border-radius:50%; flex-shrink:0;
+          border:2px solid ${isSelected ? 'var(--accent)' : 'var(--border)'};
+          display:flex; align-items:center; justify-content:center;
+          transition:all 0.15s;
+        ">
+          ${isSelected ? '<div style="width:12px; height:12px; border-radius:50%; background:var(--accent);"></div>' : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function selectCountry(code) {
+  selectedCountryCode = code;
+  renderCountryList();
+  updateCountryContinueBtn();
+}
+
+function updateCountryContinueBtn() {
+  const btn = document.getElementById('country-continue-btn');
+  if (!btn) return;
+  const hasSelection = !!selectedCountryCode;
+  btn.disabled = !hasSelection;
+  btn.style.background = hasSelection ? 'var(--accent)' : 'var(--border)';
+  btn.style.color = hasSelection ? 'var(--bg)' : 'var(--text3)';
+  btn.style.cursor = hasSelection ? 'pointer' : 'not-allowed';
+  btn.style.opacity = hasSelection ? '1' : '0.5';
+  btn.style.boxShadow = hasSelection ? '0 4px 20px rgba(45,212,191,0.35)' : 'none';
+}
+
+function countrySelectContinue() {
+  if (!selectedCountryCode) return;
+
+  const country = countrySelectList.find(c => c.code === selectedCountryCode);
+  if (!country) return;
+
+  document.getElementById('country-confirm-flag').textContent = country.flag;
+  document.getElementById('country-confirm-name').textContent = country.flag + ' ' + country.name;
+
+  const currencyNames = {
+    RUB: 'Российский рубль (\u20bd)',
+    KZT: 'Казахстанский тенге (\u20b8)',
+    BYN: 'Белорусский рубль (Br)',
+    USD: 'Доллар США ($)',
+  };
+  document.getElementById('country-confirm-currency').textContent = currencyNames[country.currency] || country.currency;
+
+  document.getElementById('country-step-1').style.display = 'none';
+  document.getElementById('country-step-2').style.display = '';
+  document.getElementById('country-select-overlay').scrollTop = 0;
+}
+
+function countrySelectBack() {
+  document.getElementById('country-step-1').style.display = '';
+  document.getElementById('country-step-2').style.display = 'none';
+  document.getElementById('country-select-overlay').scrollTop = 0;
+}
+
+async function countrySelectFinish() {
+  if (!selectedCountryCode) return;
+
+  const btn = document.getElementById('country-start-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Сохраняем...';
+    btn.style.opacity = '0.7';
+  }
+
+  try {
+    const result = await apiCall('/user/country', 'POST', { country_code: selectedCountryCode });
+
+    state.country = result.country || countrySelectList.find(c => c.code === selectedCountryCode);
+
+    const overlay = document.getElementById('country-select-overlay');
+    if (overlay) overlay.style.display = 'none';
+
+    const nav = document.querySelector('.bottom-nav');
+    if (nav) nav.style.display = '';
+
+    showScreen('home');
+
+  } catch (e) {
+    showToast(e.message || 'Ошибка сохранения', 'error');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Начать';
+      btn.style.opacity = '1';
+    }
   }
 }
 

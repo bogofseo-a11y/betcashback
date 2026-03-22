@@ -2437,7 +2437,7 @@ function openBookmakerDetail(id) {
 
     // Recent claims
     if (bkClaims.length > 0) {
-      const statusMap = { submitted:'submitted', in_review:'review', review:'review', approved:'review', paid:'paid', rejected:'rejected' };
+      const statusMap = { submitted:'submitted', in_review:'review', review:'review', approved:'paid', paid:'paid', rejected:'rejected' };
       const labelMap = { submitted:'На проверке', in_review:'Проверяется', review:'На проверке', approved:'Одобрено', paid:'Выплачено', rejected:'Отклонено' };
       html += `<div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:12px">Последние заявки</div>`;
       html += bkClaims.slice(0, 3).map(c => `
@@ -2870,7 +2870,7 @@ function renderHomeClaims() {
       </div>`;
     return;
   }
-  const statusMap = { submitted:'submitted', in_review:'review', review:'review', approved:'review', paid:'paid', rejected:'rejected' };
+  const statusMap = { submitted:'submitted', in_review:'review', review:'review', approved:'paid', paid:'paid', rejected:'rejected' };
   const labelMap = { submitted:'На проверке', in_review:'Проверяется', review:'На проверке', approved:'Одобрено', paid:'Выплачено', rejected:'Отклонено' };
   const visibleClaims = showAllHomeClaims ? state.claims : state.claims.slice(0, HOME_CLAIMS_PREVIEW_LIMIT);
   const actionLabel = showAllHomeClaims ? 'Свернуть' : 'Все заявки';
@@ -3272,7 +3272,7 @@ const assetIcons = { USDT_TRC20:'💵', USDT_TON:'💎', TON:'🔷', TG_WALLET:'
 function payoutStatusMeta(status) {
   const map = {
     pending: { label: 'Создана', tone: 'submitted' },
-    approved: { label: 'Одобрена', tone: 'review' },
+    approved: { label: 'Одобрена', tone: 'paid' },
     processing: { label: 'В обработке', tone: 'review' },
     paid: { label: 'Выплачено', tone: 'paid' },
     rejected: { label: 'Отклонена', tone: 'rejected' },

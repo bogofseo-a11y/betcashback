@@ -2083,7 +2083,9 @@ async function loadUserData() {
   loadSupportTickets({ silent: true }).catch(() => {});
 
   // Проверяем нужен ли выбор страны
+  console.log('[loadUserData] state.country after apply:', state.country);
   if (!state.country) {
+    console.log('[loadUserData] no country, showing select');
     await loadAndShowCountrySelect();
   }
 }
@@ -2355,17 +2357,23 @@ let countrySelectList = [];
 let selectedCountryCode = null;
 
 async function loadAndShowCountrySelect() {
+  console.log('[country-select] called, state.country:', state.country);
   const overlay = document.getElementById('country-select-overlay');
+  console.log('[country-select] overlay element:', !!overlay);
   if (!overlay) return;
 
   try {
     countrySelectList = await apiCall('/countries');
+    console.log('[country-select] loaded countries:', countrySelectList?.length);
   } catch (e) {
-    console.error('Failed to load countries:', e);
+    console.error('[country-select] Failed to load countries:', e);
     return;
   }
 
-  if (!countrySelectList.length) return;
+  if (!countrySelectList || !countrySelectList.length) {
+    console.warn('[country-select] no countries returned');
+    return;
+  }
 
   const langCode = tg?.initDataUnsafe?.user?.language_code || 'ru';
   const autoDetected = countrySelectList.find(c => c.language_code === langCode);

@@ -260,6 +260,16 @@ const REFERRAL_TIER_THRESHOLDS = {
   ],
 };
 
+async function getUserCurrencySymbol(userId) {
+  const res = await pool.query(
+    `SELECT c.currency_symbol FROM users u
+     JOIN countries c ON c.code = u.country_code
+     WHERE u.id = $1`,
+    [userId]
+  );
+  return res.rows[0]?.currency_symbol || '₽';
+}
+
 async function getUserTier(userId) {
   const result = await pool.query(`
     SELECT COALESCE(SUM(cashback_amount_rub), 0) as lifetime_cashback
@@ -1431,16 +1441,17 @@ app.post('/api/payout-requests', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'Payout method not found for this user' });
     }
 
+    const currencySymbol = await getUserCurrencySymbol(req.tgUser.id);
     const minPayoutRub = await getSettingNumber('min_payout_amount_rub', 500);
     if ((amountRub + EPS) < minPayoutRub) {
       await client.query('ROLLBACK');
-      return res.status(400).json({ error: `Минимальная сумма выплаты: ${minPayoutRub} ₽` });
+      return res.status(400).json({ error: `Минимальная сумма выплаты: ${minPayoutRub} ${currencySymbol}` });
     }
 
     const summary = await getUserWithdrawableSummary(req.tgUser.id, client);
     if ((amountRub - EPS) > summary.available) {
       await client.query('ROLLBACK');
-      return res.status(400).json({ error: `Недостаточно доступного баланса. Доступно: ${Math.floor(summary.available)} ₽` });
+      return res.status(400).json({ error: `Недостаточно доступного баланса. Доступно: ${Math.floor(summary.available)} ${currencySymbol}` });
     }
 
     const method = methodRes.rows[0];

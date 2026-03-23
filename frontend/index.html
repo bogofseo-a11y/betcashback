@@ -1129,8 +1129,8 @@
     <div id="home-experienced" style="display:none">
       <div class="hero animate-in">
         <div class="hero-label">Баланс кэшбэка</div>
-        <div class="hero-amount" id="home-balance">0<span> ₽</span></div>
-        <div class="hero-sub">Всего заработано: <strong id="home-total">0 ₽</strong></div>
+        <div class="hero-amount" id="home-balance">0<span class="currency-sym"> ₽</span></div>
+        <div class="hero-sub">Всего заработано: <strong id="home-total">0</strong></div>
         <div class="hero-sub" style="margin-top:4px;opacity:0.7">Выплаты в крипте: USDT · TON</div>
         <div class="hero-actions">
           <button class="btn-hero primary" onclick="showScreen('submit')">+ Подать заявку</button>
@@ -1311,9 +1311,9 @@
             <div class="claim-field-label">СУММА ПРОИГРЫША</div>
             <div class="claim-field-row">
               <input type="number" id="claim-amount" placeholder="0" min="0" inputmode="numeric" class="claim-field-input">
-              <span class="claim-field-suffix">₽</span>
+              <span class="claim-field-suffix" id="claim-currency-suffix">₽</span>
             </div>
-            <div class="field-hint" style="color:var(--text3);font-size:12px;margin-top:4px" id="claim-min-hint">Минимальная сумма: 500 ₽</div>
+            <div class="field-hint" style="color:var(--text3);font-size:12px;margin-top:4px" id="claim-min-hint">Минимальная сумма: 500</div>
             <div class="field-hint" id="cashback-preview" style="color:var(--accent);font-weight:700;margin-top:4px"></div>
           </div>
           <div class="claim-field-divider"></div>
@@ -1392,8 +1392,8 @@
         <div class="profile-balance-row">
           <div>
             <div class="profile-balance-label">ДОСТУПНО К ВЫВОДУ</div>
-            <div class="profile-balance-amount" id="prof-balance">0 ₽</div>
-            <div class="profile-balance-total">Всего: <strong id="prof-total-earned">0 ₽</strong> · <span id="prof-total-claims">0</span> заявок</div>
+            <div class="profile-balance-amount" id="prof-balance">0</div>
+            <div class="profile-balance-total">Всего: <strong id="prof-total-earned">0</strong> · <span id="prof-total-claims">0</span> заявок</div>
           </div>
           <button class="profile-withdraw-btn" onclick="showScreen('withdraw')">Вывести</button>
         </div>
@@ -1444,19 +1444,19 @@
     </div>
 
     <div style="padding:0 16px">
-      <p class="withdraw-desc">Баланс указан в ₽, выплата — в USDT или TON по курсу на момент перевода</p>
+      <p class="withdraw-desc" id="withdraw-desc">Выплата — в USDT или TON по курсу на момент перевода</p>
 
       <div class="card withdraw-balance">
         <div class="section-label" style="margin-bottom:4px">ДОСТУПНО К ВЫВОДУ</div>
-        <div class="withdraw-balance-amount" id="withdraw-balance">0 ₽</div>
+        <div class="withdraw-balance-amount" id="withdraw-balance">0</div>
       </div>
 
       <div class="section-label">КУДА ВЫВЕСТИ</div>
       <div id="payout-methods-list"></div>
       <button class="btn-secondary" onclick="openAddPayout()" style="margin-bottom:20px">+ Добавить крипто-кошелёк</button>
 
-      <div class="section-label">СУММА ВЫВОДА, ₽</div>
-      <input type="number" class="input-field" placeholder="Введите сумму от 500 ₽" id="withdraw-amount" min="1" step="1" inputmode="numeric">
+      <div class="section-label" id="withdraw-sum-label">СУММА ВЫВОДА</div>
+      <input type="number" class="input-field" id="withdraw-amount" min="1" step="1" inputmode="numeric">
 
       <button class="btn-primary" onclick="submitWithdrawRequest()" id="withdraw-submit-btn" style="margin-top:16px">Вывести на кошелёк</button>
       <div id="withdraw-min-hint" style="display:none;margin-top:8px;font-size:12px;color:var(--yellow)"></div>
@@ -1548,7 +1548,7 @@
       <div class="ref-stats animate-in delay-1">
         <div class="card ref-stat"><div class="ref-stat-value" id="ref-count">0</div><div class="ref-stat-label">ПРИГЛАШЕНО</div></div>
         <div class="card ref-stat"><div class="ref-stat-value" id="ref-active">0</div><div class="ref-stat-label">АКТИВНЫХ</div></div>
-        <div class="card ref-stat"><div class="ref-stat-value accent" id="ref-income">0 ₽</div><div class="ref-stat-label">ДОХОД</div></div>
+        <div class="card ref-stat"><div class="ref-stat-value accent" id="ref-income">0</div><div class="ref-stat-label">ДОХОД</div></div>
       </div>
 
       <div class="card ref-tier-card animate-in delay-2" id="ref-tier-card"></div>
@@ -1607,13 +1607,13 @@
         <div style="margin-bottom:20px">
           <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">Размер кэшбэка</div>
           <div style="font-size:13px;color:var(--text2);line-height:1.6">
-            Базовая ставка — 5% от суммы проигрыша. При увеличении числа одобренных заявок ставка растёт: 7% (от 5 заявок) и 10% (от 15 заявок). Размер кэшбэка рассчитывается автоматически при подаче заявки.
+            Базовая ставка — 5% от суммы проигрыша. Чем больше одобренного кэшбэка — тем выше бонус (до +5% на максимальном уровне). Размер кэшбэка рассчитывается автоматически при подаче заявки.
           </div>
         </div>
         <div style="margin-bottom:20px">
           <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">Как происходит выплата</div>
           <div style="font-size:13px;color:var(--text2);line-height:1.6">
-            Кэшбэк начисляется в рублях, а выплата производится в криптовалюте (USDT TRC-20, USDT TON или TON) по курсу на момент обработки. Минимальная сумма для вывода — 500 ₽. Выплаты обрабатываются вручную, обычно в течение 24–72 часов.
+            Кэшбэк начисляется в валюте вашей страны, а выплата производится в криптовалюте (USDT TRC-20, USDT TON или TON) по курсу на момент обработки. Минимальная сумма для вывода — <span class="terms-dynamic-min">500</span>. Выплаты обрабатываются вручную, обычно в течение 24–72 часов.
           </div>
         </div>
         <div style="margin-bottom:20px">
@@ -1629,7 +1629,7 @@
         <div style="margin-bottom:20px">
           <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">Реферальная программа</div>
           <div style="font-size:13px;color:var(--text2);line-height:1.6">
-            Пригласите друга по вашей реферальной ссылке — и получайте 20% бонус с каждого его одобренного кэшбэка. Бонус начисляется автоматически.
+            Пригласите друга по вашей реферальной ссылке — и получайте бонус от каждого его одобренного кэшбэка (от 5% до 20%). Бонус начисляется автоматически.
           </div>
         </div>
         <div style="margin-bottom:20px">
@@ -1706,27 +1706,10 @@
 <div class="modal-overlay" id="modal-tier-info">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">Как работают уровни кэшбэка</div>
-    <div class="modal-sub">Чем больше одобренного кэшбэка, тем выше бонус ко всем букмекерам.</div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.45;margin-bottom:10px">
-      <strong style="color:#fff">Уровень 1 — +0%</strong> · 0 – 2 000 ₽ кэшбэка
-    </div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.45;margin-bottom:10px">
-      <strong style="color:#fff">Уровень 2 — +1%</strong> · 2 000 – 5 000 ₽
-    </div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.45;margin-bottom:10px">
-      <strong style="color:#fff">Уровень 3 — +2%</strong> · 5 000 – 20 000 ₽
-    </div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.45;margin-bottom:10px">
-      <strong style="color:#fff">Уровень 4 — +3%</strong> · 20 000 – 50 000 ₽
-    </div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.45;margin-bottom:10px">
-      <strong style="color:#fff">Уровень 5 — +4%</strong> · 50 000 – 100 000 ₽
-    </div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.45;margin-bottom:12px">
-      <strong style="color:#fff">Уровень 6 — +5%</strong> · 100 000+ ₽
-    </div>
-    <div id="tier-info-current" style="font-size:13px;color:var(--accent);font-weight:700;margin-bottom:6px"></div>
+    <div class="modal-title">Уровни кэшбэка</div>
+    <div class="modal-sub">Чем больше одобренного кэшбэка — тем выше бонус к базовой ставке.</div>
+    <div id="tier-info-levels"></div>
+    <div id="tier-info-current" style="font-size:13px;color:var(--accent);font-weight:700;margin-top:12px;margin-bottom:6px"></div>
     <div id="tier-info-next" style="font-size:12px;color:var(--text2);margin-bottom:8px"></div>
     <button class="btn-submit" onclick="closeModal('modal-tier-info')">Понятно</button>
   </div>
@@ -1979,29 +1962,32 @@ async function loadSupportTickets({ silent = true } = {}) {
 // ============================================================
 // FAQ DATA
 // ============================================================
-const FAQ_ITEMS = [
-  { q: 'Что такое BetCashback?', a: 'BetCashback — сервис возврата части проигрыша у букмекеров. Вы регистрируетесь у букмекера по нашей ссылке, делаете ставки, а если проигрываете — мы возвращаем до 10% от суммы проигрыша в криптовалюте.' },
-  { q: 'Как начать пользоваться?', a: 'Три шага: 1) Выберите букмекера в разделе «Букмекеры» и зарегистрируйтесь по нашей ссылке. 2) Отправьте Player ID из личного кабинета букмекера — мы проверим, что аккаунт привязан к нам. 3) Когда ставка проиграла — подайте заявку с суммой и скриншотом.' },
-  { q: 'Что такое Player ID и где его найти?', a: 'Player ID — это ваш уникальный номер в системе букмекера. Обычно его можно найти в личном кабинете букмекера в разделе «Профиль», «Аккаунт» или «Мои данные». Это числовой идентификатор, не логин.' },
-  { q: 'Почему нужно регистрироваться по вашей ссылке?', a: 'Только через нашу ссылку мы можем подтвердить, что вы наш пользователь, и отследить ваши ставки. Если вы уже зарегистрированы у букмекера не через нас — к сожалению, начислить кэшбэк не получится.' },
-  { q: 'Сколько кэшбэка я получу?', a: 'Базовая ставка — 5% от суммы проигрыша. Чем больше одобренных заявок — тем выше процент: 7% (от 5 заявок) и 10% (от 15 заявок). Процент рассчитывается автоматически.' },
-  { q: 'В чём выплачивается кэшбэк?', a: 'Кэшбэк рассчитывается в рублях, но выплата идёт в криптовалюте: USDT (TRC-20 или TON) либо TON. Курс конвертации фиксируется на момент обработки выплаты. Для вывода добавьте крипто-кошелёк в разделе «Мой профиль».' },
-  { q: 'Какая минимальная сумма для вывода?', a: 'Минимальная сумма — 500 ₽. Как только баланс достигнет этой суммы, вы сможете создать запрос на вывод. Отслеживать прогресс можно в разделе «Мой профиль».' },
-  { q: 'Как быстро обрабатываются выплаты?', a: 'Обычно в течение 24–72 часов. Все выплаты проверяются вручную. Статус вашего запроса можно отслеживать в приложении, а уведомления приходят в Telegram.' },
-  { q: 'Какие скриншоты прикладывать к заявке?', a: 'Обязательно: скриншот проигранной ставки (купон) с видимым номером ставки, суммой и результатом. Желательно: скриншот истории ставок из личного кабинета букмекера. Чем больше подтверждений — тем быстрее одобрим.' },
-  { q: 'Почему заявку могут отклонить?', a: 'Частые причины: несовпадение суммы или даты, нечитаемый скриншот, ставка сделана не у поддерживаемого букмекера, аккаунт зарегистрирован не по нашей ссылке. Если заявка отклонена — вы получите уведомление с причиной.' },
-  { q: 'Что такое реферальная программа?', a: 'Поделитесь своей ссылкой с друзьями. Когда друг зарегистрируется и начнёт получать кэшбэк — вам автоматически начисляется 20% бонус от каждой его выплаты. Ссылка доступна в разделе «Пригласи друзей».' },
-  { q: 'Как связаться с поддержкой?', a: 'Откройте раздел «Мой профиль» → «Есть вопросы?» → «Открыть поддержку» и создайте обращение. Мы ответим в течение 24 часов прямо в приложении.' },
-];
+function getFaqItems() {
+  const minPayout = formatCurrencyThreshold(getMinPayoutAmount());
+  return [
+    { q: 'Что такое BetCashback?', a: 'BetCashback — сервис возврата части проигрыша у букмекеров. Вы регистрируетесь у букмекера по нашей ссылке, делаете ставки, а если проигрываете — мы возвращаем до 10% от суммы проигрыша.' },
+    { q: 'Как начать пользоваться?', a: 'Три шага: 1) Выберите букмекера в разделе «Букмекеры» и зарегистрируйтесь по нашей ссылке. 2) Отправьте Player ID из личного кабинета букмекера — мы проверим, что аккаунт привязан к нам. 3) Когда ставка проиграла — подайте заявку с суммой и скриншотом.' },
+    { q: 'Что такое Player ID и где его найти?', a: 'Player ID — это ваш уникальный номер в системе букмекера. Обычно его можно найти в личном кабинете букмекера в разделе «Профиль», «Аккаунт» или «Мои данные». Это числовой идентификатор, не логин.' },
+    { q: 'Почему нужно регистрироваться по вашей ссылке?', a: 'Только через нашу ссылку мы можем подтвердить, что вы наш пользователь, и отследить ваши ставки. Если вы уже зарегистрированы у букмекера не через нас — к сожалению, начислить кэшбэк не получится.' },
+    { q: 'Сколько кэшбэка я получу?', a: 'Базовая ставка — 5% от суммы проигрыша. Чем больше одобренного кэшбэка — тем выше бонус: до +5% на максимальном уровне. Процент рассчитывается автоматически.' },
+    { q: 'В чём выплачивается кэшбэк?', a: 'Выплата идёт в криптовалюте: USDT (TRC-20 или TON) либо TON. Для вывода добавьте крипто-кошелёк в разделе «Мой профиль».' },
+    { q: 'Какая минимальная сумма для вывода?', a: `Минимальная сумма — ${minPayout}. Как только баланс достигнет этой суммы, вы сможете создать запрос на вывод. Отслеживать прогресс можно в разделе «Мой профиль».` },
+    { q: 'Как быстро обрабатываются выплаты?', a: 'Обычно в течение 24–72 часов. Все выплаты проверяются вручную. Статус вашего запроса можно отслеживать в приложении, а уведомления приходят в Telegram.' },
+    { q: 'Какие скриншоты прикладывать к заявке?', a: 'Обязательно: скриншот проигранной ставки (купон) с видимым номером ставки, суммой и результатом. Желательно: скриншот истории ставок из личного кабинета букмекера. Чем больше подтверждений — тем быстрее одобрим.' },
+    { q: 'Почему заявку могут отклонить?', a: 'Частые причины: несовпадение суммы или даты, нечитаемый скриншот, ставка сделана не у поддерживаемого букмекера, аккаунт зарегистрирован не по нашей ссылке. Если заявка отклонена — вы получите уведомление с причиной.' },
+    { q: 'Что такое реферальная программа?', a: 'Поделитесь своей ссылкой с друзьями. Когда друг зарегистрируется и начнёт получать кэшбэк — вам автоматически начисляется бонус от каждого его одобренного кэшбэка (от 5% до 20%).' },
+    { q: 'Как связаться с поддержкой?', a: 'Откройте раздел «Мой профиль» → «Есть вопросы?» → «Открыть поддержку» и создайте обращение. Мы ответим в течение 24 часов прямо в приложении.' },
+  ];
+}
 
 // ============================================================
 // INIT
 // ============================================================
 async function init() {
-  renderFAQ();
   setupForm();
   setupSupportUploads();
   await loadUserData();
+  renderFAQ();
   updateRefLink();
 }
 
@@ -2054,6 +2040,7 @@ async function loadUserData() {
   renderBookmakers();
   populateBookmakerSelect();
   updateProfile();
+  updateDynamicCurrency();
   loadSupportTickets({ silent: true }).catch(() => {});
 
   // Проверяем нужен ли выбор страны
@@ -2070,13 +2057,13 @@ function updateProfile() {
   setEl('prof-name', name);
   setEl('prof-id', '@' + (tgUser.username || 'user'));
   const homeAvailable = Number.isFinite(state.withdrawable?.available) ? state.withdrawable.available : (state.balance || 0);
-  document.getElementById('home-balance').innerHTML = Math.round(homeAvailable).toLocaleString('ru-RU') + '<span> ₽</span>';
-  setEl('home-total', formatRub(state.totalEarned));
+  document.getElementById('home-balance').innerHTML = Math.round(homeAvailable).toLocaleString('ru-RU') + `<span class="currency-sym"> ${getCurrencySymbol()}</span>`;
+  setEl('home-total', formatCurrency(state.totalEarned));
 
   // Profile balance card
   const profBalanceEl = document.getElementById('prof-balance');
-  if (profBalanceEl) profBalanceEl.textContent = formatRub(homeAvailable);
-  setEl('prof-total-earned', formatRub(state.totalEarned));
+  if (profBalanceEl) profBalanceEl.textContent = formatCurrency(homeAvailable);
+  setEl('prof-total-earned', formatCurrency(state.totalEarned));
   setEl('prof-total-claims', state.claims.length);
 
   updateTierUI();
@@ -2207,7 +2194,7 @@ function updateTierUI() {
   const hintEl = document.getElementById('prof-tier-hint');
   if (nextTier) {
     const remaining = Math.max(0, currentTier.to - lifetime);
-    if (hintEl) hintEl.innerHTML = `Ещё <strong>${formatRub(remaining)}</strong> кэшбэка до уровня +${nextTier.bonus}%`;
+    if (hintEl) hintEl.innerHTML = `Ещё <strong>${formatCurrency(remaining)}</strong> кэшбэка до уровня +${nextTier.bonus}%`;
   } else {
     if (hintEl) hintEl.innerHTML = 'Максимальный уровень — <strong>+5%</strong> ко всем букмекерам';
     if (profBar) profBar.style.width = '100%';
@@ -2219,7 +2206,7 @@ function updateTierUI() {
   setEl('tier-name', !nextTier ? 'УРОВЕНЬ 6 · МАКСИМАЛЬНЫЙ' : `ПРОГРЕСС К УРОВНЮ ${tier + 1} · +${nextTier.bonus}%`);
   setEl('tier-hint-text', !nextTier
     ? 'У вас максимальный бонус — <strong>+5%</strong> ко всем букмекерам.'
-    : `Ещё <strong style="color:var(--text);font-weight:800">${formatRub(Math.max(0, currentTier.to - lifetime))}</strong> кэшбэка — и бонус вырастет до +${nextTier.bonus}%`);
+    : `Ещё <strong style="color:var(--text);font-weight:800">${formatCurrency(Math.max(0, currentTier.to - lifetime))}</strong> кэшбэка — и бонус вырастет до +${nextTier.bonus}%`);
 }
 
 function openTierModal() {
@@ -2283,7 +2270,7 @@ function renderTierModal() {
   if (hintEl) {
     if (nextTier) {
       const remaining = currentTier.to - lifetime;
-      hintEl.innerHTML = `Ещё <strong style="color:var(--text)">${formatRub(Math.max(0, remaining))}</strong> одобренного кэшбэка до уровня <span style="color:var(--accent);font-weight:700">+${nextTier.bonus}%</span> у всех букмекеров`;
+      hintEl.innerHTML = `Ещё <strong style="color:var(--text)">${formatCurrency(Math.max(0, remaining))}</strong> одобренного кэшбэка до уровня <span style="color:var(--accent);font-weight:700">+${nextTier.bonus}%</span> у всех букмекеров`;
     } else {
       hintEl.innerHTML = '<span style="color:var(--accent);font-weight:600">Максимальный уровень достигнут! +5% ко всем букмекерам</span>';
     }
@@ -2293,12 +2280,13 @@ function renderTierModal() {
 function updatePendingUI() {
   const section = document.getElementById('pending-section');
   if (!section) return;
-  if (state.pending > 0 && state.pending < 500) {
+  const minAmount = getMinPayoutAmount();
+  if (state.pending > 0 && state.pending < minAmount) {
     section.style.display = 'block';
-    setEl('pending-amount', formatRub(state.pending));
-    setEl('pending-left', formatRub(500 - state.pending));
+    setEl('pending-amount', formatCurrency(state.pending));
+    setEl('pending-left', formatCurrency(minAmount - state.pending));
     const fill = document.getElementById('pending-bar-fill');
-    if (fill) fill.style.width = Math.min(100, Math.round((state.pending / 500) * 100)) + '%';
+    if (fill) fill.style.width = Math.min(100, Math.round((state.pending / minAmount) * 100)) + '%';
   } else {
     section.style.display = 'none';
   }
@@ -2445,6 +2433,12 @@ async function countrySelectFinish() {
     const result = await apiCall('/user/country', 'POST', { country_code: selectedCountryCode });
 
     state.country = result.country || countrySelectList.find(c => c.code === selectedCountryCode);
+
+    // Update all currency-dependent UI
+    updateDynamicCurrency();
+    renderFAQ();
+    renderBookmakers();
+    updateProfile();
 
     const overlay = document.getElementById('country-select-overlay');
     if (overlay) overlay.style.display = 'none';
@@ -2685,7 +2679,7 @@ function openBookmakerDetail(id) {
         <div style="font-size:11px;color:var(--text3);margin-top:2px">Заявок</div>
       </div>
       <div class="card" style="padding:14px 12px;text-align:center">
-        <div style="font-size:20px;font-weight:800;color:var(--success)">${formatRub(totalCashback)}</div>
+        <div style="font-size:20px;font-weight:800;color:var(--success)">${formatCurrency(totalCashback)}</div>
         <div style="font-size:11px;color:var(--text3);margin-top:2px">Получено</div>
       </div>
     </div>`;
@@ -2705,9 +2699,9 @@ function openBookmakerDetail(id) {
               <div class="claim-bk">${c.bkName || bk.name}</div>
               <div class="claim-status ${statusMap[c.status]||'submitted'}">${labelMap[c.status]||'Отправлено'}</div>
             </div>
-            <div class="claim-meta">${formatDate(c.date)} · #${c.betId} · Проигрыш: ${formatRub(c.amount)}</div>
+            <div class="claim-meta">${formatDate(c.date)} · #${c.betId} · Проигрыш: ${formatCurrency(c.amount)}</div>
           </div>
-          <div class="claim-cashback">+${formatRub(c.cashback)}</div>
+          <div class="claim-cashback">+${formatCurrency(c.cashback)}</div>
         </div>`).join('');
     }
 
@@ -2945,23 +2939,24 @@ function onAmountChange(e) {
   const bonus = state.tierInfo?.bonus || state.tierInfo?.pct || 0;
   const finalPct = basePct + bonus;
   const cashback = amount * finalPct / 100;
+  const minAmount = getMinClaimAmount();
   const minHint = document.getElementById('claim-min-hint');
   if (minHint) {
-    if (amount > 0 && amount < 500) {
+    if (amount > 0 && amount < minAmount) {
       minHint.style.color = 'var(--red)';
-      minHint.textContent = 'Минимальная сумма: 500 ₽';
+      minHint.textContent = `Минимальная сумма: ${formatCurrencyThreshold(minAmount)}`;
     } else {
       minHint.style.color = 'var(--text3)';
-      minHint.textContent = 'Минимальная сумма: 500 ₽';
+      minHint.textContent = `Минимальная сумма: ${formatCurrencyThreshold(minAmount)}`;
     }
   }
   const preview = document.getElementById('cashback-preview');
   if (amount > 0) {
-    const msg = amount < 500
-      ? `⚠️ Минимальный проигрыш 500₽. Ваш кэшбэк: ${formatRub(cashback)} — пойдёт в копилку`
-      : `✓ Кэшбэк: +${formatRub(cashback)} (${finalPct}%)`;
+    const msg = amount < minAmount
+      ? `⚠️ Минимальный проигрыш ${formatCurrencyThreshold(minAmount)}. Ваш кэшбэк: ${formatCurrency(cashback)} — пойдёт в копилку`
+      : `✓ Кэшбэк: +${formatCurrency(cashback)} (${finalPct}%)`;
     preview.textContent = msg;
-    preview.style.color = amount < 500 ? 'var(--yellow)' : 'var(--accent)';
+    preview.style.color = amount < minAmount ? 'var(--yellow)' : 'var(--accent)';
   } else {
     preview.textContent = '';
   }
@@ -3026,12 +3021,13 @@ async function submitClaim() {
     return;
   }
   if (!amount || amount <= 0) { showToast('Укажите сумму проигрыша', 'error'); return; }
-  if (amount < 500) { showToast('Минимальная сумма проигрыша — 500 ₽', 'error'); return; }
+  const minClaimAmount = getMinClaimAmount();
+  if (amount < minClaimAmount) { showToast(`Минимальная сумма проигрыша — ${formatCurrencyThreshold(minClaimAmount)}`, 'error'); return; }
   if (!date) { showToast('Укажите дату', 'error'); return; }
   if (!betId) { showToast('Укажите номер купона', 'error'); return; }
   if (uploadedFiles.length === 0) { showToast('Добавьте хотя бы 1 скрин', 'error'); return; }
   if (!agree) { showToast('Подтвердите условия', 'error'); return; }
-  
+
   const confirmBk = state.bookmakers.find(b => b.id == bkId);
   const bkName = confirmBk?.name || 'Букмекер';
   const confirmBasePct = parseFloat(confirmBk?.base_cashback_pct || 5);
@@ -3039,9 +3035,9 @@ async function submitClaim() {
   const confirmFinalPct = confirmBasePct + confirmBonus;
   const confirmText = `Подтвердите отправку заявки:\n\n` +
     `Букмекер: ${bkName}\n` +
-    `Сумма проигрыша: ${amount.toLocaleString('ru-RU')} ₽\n` +
+    `Сумма проигрыша: ${formatCurrency(amount)}\n` +
     `Номер ставки: ${betId}\n` +
-    `Кэшбэк: ~${Math.round(amount * confirmFinalPct / 100).toLocaleString('ru-RU')} ₽ (${confirmFinalPct}%)`;
+    `Кэшбэк: ~${formatCurrency(Math.round(amount * confirmFinalPct / 100))} (${confirmFinalPct}%)`;
 
   if (!confirm(confirmText)) return;
 
@@ -3140,9 +3136,9 @@ function renderHomeClaims() {
           <div class="claim-bk">${c.bkName}</div>
           <div class="claim-status ${statusMap[c.status]||'submitted'}">${labelMap[c.status]||'Отправлено'}</div>
         </div>
-        <div class="claim-meta">${formatDate(c.date)} · #${c.betId} · Проигрыш: ${formatRub(c.amount)}</div>
+        <div class="claim-meta">${formatDate(c.date)} · #${c.betId} · Проигрыш: ${formatCurrency(c.amount)}</div>
       </div>
-      <div class="claim-cashback">+${formatRub(c.cashback)}</div>
+      <div class="claim-cashback">+${formatCurrency(c.cashback)}</div>
     </div>`).join('') + (hasMore ? `
     <div style="margin-top:8px;font-size:12px;color:var(--accent);font-weight:700;cursor:pointer" onclick="toggleHomeClaimsView()">${actionLabel}</div>
   ` : '');
@@ -3157,7 +3153,8 @@ function toggleHomeClaimsView() {
 // FAQ
 // ============================================================
 function renderFAQ() {
-  const html = FAQ_ITEMS.map((f,i) => `
+  const items = getFaqItems();
+  const html = items.map((f,i) => `
     <div class="faq-item" id="faq-${i}">
       <div class="faq-q" onclick="toggleFAQ(${i})">${f.q}<span class="faq-icon">+</span></div>
       <div class="faq-a">${f.a}</div>
@@ -3609,7 +3606,7 @@ function renderWithdrawScreen() {
 
   // Update balance display
   const balEl = document.getElementById('withdraw-balance');
-  if (balEl) balEl.textContent = formatRub(available);
+  if (balEl) balEl.textContent = formatCurrency(available);
 
   // Update submit button state
   const btn = document.getElementById('withdraw-submit-btn');
@@ -3624,7 +3621,7 @@ function renderWithdrawScreen() {
   if (hintEl) {
     if (available < minAmount) {
       hintEl.style.display = '';
-      hintEl.textContent = `Недостаточно средств для вывода. Накопите минимум ${formatRubThreshold(minAmount)}.`;
+      hintEl.textContent = `Недостаточно средств для вывода. Накопите минимум ${formatCurrencyThreshold(minAmount)}.`;
     } else {
       hintEl.style.display = 'none';
     }
@@ -3636,15 +3633,44 @@ function renderWithdrawScreen() {
 
 function openTierInfo() {
   const t = state.tierInfo || { tier: 1, pct: 5, progress: 0, nextTierAt: 0 };
-  const approvedProgress = Math.max(0, parseInt(t.progress || 0));
-  const nextAt = Math.max(0, parseInt(t.nextTierAt || 0));
-  const left = Math.max(0, nextAt - approvedProgress);
-  setEl('tier-info-current', `Ваш текущий уровень: Tier ${t.tier} · ${t.pct}%`);
-  if (t.tier >= 3) {
-    setEl('tier-info-next', 'Вы уже на максимальном уровне. Новые одобренные заявки сохраняют ставку 10%.');
+  const currency = getCurrencyCode();
+
+  const thresholds = {
+    RUB:  [0, 2000, 5000, 20000, 50000, 100000],
+    KZT:  [0, 10000, 25000, 100000, 250000, 500000],
+    BYN:  [0, 65, 160, 650, 1600, 3200],
+    USD:  [0, 20, 50, 200, 500, 1000],
+  };
+  const thr = thresholds[currency] || thresholds.RUB;
+  const bonuses = [0, 1, 2, 3, 4, 5];
+
+  const levelsHtml = thr.map((min, i) => {
+    const level = i + 1;
+    const bonus = bonuses[i];
+    const isMax = i === thr.length - 1;
+    const isCurrent = t.tier === level;
+    const range = isMax
+      ? `от ${formatCurrencyThreshold(min)}`
+      : `${formatCurrencyThreshold(min)} — ${formatCurrencyThreshold(thr[i + 1] - 1)}`;
+
+    return `<div style="font-size:13px;color:var(--text2);line-height:1.45;margin-bottom:8px;${isCurrent ? 'padding:6px 10px;background:rgba(45,212,191,0.06);border-radius:8px;border:1px solid rgba(45,212,191,0.15);' : ''}">
+      <strong style="color:${isCurrent ? 'var(--accent)' : '#fff'}">Уровень ${level} · +${bonus}%</strong>
+      <span style="font-size:12px;color:var(--text3);margin-left:6px;">${range}</span>
+    </div>`;
+  }).join('');
+
+  setEl('tier-info-levels', levelsHtml);
+  setEl('tier-info-current', `Ваш уровень: ${t.tier} · бонус +${bonuses[t.tier - 1] || 0}%`);
+
+  if (t.tier >= 6) {
+    setEl('tier-info-next', 'Максимальный уровень достигнут!');
   } else {
-    setEl('tier-info-next', `До следующего уровня: ${left} одобренных заявок.`);
+    const nextThreshold = thr[t.tier] || 0;
+    const progress = parseFloat(t.progress || 0);
+    const left = Math.max(0, nextThreshold - progress);
+    setEl('tier-info-next', `До уровня ${t.tier + 1}: ещё ${formatCurrency(left)} одобренного кэшбэка`);
   }
+
   openModal('modal-tier-info');
 }
 
@@ -3667,7 +3693,7 @@ function renderPayoutHistory() {
         </div>
         <div class="claim-meta">${formatDate(r.created_at)} · ${truncateAddr(r.address_snapshot || '')}${r.tx_hash ? ' · TX: ' + r.tx_hash : ''}</div>
       </div>
-      <div class="claim-cashback">${formatRub(parseFloat(r.amount_rub || 0))}</div>
+      <div class="claim-cashback">${formatCurrency(parseFloat(r.amount_rub || 0))}</div>
     </div>
   `;
   }).join('');
@@ -3687,7 +3713,7 @@ async function submitWithdrawRequest() {
     return;
   }
   if (Number.isFinite(minAmount) && amount < minAmount) {
-    showToast(`Минимальная сумма выплаты: ${formatRubThreshold(minAmount)}`, 'error');
+    showToast(`Минимальная сумма выплаты: ${formatCurrencyThreshold(minAmount)}`, 'error');
     return;
   }
 
@@ -3717,52 +3743,76 @@ async function submitWithdrawRequest() {
 // ============================================================
 // REFERRAL
 // ============================================================
-const REF_TIERS = [
-  { level: 1, pct: 5,  from: 0,      to: 5000 },
-  { level: 2, pct: 10, from: 5000,   to: 20000 },
-  { level: 3, pct: 15, from: 20000,  to: 50000 },
-  { level: 4, pct: 20, from: 50000, to: null },
-];
+function getRefTiers() {
+  const currency = getCurrencyCode();
+  const thresholds = {
+    RUB: [
+      { level: 1, pct: 5,  from: 0,      to: 5000 },
+      { level: 2, pct: 10, from: 5000,   to: 20000 },
+      { level: 3, pct: 15, from: 20000,  to: 50000 },
+      { level: 4, pct: 20, from: 50000,  to: null },
+    ],
+    KZT: [
+      { level: 1, pct: 5,  from: 0,       to: 25000 },
+      { level: 2, pct: 10, from: 25000,   to: 100000 },
+      { level: 3, pct: 15, from: 100000,  to: 250000 },
+      { level: 4, pct: 20, from: 250000,  to: null },
+    ],
+    BYN: [
+      { level: 1, pct: 5,  from: 0,    to: 160 },
+      { level: 2, pct: 10, from: 160,  to: 650 },
+      { level: 3, pct: 15, from: 650,  to: 1600 },
+      { level: 4, pct: 20, from: 1600, to: null },
+    ],
+    USD: [
+      { level: 1, pct: 5,  from: 0,    to: 50 },
+      { level: 2, pct: 10, from: 50,   to: 200 },
+      { level: 3, pct: 15, from: 200,  to: 500 },
+      { level: 4, pct: 20, from: 500,  to: null },
+    ],
+  };
+  return thresholds[currency] || thresholds.RUB;
+}
 
 function updateRefLink() {
   const link = `t.me/${BOT_USERNAME}?start=ref_${tgUser.id}`;
   setEl('ref-link', link);
   setEl('ref-count', safeCountValue(state.refStats?.count));
   setEl('ref-active', safeCountValue(state.refStats?.active));
-  setEl('ref-income', formatRub(safeAmountValue(state.refStats?.income)));
+  setEl('ref-income', formatCurrency(safeAmountValue(state.refStats?.income)));
   renderRefTiers();
 }
 
 function renderRefTiers() {
   const container = document.getElementById('ref-tier-card');
   if (!container) return;
+  const tiers = getRefTiers();
   const earnings = safeAmountValue(state.refStats?.totalReferralCashback ?? state.refStats?.income);
-  const currentTier = REF_TIERS.find(t => earnings < (t.to || Infinity)) || REF_TIERS[3];
-  const nextTier = REF_TIERS.find(t => t.level === currentTier.level + 1);
+  const currentTier = tiers.find(t => earnings < (t.to || Infinity)) || tiers[tiers.length - 1];
+  const nextTier = tiers.find(t => t.level === currentTier.level + 1);
 
   // Progress bar calculation
   let progressPct = 5;
-  if (currentTier.level >= 4) {
+  if (currentTier.level >= tiers.length) {
     progressPct = 100;
   } else {
     const rangeStart = currentTier.from;
     const rangeEnd = currentTier.to;
-    const tierWidth = 100 / REF_TIERS.length;
+    const tierWidth = 100 / tiers.length;
     const withinTier = (earnings - rangeStart) / (rangeEnd - rangeStart);
     progressPct = (currentTier.level - 1) * tierWidth + withinTier * tierWidth;
     progressPct = Math.max(5, Math.min(progressPct, 100));
   }
 
   // Dots
-  const dotsHtml = REF_TIERS.map(t => {
+  const dotsHtml = tiers.map(t => {
     let dotClass = 'locked';
     let isCurrent = t.level === currentTier.level;
     if (t.level < currentTier.level) dotClass = 'achieved';
     else if (t.level === currentTier.level) dotClass = 'active';
-    const label = t.to ? formatRub(t.from) : formatRub(t.from);
     return `<div class="ref-tier-dot${isCurrent ? ' current' : ''}">
       <div class="ref-tier-dot-circle ${dotClass}">${t.pct}%</div>
-      <div class="ref-tier-dot-label">${t.from > 0 ? formatRub(t.from) : '0 ₽'}</div>
+      <div class="ref-tier-dot-label">${formatCurrency(t.from)}</div>
     </div>`;
   }).join('');
 
@@ -3770,7 +3820,7 @@ function renderRefTiers() {
   let hintHtml = '';
   if (nextTier) {
     const remaining = nextTier.from - earnings;
-    hintHtml = `<div class="ref-tier-hint">Ещё <strong>${formatRub(remaining)}</strong> кэшбэка друзей — и бонус вырастет до <span style="color:var(--referral);font-weight:700">${nextTier.pct}%</span></div>`;
+    hintHtml = `<div class="ref-tier-hint">Ещё <strong>${formatCurrency(remaining)}</strong> кэшбэка друзей — и бонус вырастет до <span style="color:var(--referral);font-weight:700">${nextTier.pct}%</span></div>`;
   } else {
     hintHtml = `<div class="ref-tier-hint" style="color:var(--referral)">Максимальный уровень достигнут!</div>`;
   }
@@ -3857,15 +3907,62 @@ function setEl(id, html) {
   if (el) el.innerHTML = html;
 }
 
-function formatRub(n) {
-  return Math.round(n || 0).toLocaleString('ru-RU') + ' ₽';
+// ============================================================
+// CURRENCY FORMATTING
+// ============================================================
+
+function getCurrencySymbol() {
+  return state.country?.currency_symbol || '₽';
 }
 
-function formatRubThreshold(n) {
+function getCurrencyCode() {
+  return state.country?.currency || 'RUB';
+}
+
+function formatCurrency(n) {
+  const value = Math.round(n || 0);
+  const symbol = getCurrencySymbol();
+  const formatted = value.toLocaleString('ru-RU');
+  if (symbol === '$') return '$' + formatted;
+  return formatted + ' ' + symbol;
+}
+
+function formatCurrencyThreshold(n) {
   const value = Number(n);
-  if (!Number.isFinite(value)) return '500 ₽';
+  const symbol = getCurrencySymbol();
+  if (!Number.isFinite(value)) return formatCurrency(500);
   const text = Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.?0+$/, '');
-  return text + ' ₽';
+  if (symbol === '$') return '$' + text;
+  return text + ' ' + symbol;
+}
+
+function getMinClaimAmount() {
+  const currency = getCurrencyCode();
+  const mins = { RUB: 500, KZT: 2500, BYN: 16, USD: 5 };
+  return mins[currency] || 500;
+}
+
+function getMinPayoutAmount() {
+  const currency = getCurrencyCode();
+  const mins = { RUB: 500, KZT: 2500, BYN: 16, USD: 5 };
+  return mins[currency] || 500;
+}
+
+function updateDynamicCurrency() {
+  const sym = getCurrencySymbol();
+  // Claim form suffix
+  const suffixEl = document.getElementById('claim-currency-suffix');
+  if (suffixEl) suffixEl.textContent = sym;
+  // Claim min hint
+  const minHint = document.getElementById('claim-min-hint');
+  if (minHint) minHint.textContent = `Минимальная сумма: ${formatCurrencyThreshold(getMinClaimAmount())}`;
+  // Withdraw placeholder
+  const wAmt = document.getElementById('withdraw-amount');
+  if (wAmt) wAmt.placeholder = `Введите сумму от ${formatCurrencyThreshold(getMinPayoutAmount())}`;
+  // Terms dynamic min
+  document.querySelectorAll('.terms-dynamic-min').forEach(el => {
+    el.textContent = formatCurrencyThreshold(getMinPayoutAmount());
+  });
 }
 
 function formatDate(dateStr) {

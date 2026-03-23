@@ -2529,6 +2529,8 @@ let changeCountryList = [];
 let changeCountrySelected = null;
 
 function openCountryChangeModal() {
+  // Reset selection to current country each time modal opens
+  changeCountrySelected = state.country?.code || null;
   if (countrySelectList.length > 0) {
     changeCountryList = countrySelectList;
     renderChangeCountryList();
@@ -2549,7 +2551,8 @@ function renderChangeCountryList() {
   const container = document.getElementById('change-country-list');
   if (!container) return;
   const currentCode = state.country?.code || null;
-  changeCountrySelected = currentCode;
+  // Only reset selection when first opening, not on re-render
+  if (changeCountrySelected === null) changeCountrySelected = currentCode;
 
   const currencyNames = {
     RUB: 'Российский рубль',
@@ -2564,7 +2567,7 @@ function renderChangeCountryList() {
     const currLabel = c.currency_symbol + ' \u00b7 ' + (currencyNames[c.currency] || c.currency);
 
     return `
-      <div onclick="selectChangeCountry('${c.code}')" id="change-country-card-${c.code}"
+      <div class="change-country-card" data-code="${c.code}"
         style="
           display:flex; align-items:center; gap:14px; padding:12px 14px;
           background:${isSelected ? 'rgba(45,212,191,0.06)' : 'var(--card)'};
@@ -2579,7 +2582,7 @@ function renderChangeCountryList() {
           </div>
           <div style="font-size:12px; color:var(--text3); margin-top:1px;">${currLabel}</div>
         </div>
-        <div style="
+        <div data-radio style="
           width:20px; height:20px; border-radius:50%; flex-shrink:0;
           border:2px solid ${isSelected ? 'var(--accent)' : 'var(--border)'};
           display:flex; align-items:center; justify-content:center;
@@ -2590,12 +2593,32 @@ function renderChangeCountryList() {
     `;
   }).join('');
 
-  updateChangeCountrySaveBtn();
-}
+  // Bind click handlers via addEventListener
+  container.querySelectorAll('.change-country-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const code = card.getAttribute('data-code');
+      if (code) {
+        changeCountrySelected = code;
+        // Update styles without full re-render
+        container.querySelectorAll('.change-country-card').forEach(c => {
+          const cCode = c.getAttribute('data-code');
+          const isSel = cCode === changeCountrySelected;
+          c.style.background = isSel ? 'rgba(45,212,191,0.06)' : 'var(--card)';
+          c.style.border = '1px solid ' + (isSel ? 'rgba(45,212,191,0.3)' : 'var(--border)');
+          c.style.boxShadow = isSel ? '0 0 12px rgba(45,212,191,0.08)' : 'none';
+          const radio = c.querySelector('[data-radio]');
+          if (radio) {
+            radio.style.borderColor = isSel ? 'var(--accent)' : 'var(--border)';
+            radio.innerHTML = isSel ? '<div style="width:10px;height:10px;border-radius:50%;background:var(--accent);"></div>' : '';
+          }
+        });
+        updateChangeCountrySaveBtn();
+      }
+    });
+  });
 
-function selectChangeCountry(code) {
-  changeCountrySelected = code;
-  renderChangeCountryList();
+  updateChangeCountrySaveBtn();
 }
 
 function updateChangeCountrySaveBtn() {

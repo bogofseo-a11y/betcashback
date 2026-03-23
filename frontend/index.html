@@ -1399,6 +1399,25 @@
         </div>
       </div>
 
+      <!-- Country setting -->
+      <div class="card animate-in delay-1" id="profile-country-card" style="margin-bottom:16px; cursor:pointer;" onclick="openCountryChangeModal()">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div id="prof-country-flag" style="font-size:24px;">🌍</div>
+            <div>
+              <div style="font-size:11px; font-weight:700; color:var(--text3); letter-spacing:0.06em; text-transform:uppercase;">СТРАНА</div>
+              <div id="prof-country-name" style="font-size:15px; font-weight:700; color:var(--text); margin-top:2px;">Не выбрана</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div id="prof-country-currency" style="font-size:13px; color:var(--accent); font-weight:700;"></div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
       <!-- Quick links -->
       <div class="profile-quick-links animate-in delay-2">
         <div class="card profile-quick-link" onclick="showScreen('support')">
@@ -1715,6 +1734,26 @@
   </div>
 </div>
 
+<!-- MODAL: Change country -->
+<div class="modal-overlay" id="modal-change-country">
+  <div class="modal" style="max-height:85vh; overflow-y:auto;">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Сменить страну</div>
+    <div class="modal-sub">От страны зависит валюта и список букмекеров.</div>
+
+    <div id="change-country-list" style="display:grid; gap:8px; margin:12px 0 16px;"></div>
+
+    <div style="padding:12px 14px; border-radius:12px; background:rgba(255,215,64,0.08); border:1px solid rgba(255,215,64,0.18); margin-bottom:16px;">
+      <div style="font-size:12px; color:#FFD740; line-height:1.5;">
+        При смене страны изменится валюта и пороги уровней. Ваши заявки и баланс сохранятся.
+      </div>
+    </div>
+
+    <button class="btn-submit" id="change-country-save-btn" onclick="saveCountryChange()" disabled style="opacity:0.5;">Сохранить</button>
+    <button style="width:100%;padding:14px;background:none;border:none;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px" onclick="closeModal('modal-change-country')">Отмена</button>
+  </div>
+</div>
+
 <!-- MODAL: Support create -->
 <div class="modal-overlay" id="modal-support-create">
   <div class="modal">
@@ -1742,7 +1781,7 @@
 
 
 <script>
-const APP_VERSION = '2.1.0';
+const APP_VERSION = '2.5.0';
 console.log('[BetCashback] v' + APP_VERSION + ' loaded at ' + new Date().toISOString());
 
 // ============================================================
@@ -2072,6 +2111,23 @@ function updateProfile() {
   renderPayoutMethods();
   renderPayoutHistory();
   updateSupportBadge();
+  updateProfileCountry();
+}
+
+function updateProfileCountry() {
+  const flagEl = document.getElementById('prof-country-flag');
+  const nameEl = document.getElementById('prof-country-name');
+  const currEl = document.getElementById('prof-country-currency');
+
+  if (state.country) {
+    if (flagEl) flagEl.textContent = state.country.flag;
+    if (nameEl) nameEl.textContent = state.country.name;
+    if (currEl) currEl.textContent = state.country.currency_symbol + ' ' + state.country.currency;
+  } else {
+    if (flagEl) flagEl.textContent = '🌍';
+    if (nameEl) nameEl.textContent = 'Выберите страну';
+    if (currEl) currEl.textContent = '';
+  }
 }
 
 function renderHomeState() {
@@ -2453,6 +2509,131 @@ async function countrySelectFinish() {
     if (btn) {
       btn.disabled = false;
       btn.textContent = 'Начать';
+      btn.style.opacity = '1';
+    }
+  }
+}
+
+// ============================================================
+// COUNTRY CHANGE (settings)
+// ============================================================
+let changeCountryList = [];
+let changeCountrySelected = null;
+
+function openCountryChangeModal() {
+  if (countrySelectList.length > 0) {
+    changeCountryList = countrySelectList;
+    renderChangeCountryList();
+    openModal('modal-change-country');
+  } else {
+    apiCall('/countries').then(list => {
+      changeCountryList = list || [];
+      countrySelectList = list || [];
+      renderChangeCountryList();
+      openModal('modal-change-country');
+    }).catch(() => {
+      showToast('Не удалось загрузить список стран', 'error');
+    });
+  }
+}
+
+function renderChangeCountryList() {
+  const container = document.getElementById('change-country-list');
+  if (!container) return;
+  const currentCode = state.country?.code || null;
+  changeCountrySelected = currentCode;
+
+  const currencyNames = {
+    RUB: 'Российский рубль',
+    KZT: 'Казахстанский тенге',
+    BYN: 'Белорусский рубль',
+    USD: 'Доллар США',
+  };
+
+  container.innerHTML = changeCountryList.map(c => {
+    const isSelected = changeCountrySelected === c.code;
+    const isCurrent = currentCode === c.code;
+    const currLabel = c.currency_symbol + ' \u00b7 ' + (currencyNames[c.currency] || c.currency);
+
+    return `
+      <div onclick="selectChangeCountry('${c.code}')" id="change-country-card-${c.code}"
+        style="
+          display:flex; align-items:center; gap:14px; padding:12px 14px;
+          background:${isSelected ? 'rgba(45,212,191,0.06)' : 'var(--card)'};
+          border:1px solid ${isSelected ? 'rgba(45,212,191,0.3)' : 'var(--border)'};
+          border-radius:14px; cursor:pointer; transition:all 0.15s;
+          ${isSelected ? 'box-shadow:0 0 12px rgba(45,212,191,0.08);' : ''}
+        ">
+        <div style="font-size:24px; width:32px; text-align:center; flex-shrink:0;">${c.flag}</div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:14px; font-weight:700; color:var(--text);">
+            ${c.name}${isCurrent ? ' <span style="font-size:11px;color:var(--accent);font-weight:600;">текущая</span>' : ''}
+          </div>
+          <div style="font-size:12px; color:var(--text3); margin-top:1px;">${currLabel}</div>
+        </div>
+        <div style="
+          width:20px; height:20px; border-radius:50%; flex-shrink:0;
+          border:2px solid ${isSelected ? 'var(--accent)' : 'var(--border)'};
+          display:flex; align-items:center; justify-content:center;
+        ">
+          ${isSelected ? '<div style="width:10px; height:10px; border-radius:50%; background:var(--accent);"></div>' : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  updateChangeCountrySaveBtn();
+}
+
+function selectChangeCountry(code) {
+  changeCountrySelected = code;
+  renderChangeCountryList();
+}
+
+function updateChangeCountrySaveBtn() {
+  const btn = document.getElementById('change-country-save-btn');
+  if (!btn) return;
+  const currentCode = state.country?.code || null;
+  const changed = changeCountrySelected && changeCountrySelected !== currentCode;
+  btn.disabled = !changed;
+  btn.style.opacity = changed ? '1' : '0.5';
+  btn.style.cursor = changed ? 'pointer' : 'not-allowed';
+}
+
+async function saveCountryChange() {
+  if (!changeCountrySelected) return;
+  const currentCode = state.country?.code || null;
+  if (changeCountrySelected === currentCode) return;
+
+  const btn = document.getElementById('change-country-save-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Сохраняем...';
+    btn.style.opacity = '0.7';
+  }
+
+  try {
+    const result = await apiCall('/user/country', 'POST', { country_code: changeCountrySelected });
+
+    state.country = result.country || changeCountryList.find(c => c.code === changeCountrySelected);
+
+    closeModal('modal-change-country');
+
+    updateProfileCountry();
+    updateProfile();
+    updateDynamicCurrency();
+    renderFAQ();
+    renderBookmakers();
+
+    if (typeof renderRefTiers === 'function') renderRefTiers();
+
+    showToast('Страна изменена', 'success');
+  } catch (e) {
+    showToast(e.message || 'Ошибка сохранения', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Сохранить';
       btn.style.opacity = '1';
     }
   }
@@ -3956,9 +4137,11 @@ function updateDynamicCurrency() {
   // Claim min hint
   const minHint = document.getElementById('claim-min-hint');
   if (minHint) minHint.textContent = `Минимальная сумма: ${formatCurrencyThreshold(getMinClaimAmount())}`;
-  // Withdraw placeholder
+  // Withdraw placeholder and label
   const wAmt = document.getElementById('withdraw-amount');
   if (wAmt) wAmt.placeholder = `Введите сумму от ${formatCurrencyThreshold(getMinPayoutAmount())}`;
+  const wLabel = document.getElementById('withdraw-sum-label');
+  if (wLabel) wLabel.textContent = 'СУММА ВЫВОДА, ' + sym;
   // Terms dynamic min
   document.querySelectorAll('.terms-dynamic-min').forEach(el => {
     el.textContent = formatCurrencyThreshold(getMinPayoutAmount());

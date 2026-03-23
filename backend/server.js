@@ -526,7 +526,7 @@ async function getUserWithdrawableSummary(userId, client = pool) {
 // ============================================================
 
 // Health check
-app.get('/health', (req, res) => res.json({ ok: true, ts: new Date().toISOString(), version: '2.4.0' }));
+app.get('/health', (req, res) => res.json({ ok: true, ts: new Date().toISOString(), version: '2.5.0' }));
 
 // ---- COUNTRIES ----
 app.get('/api/countries', async (req, res) => {
